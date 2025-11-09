@@ -5,7 +5,30 @@ let reverseMode = "toStandard";
 let hasCalculatedError = false;
 let resultHistory = [];
 let isStandardOnTop = false; // 標準時刻が上に配置されているかを示す状態変数
-const QR_CODE_URL_BASE = "https://fkz1977.github.io/Time-Regulus/";
+const QR_CODE_URL_BASE = "https://fkz1977.github.io/Time-Regulus-2/";
+
+// PWAの表示モード（standalone, minimal-ui, browser）を計測する
+function trackDisplayMode() {
+    let displayMode;
+    if (navigator.standalone) {
+        // iOSでホーム画面に追加された場合
+        displayMode = 'ios-standalone';
+    } else if (window.matchMedia('(display-mode: standalone)').matches) {
+        // Androidなどでdisplay: standaloneに一致した場合
+        displayMode = 'standalone';
+    } else if (window.matchMedia('(display-mode: minimal-ui)').matches) {
+        displayMode = 'minimal-ui';
+    } else {
+        displayMode = 'browser';
+    }
+
+    if (typeof gtag === 'function') {
+        gtag('event', 'app_load', {
+            'app_display_mode': displayMode, // ★カスタムディメンションのイベントパラメータ名と一致させる
+            'app_version': currentVersion // バージョンも一緒に送ると便利
+        });
+    }
+}
 
 function checkPass() {
   const inputField = document.getElementById("passcode");
@@ -573,6 +596,16 @@ function calculateError() {
   lastError = { days, hours, minutes, seconds, isFast };
   document.getElementById("toReverseButton").style.display = "block";
 }
+
+// GA4イベントトラッキング
+    if (typeof gtag === 'function') {
+        gtag('event', 'calculate_time', {
+            'mode': reverseMode, // toStandard または toDisplay
+            'error_value': Math.abs(errorInSeconds) // 誤差の絶対値
+        });
+    }
+} // calculateCorrection関数の終了
+
 
 function applyLastErrorToReverseInputs() {
   if (!lastError) return;

@@ -1,4 +1,4 @@
-const currentVersion = "2.0.0";
+const currentVersion = "2.0.1";
 let lastError = null;
 let hasCalculated = false;
 let reverseMode = "toStandard";
@@ -71,7 +71,7 @@ function generateKeypad() {
 document.addEventListener("DOMContentLoaded", function () {
   // 起動時のポップアップ (修正: function showModeSelect()0.0の内容に変更)
   if (localStorage.getItem("lastVersion") !== currentVersion) {
-    alert("Time RegulusはV2.0.0です！");
+    alert("Time RegulusはV2.0.1です！");
     localStorage.setItem("lastVersion", currentVersion);
   }
 
@@ -586,7 +586,7 @@ function calculateError() {
     // 表示時刻が遅れている
     directionText = "遅れています。";
     directionColor = "var(--error-early-color)"; // 太文字の黄緑
-  }
+  }202
 
   resultElement.innerHTML = `
     <span style="color: var(--accent); font-weight: bold;">${parts.join("")}</span><br>

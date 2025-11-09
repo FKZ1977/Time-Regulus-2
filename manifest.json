@@ -1,7 +1,7 @@
 {
   "name": "Time Regulus",
   "short_name": "TimeRegulus",
-  "version": "2.0.1",
+  "version": "2.0.0",
   "start_url": "./index.html",
   "display": "standalone", 
   "background_color": "#0e0f11",

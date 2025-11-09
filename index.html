@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>Time Regulus</title>
+
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-R7PW7DY4GF"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-R7PW7DY4GF');
+  </script>
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="icon-192.png">
+  <link rel="stylesheet" href="style.css">
+
+  <style>
+    @keyframes riseInLong {
+      0% { opacity: 0; transform: translateY(20px); }
+      100% { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes riseInShort {
+      0% { opacity: 0; transform: translateY(20px); }
+      100% { opacity: 1; transform: translateY(0); }
+    }
+    .rise-in-long { animation: riseInLong 1s ease-out forwards; }
+    .rise-in-short { animation: riseInShort 1s ease-out forwards; }
+
+    /* 標準時刻が上の時の00秒のスタイル */
+    .seconds-fixed-00 {
+      /* input要素のスタイルを上書きしてセレクトボックスの枠を消し、背景色を適用 */
+      background-color: var(--bg-dark-navy) !important; 
+      border: 1px solid var(--accent) !important;
+      color: var(--error-late-color) !important; /* 赤色文字 */
+      font-weight: bold;
+      pointer-events: none;
+      text-align: center;
+      box-shadow: none;
+      -webkit-appearance: none; /* Safari/Chrome */
+      -moz-appearance: none;    /* Firefox */
+      appearance: none;         /* 標準 */
+    }
+  </style>
+</head>
+<body class="fade-in">
+  <div id="lockScreen">
+    <h1 class="fkz rise-in-long">Time Regulus</h1>
+    <p class="subtitle">タイム　レグルス　v2.0.0</p>
+    <label for="passcode">暗証番号を入力：</label><br>
+    <input type="password" id="passcode" placeholder="例：1234" tabindex="1">
+    <button class="action-btn" onclick="checkPass()" tabindex="2">開く</button>
+
+    <div id="keypad" class="keypad-grid"></div>
+
+    <p id="error"></p>
+    <p class="subtitle">- produced by H.Fukazu -</p>
+
+    <p class="info-link" onclick="showInformationPage()"> - Information - </p>
+
+  </div>
+
+
+  <div id="modeSelect" style="display:none; text-align:center;">
+    <h1 class="fkz rise-in-short">Time Regulus</h1>
+
+<div id="updateNotification" style="display:none; position:fixed; bottom:0; left:0; width:100%; padding:10px 15px; background-color:#ff9800; color:white; text-align:center; z-index:1000;">
+    新しいバージョンが利用可能です！
+    <button id="updateButton" style="margin-left:15px; padding:5px 10px; background-color:white; color:#0e0f11; border:none; border-radius:4px; font-weight:bold; cursor:pointer;">
+        更新して再起動
+    </button>
+</div>
+
+    <p class="subtitle">- モード選択 -</p>
+    <div style="display: flex; flex-direction: column; align-items: center; gap: 20px; margin-top: 40px;">
+      <button class="action-btn" onclick="showErrorMode()" tabindex="3">誤差の計算</button>
+      <button class="action-btn" onclick="showCorrectionMode()" tabindex="4">補正時刻の計算</button>
+    </div><br><br>
+    <a href="#" 
+  onclick="showResetConfirmation(); return false;" 
+  id="resetLink" 
+  class="mode-select-link">入力情報のリセット</a>
+<div id="resetConfirmContainer" style="display:none; margin-top: 15px;">
+  <button class="action-btn" 
+    onclick="resetAppAndReturnToLock()" 
+    style="background-color: var(--toggle-bg); box-shadow: 0 4px 12px rgba(255, 0, 170, 0.3); font-size: 14px; padding: 10px 20px;">入力情報を消去して初期画面に戻ります</button>
+</div>
+    <br><br><br><br>
+    
+  </div>
+
+  <div id="errorMode" style="display:none;">
+    <div class="mode-card">
+      <button class="back-btn" onclick="backToModeSelect()">← モード選択に戻る</button>
+      <h2>誤差の計算</h2>
+
+      <div id="errorModeDisplayInputGroup" class="input-group">
+        <label>表示時刻：</label><br>
+        <input type="datetime-local" id="displayTime">
+        <select id="displaySeconds" class="seconds-select">
+          <option value="">秒</option>
+        </select>
+      </div>
+
+      <div id="swap-button-wrapper" style="text-align: center; margin: 10px 0; position: relative;">
+    <button id="swapButton" class="action-btn toggle-btn swap-btn" onclick="swapErrorModeInputs()">🔃</button>
+</div>
+
+      <div id="errorModeStandardInputGroup" class="input-group">
+        <label>標準時刻：</label>
+        <button class="action-btn" id="standardNowButton" onclick="setNowToStandard()" style="margin-left: 8px;">NOW🔄</button><br>
+        <input type="datetime-local" id="standardTime">
+        <select id="standardSeconds" class="seconds-select">
+          <option value="">秒</option>
+        </select>
+      </div>
+
+      <div class="result-box" id="result"></div>
+      <div style="text-align: right;">
+        <div id="toReverseButton" 
+     onclick="switchToCorrectionMode()" 
+     class="to-reverse-link" 
+     style="display: none;">
+    補正時刻を計算→
+</div>
+      </div>
+    </div>
+  </div>
+
+  <div id="correctionMode" class="mode-card deep-green" style="display:none;">
+    <button class="back-btn" onclick="backToModeSelect()" tabindex="12">← モード選択に戻る</button>
+    <h2>補正時刻の計算</h2>
+    <label>補正に使う誤差：</label>
+    <div class="flex-wrap">
+      <div class="unit-input">
+        <input type="number" id="errorDays" min="0" step="1" tabindex="13">
+        <span class="unit-label">日</span>
+      </div>
+      <div class="unit-input">
+        <select id="errorHours" tabindex="14">
+          <option value="">--</option>
+        </select>
+        <span class="unit-label">時</span>
+      </div>
+      <div class="unit-input">
+        <select id="errorMinutes" tabindex="15">
+          <option value="">--</option>
+        </select>
+        <span class="unit-label">分</span>
+      </div>
+      <div class="unit-input">
+        <select id="errorSeconds" tabindex="16">
+          <option value="">--</option>
+        </select>
+        <span class="unit-label">秒</span>
+      </div>
+    </div>
+
+    <div class="input-group">
+      <label for="errorDirection" style="display:inline-block;">表示時刻は標準時刻より：</label>
+      <select id="errorDirection" tabindex="17">
+        <option value="late" class="error-late">進んでいる</option>
+        <option value="early" class="error-early">遅れている</option>
+      </select>
+    </div>
+
+    <div style="margin: 12px 0;">
+      <button class="action-btn toggle-btn active-toggle" id="reverseModeToggleBtn" onclick="toggleReverseMode()">⇆切替</button>
+    </div>
+
+    <div id="reverseTimeBlock" class="input-group">
+      <label id="reverseTimeLabel" for="reverseDisplayTime">表示時刻:</label><br>
+      <input type="datetime-local" id="reverseDisplayTime" step="60" tabindex="19">
+      <select id="reverseDisplaySeconds" class="seconds-select" tabindex="20">
+        <option value="">--</option>
+      </select>
+    </div>
+
+    <div id="reverseResult" class="result-box"></div>
+    
+    <div style="display: flex; flex-direction: column; align-items: center; margin-top: 10px;">
+      <button class="action-btn" id="addToListButton" onclick="addResultToList()">結果一覧に記録する</button>
+      <span id="recordSuccessMessage" class="success-message" style="display:none; color: var(--accent); font-weight: bold; font-size: 15px; margin-top: 10px;">結果一覧に追加しました</span>
+    </div>
+
+    <p id="showListLink" class="show-list-link" onclick="showResultList()" style="display:none; text-align: right; margin-top: 20px;">結果一覧を表示 →</p>
+  </div>
+
+  <div id="resultListPage" style="display:none; text-align:center; padding: 40px 16px;"><br><br>
+    <button class="back-btn" onclick="backToCorrectionMode()">← 補正時刻の計算に戻る</button>
+    <h1 class="fkz" style="margin-top: 40px;">結果一覧</h1>
+    <div id="resultListContainer" style="margin-top: 30px;"></div>
+  </div>
+
+  <div id="informationPage" style="display:none; text-align:center; padding: 40px 16px;"><br>
+    <button class="back-btn" onclick="backToLockScreen()">← 初期画面に戻る</button>
+    <h1 class="fkz" style="margin-top: 40px;">Information</h1>
+    <div id="informationContent" style="margin-top: 30px; text-align: left; max-width: 500px; margin-left: auto; margin-right: auto;">
+      <p style="margin-bottom: 8px;">このアプリは <strong>H.Fukazu</strong> によって制作されました。</p>
+      <p style="margin-bottom: 24px;">バージョン: <strong>v2.0.0</strong></p>
+
+      <h3 style="margin-top:24px;">## 著作権および利用規約 (Copyright and Usage Policy)</h3>
+      <p>本作品（ソフトウェア、コード、ドキュメント、および関連する全ての内容を含む）の著作権は、© 2025 H.Fukazu に帰属します。<br>**© 2025 H.Fukazu. All Rights Reserved.**</p><br>
+      <h3 style="margin-top:24px;"> 厳禁事項 (Strictly Prohibited)</h3>
+      <p>著作者からの書面による事前の明示的な許可なく、以下の行為を固く禁じます。</p>
+      <ul>
+        <li>無断転用、複製、改変、二次利用は禁止</li>
+        <li>ソースコードの全部または一部の無断転載および再配布の禁止</li>
+        <li>商業的な目的での利用禁止 (営利・非営利を問わず、対価を得る活動への利用)</li>
+        <li>本作品を基にした派生作品の作成および公開も禁止</li>
+      </ul>
+      <p>本作品は、著作権法によって最大限に保護されています。</p>
+    </div>
+    <button class="action-btn" onclick="showQRCodePage()" style="margin-top: 30px;">QRコードを表示</button>
+  </div>
+  
+  <div id="qrCodePage" style="display:none; text-align:center; padding: 40px 16px;">
+    <div style="margin-top: 100px;">
+      <img id="qrCodeImage" 
+           src="QRCorde.PNG" 
+           alt="Time Regulus QR Code" 
+           style="border: 4px solid var(--text-main); border-radius: 8px;">
+      <p id="qrCodeMessage" style="color: var(--text-sub); margin-top: 10px; font-size: 14px;">QRコードが表示されない場合は、ネットワーク接続を確認してください。</p>
+    </div>
+    <button class="action-btn" onclick="closeQRCodePage()" style="margin-top: 40px; background-color: #ff4d4d;">☒ 閉じる</button>
+  </div>
+
+  <script src="script.js" defer></script>
+  <script>
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.register("service-worker.js")
+        .then(() => console.log("Service Worker registered"))
+        .catch(error => console.error("Service Worker registration failed:", error));
+    }
+  </script>
+
+<script>
+      // Service Workerの登録
+      if ('serviceWorker' in navigator) {
+        // ページが完全にロードされた後でService Workerを登録する
+        window.addEventListener('load', () => {
+          // 'service-worker.js'を登録。このファイル名は変更しないでください。
+          navigator.serviceWorker.register('./service-worker.js')
+            .then(registration => {
+              console.log('Service Worker 登録成功:', registration.scope);
+            })
+            .catch(error => {
+              console.log('Service Worker 登録失敗:', error);
+            });
+        });
+      }
+    </script>
+
+</body>
+</html>

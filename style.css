@@ -1,0 +1,534 @@
+:root {
+  --bg-dark: #0e0f11;
+  --bg-dark-navy: #151c27; /* 標準時刻が上の時の新しい背景色 */
+  --card-bg: rgba(120, 110, 255, 0.38);
+  --accent: #00ffe0; /* 水色/メインカラー */
+  --text-main: #e0e0e0;
+  --text-sub: #999;
+  --btn-bg: #00ffe0;
+  --btn-text: #000;
+  --deep-green: #134d33;
+  --toggle-bg: #ff00aa; /* ピンク */
+  --toggle-text: #fff;
+  --error-late-color: #ff4d4d; /* 赤色 (進み) */
+  --error-early-color: #00ff80; /* 黄緑色 (遅れ) */
+  --result-standard-bg: rgba(0, 255, 224, 0.1);
+  --result-display-bg: rgba(255, 0, 170, 0.1);
+}
+
+.fade-in {
+  animation: fadeIn 1.2s ease-in-out forwards;
+  opacity: 0;
+}
+@keyframes fadeIn {
+  to {
+    opacity: 1;
+  }
+}
+
+.rise-in {
+  animation: riseFade 1.2s ease-out forwards;
+  opacity: 0;
+  transform: translateY(20px);
+}
+@keyframes riseFade {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* 新しいアニメーション */
+@keyframes riseInLong {
+  0% { opacity: 0; transform: translateY(20px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+@keyframes riseInShort {
+  0% { opacity: 0; transform: translateY(20px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+.rise-in-long { animation: riseInLong 1s ease-out forwards; }
+.rise-in-short { animation: riseInShort 1s ease-out forwards; }
+
+/* 入力フィールドスワップアニメーション */
+@keyframes slideUpOut {
+  to { transform: translateY(-100%); opacity: 0.2; }
+}
+@keyframes slideDownOut {
+  to { transform: translateY(100%); opacity: 0.2; }
+}
+@keyframes slideUpIn {
+  from { transform: translateY(100%); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+@keyframes slideDownIn {
+  from { transform: translateY(-100%); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+.animate-up-out { animation: slideUpOut 0.3s ease-in forwards; }
+.animate-down-out { animation: slideDownOut 0.3s ease-in forwards; }
+.animate-up-in { animation: slideUpIn 0.3s ease-out forwards; }
+.animate-down-in { animation: slideDownIn 0.3s ease-out forwards; }
+
+/* 記録成功メッセージのアニメーション */
+@keyframes fadeOut {
+    0% { opacity: 1; }
+    100% { opacity: 0; }
+}
+
+.fade-in-out {
+    animation: fadeIn 0.1s ease-in forwards; /* 即座にフェードイン */
+}
+.fade-out {
+    animation: fadeOut 0.5s ease-out forwards; /* 0.5秒でフェードアウト */
+}
+
+
+body {
+  margin: 0;
+  padding: 0;
+  font-family: 'Inter', sans-serif;
+  background: var(--bg-dark);
+  color: var(--text-main);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: 100vh;
+}
+
+input:focus, select:focus, button:focus {
+  outline: 2px solid var(--accent);
+  box-shadow: 0 0 6px var(--accent);
+}
+
+h1.fkz {
+  font-size: 40px;
+  color: var(--accent);
+  text-shadow: 0 0 12px var(--accent);
+  margin-top: 60px;
+  letter-spacing: 4px;
+}
+
+.subtitle {
+  font-size: 16px;
+  color: var(--text-sub);
+  margin-bottom: 40px;
+}
+
+.mode-card {
+  background: var(--card-bg);
+  backdrop-filter: blur(12px);
+  border-radius: 16px;
+  padding: 30px;
+  width: 90%;
+  max-width: 500px;
+  box-shadow: 0 0 20px rgba(0,0,0,0.4);
+  margin-top: 40px;
+}
+
+.mode-card h2 {
+  color: #fff;
+  font-weight: bold;
+  font-size: 20px;
+  margin-bottom: 16px;
+}
+
+.deep-green {
+  background-color: var(--deep-green);
+}
+
+.input-group {
+  margin-top: 12px;
+  margin-bottom: 20px;
+}
+
+input[type="datetime-local"] {
+  width: 220px;
+}
+
+.seconds-select {
+  width: 80px;
+  margin-top: 8px;
+}
+
+/* 誤差計算モードで標準時刻が上の時の「00秒」のスタイル */
+.seconds-fixed-00 {
+  background-color: var(--bg-dark-navy) !important; 
+  border: 1px solid var(--accent) !important;
+  color: var(--error-late-color) !important; /* 赤色文字 */
+  font-weight: bold;
+  pointer-events: none;
+  text-align: center;
+  box-shadow: none;
+  /* セレクトボックスの矢印を非表示 */
+  -webkit-appearance: none; 
+  -moz-appearance: none;    
+  appearance: none;         
+}
+
+#errorDirection {
+  width: 160px;
+  display: inline-block;
+  margin-left: 8px;
+}
+
+
+/* 誤差計算モードの「補正時刻を計算→」リンク風テキストのスタイル */
+.to-reverse-link {
+    /* 右寄せ */
+    text-align: right;
+    width: 100%; /* 親要素の幅いっぱいに広げ、text-align: rightを有効にする */
+    display: block; /* ブロック要素にする */
+    
+    /* 水色の文字（--accentは水色/メインカラー） */
+    color: var(--accent); 
+    font-size: 16px; 
+    font-weight: bold; 
+    
+    /* リンク風のカーソルと体裁 */
+    cursor: pointer; 
+    padding: 10px 0; /* 上下のパディング */
+    margin-top: 10px; /* 上部の余白 */
+    
+    /* ボタンとしてのデフォルトスタイルを上書き */
+    background: none;
+    border: none;
+    text-decoration: none; 
+}
+
+/* ホバー時のスタイル（任意: マウスオーバー時に少し薄くする） */
+.to-reverse-link:hover {
+    opacity: 0.8;
+}
+
+
+/* 誤差の方向の文字色 */
+.error-late { /* 進んでいる (late) は赤色 */
+    color: var(--error-late-color);
+    font-weight: bold;
+}
+.error-early { /* 遅れている (early) は黄緑色 */
+    color: var(--error-early-color);
+    font-weight: bold;
+}
+
+
+input, select {
+  padding: 10px;
+  font-size: 16px;
+  border-radius: 8px;
+  border: none;
+  background-color: #1f1f2f;
+  color: var(--text-main);
+}
+
+.action-btn {
+  background-color: var(--btn-bg);
+  color: var(--btn-text);
+  border: none;
+  padding: 12px 24px;
+  font-size: 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  margin-top: 20px;
+  box-shadow: 0 4px 12px rgba(0,255,224,0.3);
+  transition: transform 0.2s ease, background-color 0.3s ease;
+}
+.action-btn:hover {
+  transform: scale(1.05);
+  background-color: #00e6cc;
+}
+
+.toggle-btn {
+  background-color: var(--btn-bg); /* 通常のボタンのデフォルト */
+  color: var(--btn-text);
+  box-shadow: 0 4px 12px rgba(0,255,224,0.3);
+  border-radius: 8px;
+  padding: 12px 24px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: transform 0.2s ease, background-color 0.3s ease, box-shadow 0.3s ease;
+}
+.toggle-btn:hover {
+  transform: scale(1.05);
+}
+
+/* 1. 表示時刻 → 補正時刻 (toStandard) : 水色 */
+.toggle-btn.active-toggle {
+  background-color: var(--accent);
+  color: var(--btn-text);
+  box-shadow: 0 0 10px rgba(0, 255, 224, 0.5);
+  transform: scale(1);
+}
+.toggle-btn.active-toggle:hover {
+  background-color: #00e6cc;
+  transform: scale(1.05);
+}
+
+/* 2. 探している時刻 → 表示時刻 (toDisplay) : ピンク */
+.toggle-btn.active-toggle-pink {
+  background-color: var(--toggle-bg);
+  color: var(--toggle-text);
+  box-shadow: 0 0 10px rgba(255, 0, 170, 0.5);
+  transform: scale(1);
+}
+.toggle-btn.active-toggle-pink:hover {
+  background-color: var(--toggle-bg); /* ピンクのまま */
+  transform: scale(1.05);
+}
+
+.back-btn {
+  background: none;
+  border: none;
+  color: var(--accent);
+  font-size: 16px;
+  margin-bottom: 20px;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+.back-btn:hover {
+  transform: scale(1.05);
+}
+
+.result-box {
+  margin-top: 30px;
+  font-size: 18px;
+  line-height: 1.6;
+  color: var(--accent);
+  text-align: center;
+  margin: 20px 0;
+}
+.result-box p {
+  margin: 20px 0;
+}
+
+#error {
+  color: red;
+  min-height: 1.2em;
+  margin-top: 4px;
+  margin-bottom: 4px;
+  font-size: 14px;
+}
+
+.flex-wrap {
+  display: flex;
+  flex-direction: row;
+  gap: 6px;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  margin-bottom: 24px;
+}
+
+.unit-input {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-bottom: 12px;
+  flex: 1 1 auto;
+  min-width: 60px;
+}
+
+.unit-input input,
+.unit-input select {
+  width: 50px;
+  min-width: 40px;
+  max-width: 80px;
+  padding: 4px 6px;
+  font-size: 14px;
+  border-radius: 6px;
+  border: none;
+  background-color: #1f1f2f;
+  color: var(--text-main);
+  text-align: right;
+}
+
+.unit-label {
+  font-size: 14px;
+  color: var(--text-main);
+  white-space: nowrap;
+  margin-left: 2px;
+}
+
+#lockScreen {
+  text-align: center;
+  margin-top: 0px;
+}
+
+#lockScreen input {
+  width: 100px;
+  text-align: center;
+  padding: 10px;
+  font-size: 18px;
+  border-radius: 8px;
+  border: none;
+  color: var(--text-main);
+}
+
+#modeSelect {
+  padding-top: 80px;
+}
+
+#errorMode, #correctionMode {
+  padding-top: 60px;
+}
+
+.keypad-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 45px);
+  grid-template-rows: repeat(3, 45px);
+  gap: 10px;
+  justify-content: center;
+  margin: 20px auto;
+}
+
+.keypad-grid button {
+  font-size: 18px;
+  border: none;
+  border-radius: 8px;
+  background-color: rgba(255, 255, 255, 0.08);
+  color: var(--accent);
+  cursor: pointer;
+  box-shadow: 0 0 6px rgba(0,255,224,0.2);
+  transition: background-color 0.2s ease;
+}
+.keypad-grid button:hover {
+  background-color: rgba(0,255,224,0.2);
+}
+
+.show-list-link {
+  color: var(--accent);
+  font-size: 16px;
+  margin-top: 12px;
+  text-align: right;
+  cursor: pointer;
+}
+
+.info-link {
+  color: var(--accent);
+  font-size: 14px;
+  margin-top: 40px;
+  text-align: center;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+.info-link:hover {
+  transform: scale(1.05);
+}
+
+/* 結果一覧のスタイル */
+.result-list-group-outer {
+    padding: 16px;
+    margin-bottom: 24px;
+    border: 2px solid var(--text-sub);
+    border-radius: 12px;
+    background-color: rgba(255, 255, 255, 0.03);
+    box-shadow: 0 0 10px rgba(0,0,0,0.3);
+}
+
+.result-list-group-inner {
+    border-radius: 8px;
+    padding: 12px;
+    margin-bottom: 12px;
+    text-align: left;
+}
+
+.delete-btn {
+    /* 背景色をグレー系（暗い背景色）に変更 */
+    background-color: var(--bg-dark); 
+    /* 文字色をグレー系（サブテキスト色）に変更 */
+    color: var(--text-sub); 
+    /* 枠線をサブテキストの色で追加 */
+    border: 1px solid var(--text-sub); 
+    padding: 4px 8px;
+    font-size: 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    /* アニメーションを削除 */
+    transition: none;
+}
+.delete-btn:hover {
+    /* ホバー時の色変更を削除し、固定色に設定 */
+    background-color: var(--bg-dark);
+    color: var(--text-sub);
+    /* 押せる要素であることを示すため、わずかに透明度を変更（任意ですが推奨） */
+    opacity: 0.8;
+}
+/* 成功メッセージ */
+.success-message {
+    color: var(--accent); 
+    font-weight: bold; 
+    font-size: 15px;
+    opacity: 0;
+    transition: opacity 0.1s ease-in, transform 0.1s ease-in;
+}
+
+/* Informationページの文字詰め */
+#informationContent p {
+    margin-bottom: 8px; /* 段落の間隔を狭める */
+}
+
+/* style.css (末尾の定義を変更) */
+
+/* 中央の🔃ボタンのスタイル */
+.sync-center-btn {
+    /* **変更点:** ボタンの枠と背景を削除し、テキスト（アイコン）として表示する */
+    background-color: transparent; /* 背景を透明に */
+    border: none; /* 枠線を削除 */
+    box-shadow: none; /* 影を削除 */
+    
+    /* ボタンのサイズとフォントを調整 */
+    width: auto; /* 幅をテキストに合わせる */
+    padding: 0; /* パディングを削除 */
+    margin-top: 0; 
+    font-size: 28px; /* 🔃アイコンを大きく表示 */
+    cursor: pointer; /* クリック可能であることを示す */
+    
+    /* 必要に応じて文字色を調整 */
+    color: #333; 
+}
+
+/* 🔃ボタン（交換ボタン）の位置調整とフォーカスリングの削除 */
+#swapButton {
+    position: absolute; 
+    
+    /* 垂直方向の位置調整: 上に動かすために translateY の負の値を大きくします */
+    top: 50%; 
+    /* 50%の位置から上に150%分移動させます。この値を調整して高さを微調整してください。 */
+    transform: translateY(-100%); 
+    
+    /* 水平方向の右寄せを維持 */
+    right: 20px; 
+    
+    /* アイコンに見せるスタイルを維持 */
+    background-color: transparent !important; 
+    border: none !important; 
+    box-shadow: none !important; 
+    padding: 0; 
+    width: auto;
+    font-size: 28px;
+    cursor: pointer; 
+    z-index: 10; 
+    
+    /* ★【新規追加】押した時の水色の枠（フォーカスリング）を削除 */
+    outline: none !important;
+}
+
+/* ★【新規追加】クリック中（アクティブ時）の背景色変化も無効化 */
+#swapButton:active {
+    background-color: transparent !important;
+}
+
+#resetLink {
+    display: block; /* ブロック要素にして中央寄せを可能にする */
+    text-align: center;
+    text-decoration: none; /* 下線を削除 */
+    color: var(--toggle-bg); /* ピンク色 (var(--toggle-bg)) に設定 */
+    font-size: 14px; /* サイズを調整 */
+    font-weight: bold; /* 文字を太くする */
+    margin-top: 30px; /* 上部の余白を維持 */
+    cursor: pointer; /* マウスオーバー時にカーソルをポインタに変更 */
+}
+
+#resetLink:hover {
+    text-decoration: underline; /* ホバー時に下線を表示 */
+}

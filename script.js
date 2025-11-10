@@ -1,4 +1,4 @@
-const currentVersion = "2.0.0";
+const currentVersion = "2.0.1";
 let lastError = null;
 let hasCalculated = false;
 let reverseMode = "toStandard";

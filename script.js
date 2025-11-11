@@ -571,6 +571,8 @@ function calculateError() {
     <span style="color: ${directionColor}; font-weight: bold;">${directionText}</span>
   `;
 
+  gtag('event', 'calculate_error'); // Google Analyticsイベント
+
   lastError = { days, hours, minutes, seconds, isFast };
   document.getElementById("toReverseButton").style.display = "block";
 }
@@ -691,6 +693,8 @@ function handleReverseCalculation() {
 
   const resultTime = new Date(resultTimeMs);
 
+gtag('event', 'calculate_correction'); // Google Analyticsイベント
+
   const baseStr = formatDate(baseTime, true);
   const resultStr = formatDate(resultTime, true);
   
@@ -794,6 +798,9 @@ if (isDuplicate) {
   group.entries.push(newEntry);
   
   saveResultHistory();
+
+  gtag('event', 'add_to_list'); // Google Analyticsイベント
+
   renderResultList();
   
 // ★改修: 履歴がある場合、「結果一覧を表示 →」リンクを表示し、テキストを再設定する

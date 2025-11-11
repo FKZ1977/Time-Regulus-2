@@ -19,6 +19,7 @@ function checkPass() {
     inputField.blur();
     inputField.style.border = "";
     errorMessage.innerText = "";
+    gtag('event', 'unlock_success'); // Google Analyticsイベント
   } else {
     errorMessage.innerText = "暗証番号が違います";
     inputField.style.border = "2px solid red";

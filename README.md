@@ -124,6 +124,7 @@ Esta obra está protegida ao máximo pela lei de direitos autorais.
 यह रचना कॉपीराइट कानून द्वारा पूरी तरह से संरक्षित है।
 
 
+🇺🇦
 ＜＜　Українська　＞＞ウクライナ語
 Цей додаток створено H.Fukazu.
 Авторське право та умови використання (Copyright and Usage Policy)
@@ -167,7 +168,7 @@ Esta obra está protegida ao máximo pela lei de direitos autorais.
 ・禁止未经授权转载或再分发全部或部分源代码
 ・禁止用于商业目的（无论营利或非营利，只要涉及获取报酬的活动）
 ・禁止基于本作品创作并发布衍生作品
-本作品受到版权法的最大保护。🇺🇦
+本作品受到版权法的最大保护。
 
 
 🇮🇩

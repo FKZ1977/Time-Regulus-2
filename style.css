@@ -50,16 +50,6 @@
 .rise-in-long { animation: riseInLong 1s ease-out forwards; }
 .rise-in-short { animation: riseInShort 1s ease-out forwards; }
 
-/* 初期化画面シーケンス用 */
-.title-rise {
-  opacity: 0;
-  animation: riseInLong 1.2s ease-out 1.4s forwards;
-}
-.delayed-fade {
-  opacity: 0;
-  animation: fadeIn 1s ease-in-out 0s forwards;
-}
-
 /* 入力フィールドスワップアニメーション */
 @keyframes slideUpOut {
   to { transform: translateY(-100%); opacity: 0.2; }
@@ -130,30 +120,11 @@ h1.fkz {
   backdrop-filter: blur(12px);
   border-radius: 16px;
   padding: 30px;
-  width: 100%;
-  max-width: 480px !important;
+  width: 90%;
+  max-width: 500px;
   box-shadow: 0 0 20px rgba(0,0,0,0.4);
   margin-top: 40px;
 }
-
-
-
-
-
-
-/* 緑色の背景（補正モード）を 480px に強制する */
-
-.mode-card,
-.mode-card.deep-green {
-  max-width: 480px !important;
-  width: 100% !important;
-  margin-left: auto !important;
-  margin-right: auto !important;
-  box-sizing: border-box !important;
-}
-
-
-
 
 .mode-card h2 {
   color: #fff;
@@ -173,99 +144,11 @@ h1.fkz {
 
 input[type="datetime-local"] {
   width: 220px;
-  box-sizing: content-box;
 }
 
 .seconds-select {
-  width: 65px !important;
-  margin-top: 0px !important; /* 秒の枠が下に離れすぎないように修正 */
-  vertical-align: top;
-}
-
-/* Split time input styles (ON時の分割枠) */
-.split-time-group {
-  display: flex;
-  justify-content: flex-start;
-  align-items: center;
-  gap: 1px !important;
-  margin-top: 0px; /* OFF時と高さを揃える */
-}
-
-/* 日時の枠を一つのボックスのように見せるラッパー */
-.datetime-wrapper {
-  display: flex;
-  align-items: center;
-  background-color: #1f1f2f;
-  border-radius: 8px;
-  padding: 0 4px;
-  gap: 0;
-  width: 240px; /* datetime-localの幅(220px+左右padding20px=240px)と完全一致させる */
-  box-sizing: border-box;
-}
-
-/* 不動文字（スラッシュ、コロン等） */
-.time-separator {
-  color: var(--text-sub);
-  font-size: 16px;
-  font-weight: bold;
-  pointer-events: none;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0 1px;
-  background-color: transparent !important;
-}
-
-.split-time-input {
-  /* OFF時の input / select に見た目・高さを近づける */
-  padding: 10px 2px !important; /* 横幅節約のためpadding削減 */
-  font-size: 16px !important;
-  text-align: center;
-  border-radius: 8px;
-  border: none;
-  background-color: #1f1f2f;
-  color: var(--text-main);
-  -webkit-appearance: none;
-  -moz-appearance: none;
-  appearance: none;
-}
-
-/* ラッパー内の入力枠は背景と枠線を透明にする */
-.datetime-wrapper .split-time-input {
-  background-color: transparent !important;
-  border-radius: 0 !important;
-  padding: 10px 0 !important;
-  width: 100% !important; 
-  min-width: 0 !important;
-}
-
-/* プレースホルダー */
-.split-time-input::placeholder {
-  color: #777;
-  font-size: 12px;
-  font-weight: normal;
-}
-
-/* 年の枠 */
-#displayYear, #standardYear, #reverseYear {
-  flex: 1.4;
-  max-width: none !important;
-}
-
-/* 月・日・時・分の枠 */
-#displayMonth, #standardMonth, #reverseMonth,
-#displayDay, #standardDay, #reverseDay,
-#displayHour, #standardHour, #reverseHour,
-#displayMinute, #standardMinute, #reverseMinute {
-  flex: 1;
-  max-width: none !important;
-}
-
-/* 秒の枠（OFF時と同じ 65px に揃え、離れすぎないようにマージンをリセット） */
-#displaySecond, #standardSecond, #reverseSecond {
-  width: 65px !important;
-  max-width: 65px !important;
-  margin-left: 4px !important;
+  width: 80px;
+  margin-top: 8px;
 }
 
 /* 誤差計算モードで標準時刻が上の時の「00秒」のスタイル */
@@ -337,8 +220,6 @@ input, select {
   border: none;
   background-color: #1f1f2f;
   color: var(--text-main);
-  font-family: inherit;
-  vertical-align: top;
 }
 
 .action-btn {
@@ -429,58 +310,20 @@ input, select {
   font-size: 14px;
 }
 
-
-
-
-
-/* 子要素が親を押し広げないようにする */
-
 .flex-wrap {
   display: flex;
   flex-direction: row;
-  gap: 0 !important;
+  gap: 6px;
   flex-wrap: nowrap;
-  overflow-x: hidden !important;   /* ← これが重要 */
-}
-
-
-
-
-
-
-/* 日時・時・分・秒の枠を完全にくっつける（強制版） */
-.flex-wrap {
-  display: flex;
-  flex-direction: row;
-  gap: 0px !important;        /* ← 強制的に隙間ゼロ */
-  flex-wrap: nowrap;
-  overflow-x: hidden;
+  overflow-x: auto;
+  margin-bottom: 24px;
 }
 
 .unit-input {
   display: flex;
   align-items: center;
-  gap: 0px !important;        /* ← ここも強制ゼロ */
-  margin: 0 !important;       /* ← 下の余白もゼロ */
-  padding: 0 !important;
-}
-
-.unit-input input,
-.unit-input select {
-  margin: 0 !important;       /* ← input 同士の隙間を完全にゼロに */
-  padding: 4px 4px;           /* ← 枠のサイズはそのまま */
-}
-
-
-
-
-
-
-.unit-input {
-  display: flex;
-  align-items: center;
-  gap: 0px;
-  margin-bottom: 0px;
+  gap: 4px;
+  margin-bottom: 12px;
   flex: 1 1 auto;
   min-width: 60px;
 }
@@ -490,7 +333,7 @@ input, select {
   width: 50px;
   min-width: 40px;
   max-width: 80px;
-  padding: 4px 2px;
+  padding: 4px 6px;
   font-size: 14px;
   border-radius: 6px;
   border: none;
@@ -519,27 +362,6 @@ input, select {
   border-radius: 8px;
   border: none;
   color: var(--text-main);
-  box-sizing: border-box;
-  height: 44px;
-  margin: 0;
-}
-
-.passcode-group {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 12px;
-  margin-top: 12px;
-}
-
-.passcode-group .action-btn {
-  margin-top: 0;
-  height: 44px;
-  box-sizing: border-box;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0 24px;
 }
 
 #modeSelect {
@@ -709,219 +531,4 @@ input, select {
 
 #resetLink:hover {
     text-decoration: underline; /* ホバー時に下線を表示 */
-}
-
-
-
-
-body,
-html,
-#app,
-#lockScreen,
-#modeSelect,
-#errorMode,
-#correctionMode,
-#resultListPage,
-#informationPage,
-#qrCodePage {
-  max-width: 480px !important;
-  width: 100% !important;
-  margin-left: auto !important;
-  margin-right: auto !important;
-  box-sizing: border-box !important;
-}
-
-
-
-
-
-/* アプリ全体の外側コンテナも 480px に強制 */
-#app,
-.container,
-.wrapper,
-.main,
-.page {
-  max-width: 480px !important;
-  width: 100% !important;
-  margin-left: auto !important;
-  margin-right: auto !important;
-}
-
-
-
-
-
-/* トグル全体のラッパー（タイトル直下・左寄せ） */
-.keypad-toggle-wrapper {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-top: 8px;
-  margin-bottom: 8px;
-  position: static;   /* ← 右寄りを防ぐために必須 */
-}
-
-/* スイッチ本体（背景部分） */
-.toggle-switch {
-  width: 48px;
-  height: 26px;
-  background-color: #666;     /* ← 背景が消えていた原因はここが効いてなかった */
-  border-radius: 26px;
-  position: relative;
-  cursor: pointer;
-  transition: background-color 0.25s ease;
-  display: inline-block;
-}
-
-/* スイッチの丸いノブ（●） */
-.toggle-switch::after {
-  content: "";
-  width: 22px;
-  height: 22px;
-  background-color: white;
-  border-radius: 50%;
-  position: absolute;
-  top: 2px;
-  left: 2px;
-  transition: transform 0.25s ease;
-}
-
-/* ON のときの背景色 */
-.keypad-toggle-wrapper input[type="checkbox"]:checked + .toggle-switch {
-  background-color: var(--accent);
-}
-
-/* ON のときのノブ位置（右へスライド） */
-.keypad-toggle-wrapper input[type="checkbox"]:checked + .toggle-switch::after {
-  transform: translateX(22px);
-}
-
-/* ラベル（テンキー） */
-.toggle-label {
-  color: var(--text-main);
-  font-size: 14px;
-  font-weight: bold;
-}
-
-/* チェックボックス本体は完全に非表示 */
-.toggle-switch-wrapper input[type="checkbox"] {
-  display: none;
-}
-
-
-/* 誤差モード・補正モード共通：画面右上に固定 */
-#errorKeypadOverlay,
-#correctionKeypadOverlay {
-  position: fixed;   /* 画面に固定 */
-  top: 12px;         /* 上からの距離（好みで微調整OK） */
-  right: 12px;       /* 右からの距離 */
-  z-index: 3000;
-  display: none;     /* トグルOFFのときは非表示 */
-}
-
-/* テンキー本体（透明レイヤー） */
-.overlay-keypad-inner {
-  width: 240px;
-  background-color: rgba(0, 0, 0, 0.35);
-  border-radius: 10px;
-  padding: 10px;
-
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  grid-template-rows: repeat(5, 2.2rem); /* ← ★ 5行を確保 */
-  gap: 6px;
-}
-
-/* ▼ 蛍光灯チカチカ（全体） ▼ */
-@keyframes keypadFlicker {
-  0%, 18%, 22%, 25%, 53%, 57%, 100% {
-    opacity: 1;
-    filter: brightness(1);
-  }
-  19%, 23%, 54% {
-    opacity: 0.3;
-    filter: brightness(2);
-  }
-}
-
-/* ▼ 各キーのランダム点灯 ▼ */
-@keyframes keyBlink {
-  0% {
-    opacity: 0;
-    filter: brightness(3);
-  }
-  100% {
-    opacity: 1;
-    filter: brightness(1);
-  }
-}
-
-/* ▼ ブラウン管のプツン消灯 ▼ */
-@keyframes crtOff {
-  0% {
-    opacity: 1;
-    transform: scale(1);
-    filter: brightness(1);
-  }
-  40% {
-    opacity: 1;
-    transform: scaleX(1) scaleY(0.1);
-    filter: brightness(3);
-  }
-  100% {
-    opacity: 0;
-    transform: scaleX(0) scaleY(0.02);
-    filter: brightness(5);
-  }
-}
-
-/* ▼ アニメーション適用クラス ▼ */
-.keypad-flicker {
-  animation: keypadFlicker 0.18s linear forwards;
-}
-
-.keypad-crt-off {
-  animation: crtOff 0.12s ease-in forwards;
-}
-
-/* ▼ 各キーのフラッシュ（強烈に光る） ▼ */
-@keyframes keyFlash {
-  0% {
-    opacity: 0;
-    filter: brightness(1);
-  }
-  20% {
-    opacity: 1;
-    filter: brightness(4) blur(1px);
-  }
-  40% {
-    opacity: 0.4;
-    filter: brightness(2);
-  }
-  60% {
-    opacity: 1;
-    filter: brightness(3);
-  }
-  100% {
-    opacity: 1;
-    filter: brightness(1);
-  }
-}
-
-.overlay-keypad-inner button {
-  height: 2.2rem;        /* ← 少し縦に伸ばす（2.2 → 2.6） */
-  line-height: 2.6rem;   /* ← 数字を中央に揃える */
-  padding: 1;            /* ← 下ズレの原因を解消 */
-
-  background-color: rgba(255, 255, 255, 0.15);
-  border: none;
-  color: white;
-  font-size: 20px;
-  padding: 0px;
-  border-radius: 6px;
-  transition: background-color 0.15s ease;
-}
-
-.overlay-keypad-inner button:active {
-  background-color: rgba(255, 255, 255, 0.35);
 }

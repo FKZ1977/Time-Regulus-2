@@ -25,11 +25,11 @@
   <style>
     @keyframes riseInLong {
       0% { opacity: 0; transform: translateY(20px); }
-      100% { opacity: 1; transform: translateY(0); }
+      100% { opacity: 1; transform: none; }
     }
     @keyframes riseInShort {
       0% { opacity: 0; transform: translateY(20px); }
-      100% { opacity: 1; transform: translateY(0); }
+      100% { opacity: 1; transform: none; }
     }
     .rise-in-long { animation: riseInLong 1s ease-out forwards; }
     .rise-in-short { animation: riseInShort 1s ease-out forwards; }
@@ -52,18 +52,24 @@
 </head>
 <body class="fade-in">
   <div id="lockScreen">
-    <h1 class="fkz rise-in-long">Time Regulus</h1>
-    <p class="subtitle">タイム　レグルス　v2.1.2</p>
-    <label for="passcode">暗証番号を入力：</label><br>
-    <input type="password" id="passcode" placeholder="例：12345" tabindex="1">
-    <button class="action-btn" onclick="checkPass()" tabindex="2">開く</button>
+    <h1 class="fkz title-rise">Time Regulus</h1>
+    
+    <div class="delayed-fade">
+      <p class="subtitle">タイム　レグルス　v3.0.0</p>
+      <label for="passcode">暗証番号を入力：</label>
+      <div class="passcode-group">
+        <input type="password" id="passcode" placeholder="例：12345" tabindex="1">
+        <button class="action-btn" onclick="checkPass()" tabindex="2">開く</button>
+      </div>
+    </div>
 
     <div id="keypad" class="keypad-grid"></div>
 
-    <p id="error"></p>
-    <p class="subtitle">- produced by H.Fukazu -</p>
-
-    <p class="info-link" onclick="showInformationPage()"> - Information - </p>
+    <div class="delayed-fade">
+      <p id="error"></p>
+      <p class="subtitle">- produced by H.Fukazu -</p>
+      <p class="info-link" onclick="showInformationPage()"> - Information - </p>
+    </div>
 
   </div>
 
@@ -96,102 +102,264 @@
     
   </div>
 
-  <div id="errorMode" style="display:none;">
-    <div class="mode-card">
-      <button class="back-btn" onclick="backToModeSelect()">← モード選択に戻る</button>
-      <h2>誤差の計算</h2>
+<div id="errorMode" style="display:none;">
+  <div class="mode-card">
+    <button class="back-btn" onclick="backToModeSelect()">← モード選択に戻る</button>
+    <h2>誤差の計算</h2>
 
-      <div id="errorModeDisplayInputGroup" class="input-group">
-        <label>表示時刻：</label><br>
-        <input type="datetime-local" id="displayTime">
-        <select id="displaySeconds" class="seconds-select">
-          <option value="">秒</option>
-        </select>
-      </div>
+<br>
 
-      <div id="swap-button-wrapper" style="text-align: center; margin: 10px 0; position: relative;">
-    <button id="swapButton" class="action-btn toggle-btn swap-btn" onclick="swapErrorModeInputs()">🔃</button>
+    <!-- 誤差モード用 トグルスイッチ -->
+<div class="keypad-toggle-wrapper">
+  <span class="toggle-label">テンキー</span>
+  <label class="toggle-switch-wrapper">
+    <input type="checkbox" id="errorKeypadToggle" onchange="toggleErrorOverlayKeypad()" checked>
+    <span class="toggle-switch"></span>
+  </label>
 </div>
 
-      <div id="errorModeStandardInputGroup" class="input-group">
-        <label>標準時刻：</label>
-        <button class="action-btn" id="standardNowButton" onclick="setNowToStandard()" style="margin-left: 8px;">NOW🔄</button><br>
-        <input type="datetime-local" id="standardTime">
-        <select id="standardSeconds" class="seconds-select">
-          <option value="">秒</option>
-        </select>
-      </div>
+<div id="errorModeDisplayInputGroup" class="input-group">
+  <label>表示時刻：</label><br>
+  <!-- 通常モード：datetime-local ＋ 秒セレクト -->
+  <input type="datetime-local" id="displayTime">
+  <select id="displaySeconds" class="seconds-select">
+    <option value="">秒</option>
+  </select>
 
-      <div class="result-box" id="result"></div>
-      <div style="text-align: right;">
-        <div id="toReverseButton" 
-     onclick="switchToCorrectionMode()" 
-     class="to-reverse-link" 
-     style="display: none;">
+  <!-- 透明レイヤーテンキー用：select 群（最初は非表示） -->
+  <div id="displayTimeSelectGroup" class="input-group split-time-group" style="display:none; margin-top: 4px;">
+    <div class="datetime-wrapper">
+      <select id="displayYear" data-maxlength="4" tabindex="101" class="split-time-input"></select>
+      <span class="time-separator">/</span>
+      <select id="displayMonth" data-maxlength="2" tabindex="102" class="split-time-input"></select>
+      <span class="time-separator">/</span>
+      <select id="displayDay" data-maxlength="2" tabindex="103" class="split-time-input"></select>
+      <span class="time-separator">&nbsp;</span>
+      <select id="displayHour" data-maxlength="2" tabindex="104" class="split-time-input"></select>
+      <span class="time-separator">:</span>
+      <select id="displayMinute" data-maxlength="2" tabindex="105" class="split-time-input"></select>
+    </div>
+    <select id="displaySecond" data-maxlength="2" tabindex="106" class="split-time-input"></select>
+  </div>
+</div>
+
+<div id="swap-button-wrapper" style="text-align: center; margin: 10px 0; position: relative;">
+  <button id="swapButton" class="action-btn toggle-btn swap-btn" onclick="swapErrorModeInputs()">🔃</button>
+</div>
+
+
+
+
+
+<div id="errorModeStandardInputGroup" class="input-group">
+  <label>標準時刻：</label>
+  <button class="action-btn" id="standardNowButton" onclick="setNowToStandard()" style="margin-left: 8px;">NOW🔄</button><br>
+  <input type="datetime-local" id="standardTime">
+  <select id="standardSeconds" class="seconds-select">
+    <option value="">秒</option>
+  </select>
+
+  <!-- 透明レイヤーテンキー用：select 群（最初は非表示） -->
+  <div id="standardTimeSelectGroup" class="input-group split-time-group" style="display:none; margin-top: 4px;">
+    <div class="datetime-wrapper">
+      <select id="standardYear" data-maxlength="4" tabindex="107" class="split-time-input"></select>
+      <span class="time-separator">/</span>
+      <select id="standardMonth" data-maxlength="2" tabindex="108" class="split-time-input"></select>
+      <span class="time-separator">/</span>
+      <select id="standardDay" data-maxlength="2" tabindex="109" class="split-time-input"></select>
+      <span class="time-separator">&nbsp;</span>
+      <select id="standardHour" data-maxlength="2" tabindex="110" class="split-time-input"></select>
+      <span class="time-separator">:</span>
+      <select id="standardMinute" data-maxlength="2" tabindex="111" class="split-time-input"></select>
+    </div>
+    <select id="standardSecond" data-maxlength="2" tabindex="112" class="split-time-input"></select>
+  </div>
+</div>
+
+<div class="result-box" id="result"></div>
+<div style="text-align: right;">
+  <div id="toReverseButton"
+       onclick="switchToCorrectionMode()"
+       class="to-reverse-link"
+       style="display: none;">
     補正時刻を計算→
+  </div>
 </div>
-      </div>
-    </div>
+
+<!-- 誤差モード用 透明レイヤーテンキー -->
+<div id="errorKeypadOverlay" class="overlay-keypad" style="display:none;">
+  <div class="overlay-keypad-inner">
+
+    <!-- 1行目：7 8 9 -->
+    <button data-key="7">7</button>
+    <button data-key="8">8</button>
+    <button data-key="9">9</button>
+
+    <!-- 2行目：4 5 6 -->
+    <button data-key="4">4</button>
+    <button data-key="5">5</button>
+    <button data-key="6">6</button>
+
+    <!-- 3行目：1 2 3 -->
+    <button data-key="1">1</button>
+    <button data-key="2">2</button>
+    <button data-key="3">3</button>
+
+    <!-- 4行目：0 ↑ 🔙 -->
+    <button data-key="0">0</button>
+    <button data-key="up">↑</button>
+    <button data-key="backspace">🔙</button>
+
+    <!-- 5行目：← ↓ → -->
+    <button data-key="left">←</button>
+    <button data-key="down">↓</button>
+    <button data-key="right">→</button>
+
+  </div>
+</div>
+
+</div>
+</div>
+
+<div id="correctionMode" class="mode-card deep-green" style="display:none;">
+  <button class="back-btn" onclick="backToModeSelect()" tabindex="12">← モード選択に戻る</button>
+  <h2>補正時刻の計算</h2>
+
+<br>
+
+  <!-- 補正モード用 トグルスイッチ（タイトル直下 / 左寄せ） -->
+<div class="keypad-toggle-wrapper">
+  <span class="toggle-label">テンキー</span>
+  <label class="toggle-switch-wrapper">
+    <input type="checkbox" id="correctionKeypadToggle" onchange="toggleCorrectionOverlayKeypad()" checked>
+    <span class="toggle-switch"></span>
+  </label>
+</div>
+
+
+<label>補正に使う誤差：</label>
+<div class="flex-wrap">
+
+  <!-- 日：無制限なので data-maxlength を付けない -->
+  <div class="unit-input">
+    <input type="number" id="errorDays" min="0" step="1" tabindex="13">
+    <span class="unit-label">日</span>
   </div>
 
-  <div id="correctionMode" class="mode-card deep-green" style="display:none;">
-    <button class="back-btn" onclick="backToModeSelect()" tabindex="12">← モード選択に戻る</button>
-    <h2>補正時刻の計算</h2>
-    <label>補正に使う誤差：</label>
-    <div class="flex-wrap">
-      <div class="unit-input">
-        <input type="number" id="errorDays" min="0" step="1" tabindex="13">
-        <span class="unit-label">日</span>
-      </div>
-      <div class="unit-input">
-        <select id="errorHours" tabindex="14">
-          <option value="">--</option>
-        </select>
-        <span class="unit-label">時</span>
-      </div>
-      <div class="unit-input">
-        <select id="errorMinutes" tabindex="15">
-          <option value="">--</option>
-        </select>
-        <span class="unit-label">分</span>
-      </div>
-      <div class="unit-input">
-        <select id="errorSeconds" tabindex="16">
-          <option value="">--</option>
-        </select>
-        <span class="unit-label">秒</span>
-      </div>
-    </div>
-
-    <div class="input-group">
-      <label for="errorDirection" style="display:inline-block;">表示時刻は標準時刻より：</label>
-      <select id="errorDirection" tabindex="17">
-        <option value="late" class="error-late">進んでいる</option>
-        <option value="early" class="error-early">遅れている</option>
-      </select>
-    </div>
-
-    <div style="margin: 12px 0;">
-      <button class="action-btn toggle-btn active-toggle" id="reverseModeToggleBtn" onclick="toggleReverseMode()">⇆切替</button>
-    </div>
-
-    <div id="reverseTimeBlock" class="input-group">
-      <label id="reverseTimeLabel" for="reverseDisplayTime">表示時刻:</label><br>
-      <input type="datetime-local" id="reverseDisplayTime" step="60" tabindex="19">
-      <select id="reverseDisplaySeconds" class="seconds-select" tabindex="20">
-        <option value="">--</option>
-      </select>
-    </div>
-
-    <div id="reverseResult" class="result-box"></div>
-    
-    <div style="display: flex; flex-direction: column; align-items: center; margin-top: 10px;">
-      <button class="action-btn" id="addToListButton" onclick="addResultToList()">結果一覧に記録する</button>
-      <span id="recordSuccessMessage" class="success-message" style="display:none; color: var(--accent); font-weight: bold; font-size: 15px; margin-top: 10px;">結果一覧に追加しました</span>
-    </div>
-
-    <p id="showListLink" class="show-list-link" onclick="showResultList()" style="display:none; text-align: right; margin-top: 20px;">結果一覧を表示 →</p><br><br>
+  <!-- 時：2桁固定 → data-maxlength="2" を付ける -->
+  <div class="unit-input">
+    <select id="errorHours" data-maxlength="2" tabindex="14">
+      <option value="">--</option>
+    </select>
+    <span class="unit-label">時</span>
   </div>
+
+  <!-- 分：2桁固定 → data-maxlength="2" を付ける -->
+  <div class="unit-input">
+    <select id="errorMinutes" data-maxlength="2" tabindex="15">
+      <option value="">--</option>
+    </select>
+    <span class="unit-label">分</span>
+  </div>
+
+  <!-- 秒：2桁固定 → data-maxlength="2" を付ける -->
+  <div class="unit-input">
+    <select id="errorSeconds" data-maxlength="2" tabindex="16">
+      <option value="">--</option>
+    </select>
+    <span class="unit-label">秒</span>
+  </div>
+
+</div>
+
+
+  <div class="input-group">
+    <label for="errorDirection" style="display:inline-block;">表示時刻は標準時刻より：</label>
+    <select id="errorDirection" tabindex="17">
+      <option value="late" class="error-late">進んでいる</option>
+      <option value="early" class="error-early">遅れている</option>
+    </select>
+  </div>
+
+  <div style="margin: 12px 0;">
+    <button class="action-btn toggle-btn active-toggle" id="reverseModeToggleBtn" onclick="toggleReverseMode()">⇆切替</button>
+  </div>
+
+<div id="reverseTimeBlock" class="input-group">
+  <label id="reverseTimeLabel" for="reverseDisplayTime">表示時刻:</label><br>
+
+  <!-- 通常モード：datetime-local ＋ 秒セレクト -->
+  <input type="datetime-local" id="reverseDisplayTime" step="60" tabindex="19">
+  <select id="reverseDisplaySeconds" class="seconds-select" tabindex="20">
+    <option value="">--</option>
+  </select>
+
+  <!-- 透明レイヤーテンキー用：select 群（最初は非表示） -->
+  <div id="reverseDisplayTimeSelectGroup" class="input-group split-time-group" style="display:none; margin-top: 4px;">
+    <div class="datetime-wrapper">
+      <select id="reverseYear" data-maxlength="4" tabindex="201" class="split-time-input"></select>
+      <span class="time-separator">/</span>
+      <select id="reverseMonth" data-maxlength="2" tabindex="202" class="split-time-input"></select>
+      <span class="time-separator">/</span>
+      <select id="reverseDay" data-maxlength="2" tabindex="203" class="split-time-input"></select>
+      <span class="time-separator">&nbsp;</span>
+      <select id="reverseHour" data-maxlength="2" tabindex="204" class="split-time-input"></select>
+      <span class="time-separator">:</span>
+      <select id="reverseMinute" data-maxlength="2" tabindex="205" class="split-time-input"></select>
+    </div>
+    <select id="reverseSecond" data-maxlength="2" tabindex="206" class="split-time-input"></select>
+  </div>
+</div>
+
+<!-- 補正モード用 透明レイヤーテンキー -->
+<div id="correctionKeypadOverlay" class="overlay-keypad" style="display:none;">
+  <div class="overlay-keypad-inner">
+
+    <!-- 1行目：7 8 9 -->
+    <button data-key="7">7</button>
+    <button data-key="8">8</button>
+    <button data-key="9">9</button>
+
+    <!-- 2行目：4 5 6 -->
+    <button data-key="4">4</button>
+    <button data-key="5">5</button>
+    <button data-key="6">6</button>
+
+    <!-- 3行目：1 2 3 -->
+    <button data-key="1">1</button>
+    <button data-key="2">2</button>
+    <button data-key="3">3</button>
+
+    <!-- 4行目：0 ↑ 🔙 -->
+    <button data-key="0">0</button>
+    <button data-key="up">↑</button>
+    <button data-key="backspace">🔙</button>
+
+    <!-- 5行目：← ↓ → -->
+    <button data-key="left">←</button>
+    <button data-key="down">↓</button>
+    <button data-key="right">→</button>
+
+  </div>
+</div>
+
+
+  <div id="reverseResult" class="result-box"></div>
+  
+  <div style="display: flex; flex-direction: column; align-items: center; margin-top: 10px;">
+    <button class="action-btn" id="addToListButton" onclick="addResultToList()">結果一覧に記録する</button>
+    <span id="recordSuccessMessage" class="success-message" style="display:none; color: var(--accent); font-weight: bold; font-size: 15px;">結果一覧に追加しました</span>
+  </div>
+
+  <p id="showListLink" class="show-list-link" onclick="showResultList()" style="display:none; text-align: right; margin-top: 20px;">結果一覧を表示 →</p><br><br>
+</div>
+
+
+
+
+
+
+
 
   <div id="resultListPage" style="display:none; text-align:center; padding: 40px 16px;"><br><br>
     <button class="back-btn" onclick="backToCorrectionMode()">← 補正時刻の計算に戻る</button>
@@ -202,9 +370,9 @@
   <div id="informationPage" style="display:none; text-align:center; padding: 40px 16px;"><br>
     <button class="back-btn" onclick="backToLockScreen()">← 初期画面に戻る</button>
     <h1 class="fkz" style="margin-top: 40px;">Information</h1>
-    <div id="informationContent" style="margin-top: 30px; text-align: left; max-width: 500px; margin-left: auto; margin-right: auto;">
+    <div id="informationContent" style="margin-top: 30px; text-align: left; max-width: 480px; margin-left: auto; margin-right: auto;">
       <p style="margin-bottom: 8px;">このアプリは <strong>H.Fukazu</strong> によって制作されました。</p>
-      <p style="margin-bottom: 24px;">バージョン: <strong>v2.1.2</strong></p>
+      <p style="margin-bottom: 24px;">バージョン: <strong>v3.0.0</strong></p>
 
       <h3 style="margin-top:24px;">## 著作権および利用規約 (Copyright and Usage Policy)</h3>
       <p>本作品（ソフトウェア、コード、ドキュメント、および関連する全ての内容を含む）の著作権は、© 2025 H.Fukazu に帰属します。<br>**© 2025 H.Fukazu. All Rights Reserved.**</p><br>
@@ -219,7 +387,7 @@
       <p>本作品は、著作権法によって最大限に保護されています。</p>
     </div><br><br>
 
-    <h2>↓↓最新ﾊﾞｰｼﾞｮﾝ情報はこちらから↓↓</h2>
+    <h2>↓↓↓最新バージョン情報はこちらから↓↓↓</h2>
     <p>ＱＲコードから新しい情報を確認してください。</p>
 
     <button class="action-btn" onclick="showQRCodePage()" style="margin-top: 30px;">QRコードを表示</button>
@@ -244,22 +412,47 @@
     }
   </script>
 
-<script>
-      // Service Workerの登録
-      if ('serviceWorker' in navigator) {
-        // ページが完全にロードされた後でService Workerを登録する
-        window.addEventListener('load', () => {
-          // 'service-worker.js'を登録。このファイル名は変更しないでください。
-          navigator.serviceWorker.register('./service-worker.js')
-            .then(registration => {
-              console.log('Service Worker 登録成功:', registration.scope);
-            })
-            .catch(error => {
-              console.log('Service Worker 登録失敗:', error);
-            });
+<script>key-disabledfunction updateUpDownKeyState()
+  // Service Workerの登録
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('./service-worker.js')
+        .then(registration => {
+          console.log('Service Worker 登録成功:', registration.scope);
+        })
+        .catch(error => {
+          console.log('Service Worker 登録失敗:', error);
         });
-      }
-    </script>
+    });
+  }
+</script>
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+
+  // ▼ 上下キーの見た目を切り替える
+  function updateUpDownKeyState() {
+    const upKey = document.querySelector('button[data-key="up"]');
+    const downKey = document.querySelector('button[data-key="down"]');
+
+    if (!upKey || !downKey) return;
+
+    if (activeInput && activeInput.id === "errorDirection") {
+      upKey.classList.remove("key-disabled");
+      downKey.classList.remove("key-disabled");
+    } else {
+      upKey.classList.add("key-disabled");
+      downKey.classList.add("key-disabled");
+    }
+  }
+
+  // ▼ activeInput が変わるたびに上下キーの状態を更新
+  document.addEventListener("focusin", () => {
+    updateUpDownKeyState();
+  });
+
+});
+</script>
 
 </body>
 </html>

@@ -158,7 +158,6 @@ function populateSeconds(selectId) {
 
 
 
-
 function populateErrorDropdowns() {
   const hourSelect = document.getElementById("errorHours");
   const minuteSelect = document.getElementById("errorMinutes");
@@ -314,12 +313,12 @@ function resetApp(onlyInputs = false) {
   // ポップアップ処理を削除し、処理をシンプル化
   // 【重要】resultHistoryの消去処理は、onlyInputsがtrueのときのみ行うようにする
   //          また、画面遷移とアラートは resetAppAndReturnToLock() で制御する。
-  if (onlyInputs) { 
+  if (onlyInputs) { 
     // 結果一覧も消去
-    resultHistory = [];
-    localStorage.removeItem('resultHistory');
-    document.getElementById("showListLink").style.display = "none";
-  } else {
+    resultHistory = [];
+    localStorage.removeItem('resultHistory');
+    document.getElementById("showListLink").style.display = "none";
+  } else {
     // onlyInputsがfalse（リセットリンク初回クリック時）の場合は、
     // ここで何もしない (showResetConfirmation()が呼ばれるため)
     return;
@@ -423,7 +422,7 @@ function swapErrorModeInputs() {
   
 
 
-
+  
 
   
     // 状態更新
@@ -547,7 +546,6 @@ function calculateError() {
         // 元のスタイル
         messageStyle = `font-size: 14px; color: #FFFF00; text-decoration: font-weight: bold; line-height: 1.5;`; 
     }
-
 
 
 
@@ -679,8 +677,6 @@ function toggleReverseMode(doToggle = true) {
 
 
 
-
-
   // ボタン名を「⇆切替」に統一
   toggleBtn.innerText = "⇆切替";
 
@@ -805,7 +801,6 @@ gtag('event', 'calculate_correction'); // Google Analyticsイベント
 
 
 
-
 /**
  * 結果一覧に追加する (修正: 表示時間を1.0秒に)
  */
@@ -836,25 +831,25 @@ function addResultToList() {
   );
 
 if (isDuplicate) {
-    // ★改修: 「追加しました」と同じアニメーション時間に変更
-    const msg = document.getElementById("recordSuccessMessage");
-    const originalText = msg.innerText;
-    msg.innerText = "既に記録されています";
-    msg.style.display = 'inline-block';
-    msg.classList.remove('fade-out');
-    msg.classList.add('fade-in-out');
-    // 外側のsetTimeoutを1000ms (1.0秒) に維持
-    setTimeout(() => {
-        msg.classList.remove('fade-in-out');
-        msg.classList.add('fade-out');
-        setTimeout(() => {
-            msg.style.display = 'none';
-            msg.classList.remove('fade-out');
-            msg.innerText = originalText; // テキストを元に戻す
-        }, 500); // 0.5秒のフェードアウト時間
-    }, 1000); // 1.0秒後にフェードアウト開始
-    return;
-  }
+    // ★改修: 「追加しました」と同じアニメーション時間に変更
+    const msg = document.getElementById("recordSuccessMessage");
+    const originalText = msg.innerText;
+    msg.innerText = "既に記録されています";
+    msg.style.display = 'inline-block';
+    msg.classList.remove('fade-out');
+    msg.classList.add('fade-in-out');
+    // 外側のsetTimeoutを1000ms (1.0秒) に維持
+    setTimeout(() => {
+        msg.classList.remove('fade-in-out');
+        msg.classList.add('fade-out');
+        setTimeout(() => {
+            msg.style.display = 'none';
+            msg.classList.remove('fade-out');
+            msg.innerText = originalText; // テキストを元に戻す
+        }, 500); // 0.5秒のフェードアウト時間
+    }, 1000); // 1.0秒後にフェードアウト開始
+    return;
+  }
   
   // 常に新しいIDを割り当ててユニークにする
   const newEntry = {
@@ -934,8 +929,6 @@ function renderResultList() {
     Object.keys(entriesByMode).forEach(mode => {
       entriesByMode[mode].sort((a, b) => a.base.getTime() - b.base.getTime());
     });
-
-
 
 
 
@@ -1060,8 +1053,6 @@ function formatDate(date, includeSeconds = false) {
 
 
 
-
-
 function showInformationPage() {
   document.getElementById("lockScreen").style.display = "none";
   document.getElementById("informationPage").style.display = "block";
@@ -1147,6 +1138,14 @@ function toggleErrorOverlayKeypad() {
     syncNativeToSplit("standard");
     switchErrorInputs(true);
     
+    // ★ネイティブキーボード出現を防ぐ：readOnly + inputmode="none"
+    disableNativeKeyboard([
+      "displayYear", "displayMonth", "displayDay", 
+      "displayHour", "displayMinute", "displaySecond",
+      "standardYear", "standardMonth", "standardDay", 
+      "standardHour", "standardMinute", "standardSecond"
+    ]);
+    
     document.getElementById("displayTime").style.display = "none";
     document.getElementById("displaySeconds").style.display = "none";
     document.getElementById("displayTimeSelectGroup").style.display = "flex";
@@ -1163,6 +1162,14 @@ function toggleErrorOverlayKeypad() {
       overlay.style.display = "none";
     }
   } else {
+    // ★ネイティブキーボード出現防止を解除
+    enableNativeKeyboard([
+      "displayYear", "displayMonth", "displayDay", 
+      "displayHour", "displayMinute", "displaySecond",
+      "standardYear", "standardMonth", "standardDay", 
+      "standardHour", "standardMinute", "standardSecond"
+    ]);
+    
     syncSplitToNativeFromElement({id:"displayYear"});
     syncSplitToNativeFromElement({id:"standardYear"});
 
@@ -1192,6 +1199,12 @@ function toggleCorrectionOverlayKeypad() {
     syncNativeToSplit("reverse");
     switchErrorInputs(true);
     
+    // ★ネイティブキーボード出現を防ぐ：readOnly + inputmode="none"
+    disableNativeKeyboard([
+      "reverseYear", "reverseMonth", "reverseDay", 
+      "reverseHour", "reverseMinute", "reverseSecond"
+    ]);
+    
     document.getElementById("reverseDisplayTime").style.display = "none";
     document.getElementById("reverseDisplaySeconds").style.display = "none";
     document.getElementById("reverseDisplayTimeSelectGroup").style.display = "flex";
@@ -1204,6 +1217,12 @@ function toggleCorrectionOverlayKeypad() {
       overlay.style.display = "none";
     }
   } else {
+    // ★ネイティブキーボード出現防止を解除
+    enableNativeKeyboard([
+      "reverseYear", "reverseMonth", "reverseDay", 
+      "reverseHour", "reverseMinute", "reverseSecond"
+    ]);
+    
     syncSplitToNativeFromElement({id:"reverseYear"});
 
     playKeypadOffAnimation(overlay);
@@ -1216,6 +1235,36 @@ function toggleCorrectionOverlayKeypad() {
       handleReverseCalculation();
     }, 350);
   }
+}
+
+// ★ 新規追加：ネイティブキーボード出現防止の関数
+function disableNativeKeyboard(idArray) {
+  idArray.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) {
+      el.readOnly = true;
+      el.setAttribute("inputmode", "none");
+      if (el.tagName === "INPUT") {
+        el.style.pointerEvents = "none";
+        el.style.caretColor = "transparent";
+      }
+    }
+  });
+}
+
+// ★ 新規追加：ネイティブキーボード出現防止を解除の関数
+function enableNativeKeyboard(idArray) {
+  idArray.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) {
+      el.readOnly = false;
+      el.removeAttribute("inputmode");
+      if (el.tagName === "INPUT") {
+        el.style.pointerEvents = "auto";
+        el.style.caretColor = "auto";
+      }
+    }
+  });
 }
 
 
@@ -1253,10 +1302,6 @@ function playKeypadOffAnimation(overlay) {
 
 
 
-
-
-
-
 // 現在フォーカス中の入力欄を記録する変数
 let activeInput = null;
 
@@ -1274,7 +1319,6 @@ document.addEventListener("click", (e) => {
     activeInput = e.target;
   }
 });
-
 
 
 
@@ -1380,7 +1424,6 @@ if (!isNaN(key)) {
 
 
 
-
 function moveCursor(direction) {
   const inputs = Array.from(
     document.querySelectorAll("input, select")
@@ -1400,8 +1443,6 @@ function moveCursor(direction) {
   // ★ 追加：カーソル移動後に上下キーの有効/無効を更新
   updateUpDownKeyState();
 }
-
-
 
 
 
@@ -1457,8 +1498,6 @@ function autoPad(input) {
 
 
 
-
-
 function padReverseDisplayTime() {
   const input = document.getElementById("reverseDisplayTime");
   if (!input.value) return;
@@ -1493,7 +1532,6 @@ function padReverseDisplayTime() {
 
 document.getElementById("reverseDisplayTime").addEventListener("change", padReverseDisplayTime);
 document.getElementById("reverseDisplayTime").addEventListener("blur", padReverseDisplayTime);
-
 
 
 
@@ -1626,7 +1664,9 @@ function switchErrorInputs(useInput) {
       newEl.tabIndex = oldEl.tabIndex;
       newEl.dataset.maxlength = item.max;
       
-      if (item.id.includes("Year") || item.id.includes("Month") || item.id.includes("Day") || item.id.includes("displayHour") || item.id.includes("displayMinute") || item.id.includes("displaySecond") || item.id.includes("standard") || item.id.includes("reverse")) {
+      if (item.id.includes("Year") || item.id.includes("Month") || item.id.includes("Day") || item.id.includes("displayHour") || item.id.includes("displayMinute") || item.id.includes("displaySecond") ||
+          item.id.includes("standardHour") || item.id.includes("standardMinute") || item.id.includes("standardSecond") ||
+          item.id.includes("reverseHour") || item.id.includes("reverseMinute") || item.id.includes("reverseSecond")) {
           newEl.className = "split-time-input";
           if (item.id.endsWith("Year")) newEl.placeholder = "年";
           else if (item.id.endsWith("Month")) newEl.placeholder = "月";
@@ -1653,7 +1693,9 @@ function switchErrorInputs(useInput) {
       newEl.id = item.id;
       newEl.tabIndex = oldEl.tabIndex;
       newEl.dataset.maxlength = item.max;
-      if (item.id.includes("Year") || item.id.includes("Month") || item.id.includes("Day") || item.id.includes("displayHour") || item.id.includes("displayMinute") || item.id.includes("displaySecond") || item.id.includes("standard") || item.id.includes("reverse")) {
+      if (item.id.includes("Year") || item.id.includes("Month") || item.id.includes("Day") || item.id.includes("displayHour") || item.id.includes("displayMinute") || item.id.includes("displaySecond") ||
+          item.id.includes("standardHour") || item.id.includes("standardMinute") || item.id.includes("standardSecond") ||
+          item.id.includes("reverseHour") || item.id.includes("reverseMinute") || item.id.includes("reverseSecond")) {
           newEl.className = "split-time-input";
       }
       populateSelectOptions(newEl, item.type);
@@ -1695,9 +1737,18 @@ function populateDisplayTimeSelects() {
 window.addEventListener("DOMContentLoaded", populateDisplayTimeSelects);
 
 
+// ★新規追加：上下キーの見た目を更新
+function updateUpDownKeyState() {
+  const upKey = document.querySelector('button[data-key="up"]');
+  const downKey = document.querySelector('button[data-key="down"]');
 
+  if (!upKey || !downKey) return;
 
-
-
-
-
+  if (activeInput && activeInput.id === "errorDirection") {
+    upKey.classList.remove("key-disabled");
+    downKey.classList.remove("key-disabled");
+  } else {
+    upKey.classList.add("key-disabled");
+    downKey.classList.add("key-disabled");
+  }
+}

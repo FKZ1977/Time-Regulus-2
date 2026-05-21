@@ -1,3 +1,7 @@
+* {
+  touch-action: manipulation;
+}
+
 :root {
   --bg-dark: #0e0f11;
   --bg-dark-navy: #151c27; /* 標準時刻が上の時の新しい背景色 */

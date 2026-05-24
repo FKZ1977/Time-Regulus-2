@@ -1,9 +1,9 @@
-const CACHE_NAME = "time-regulus-v2.1.2"; // バージョンアップ時にはここを必ず変更してください
+const CACHE_NAME = "time-regulus-v3.0.0"; // キャッシュバスティング用バージョンアップ
 const urlsToCache = [
   "./",
   "./index.html",
-  "./style.css",
-  "./script.js",
+  "./style.css?v=3.0.0",
+  "./script.js?v=3.0.0",
   "./manifest.json",
   "./icon-192.png",
   "./icon-512.png",

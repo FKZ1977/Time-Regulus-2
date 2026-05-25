@@ -1,9 +1,9 @@
-const currentVersion = "3.0.0";
+const currentVersion = "3.0.1";
 
 // ロック画面が完全ロードされたら、メイン機能をバックグラウンドで読み込む
 function preloadMainScript() {
   const script = document.createElement('script');
-  script.src = './script-main.js?v=3.0.0';
+  script.src = './script-main.js?v=3.0.1';
   script.defer = true;
   script.onload = () => {
     console.log('✓ Main script preloaded in background');
@@ -59,7 +59,7 @@ function checkPass() {
 function loadMainScript() {
   console.log('Loading main script...');
   const script = document.createElement('script');
-  script.src = './script-main.js?v=3.0.0';
+  script.src = './script-main.js?v=3.0.1';
   script.onload = () => {
     window.mainScriptLoaded = true;
     console.log('✓ Main script loaded');
@@ -153,7 +153,7 @@ const updateButton = document.getElementById('updateButton');
 
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./service-worker.js?v=3.0.0')
+        navigator.serviceWorker.register('./service-worker.js?v=3.0.1')
             .then(reg => {
                 console.log('✓ Service Worker registered:', reg.scope);
 
@@ -193,7 +193,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
   // バージョン確認ポップアップ
   if (localStorage.getItem("lastVersion") !== currentVersion) {
-    alert("Time RegulusはV3.0.0です！");
+    alert("Time RegulusはV3.0.1です！");
     localStorage.setItem("lastVersion", currentVersion);
   }
 

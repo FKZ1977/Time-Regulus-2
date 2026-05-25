@@ -2025,23 +2025,23 @@ select.seconds-fixed-00,
 /* 年月日も計算ONの時（年月日枠あり）の、各枠の横幅スリム詰め調整 */
 #correctionMode #reverseTimeBlock input[type="date"],
 #correctionMode #reverseTimeBlock #reverseDisplayDateGroup_direct {
-  flex: 1.35 !important;
-  max-width: 120px !important; /* 110px -> 120px に超特大拡張！年月日数値やカレンダーマークが1ミリも隠れない！ */
+  flex: 1.55 !important;
+  max-width: 138px !important; /* 120px -> 138px に拡張！西暦4桁がしっかり収まるサイズ！ */
   min-width: 0 !important;
 }
 
 #correctionMode #reverseTimeBlock .time-input-wrapper,
 #correctionMode #reverseTimeBlock .direct-group-time {
-  flex: 0.75 !important;
-  max-width: 64px !important; /* 62px -> 64px に微調整してスリムに格納 */
+  flex: 0.65 !important;
+  max-width: 54px !important; /* 64px -> 54px に縮小（年月日拡張分をここで吸収） */
   min-width: 0 !important;
 }
 
 #correctionMode #reverseTimeBlock .seconds-select,
 #correctionMode #reverseTimeBlock .direct-group-sec {
-  flex: 0.52 !important;
-  max-width: 44px !important; /* 秒の入力枠の右端をギリギリまで右端（淵）に寄せる！ */
-  min-width: 40px !important;
+  flex: 0.48 !important;
+  max-width: 38px !important; /* 44px -> 38px に縮小（年月日拡張分をここでも吸収） */
+  min-width: 34px !important;
 }
 
 /* 秒セレクトボックスのパディングをスリム化してはみ出し・矢印被りを完全防止 */
@@ -2081,8 +2081,8 @@ select.seconds-fixed-00,
 /* 補正モード（#reverseTimeBlock）の時間枠・秒枠・グループに対する極上スライドアニメーションの transition 設定 */
 #correctionMode #reverseTimeBlock .date-input-wrapper,
 #correctionMode #reverseTimeBlock #reverseDisplayDateGroup_direct {
-  flex: 1.35 !important;
-  max-width: 120px !important;
+  flex: 1.55 !important;
+  max-width: 138px !important; /* 120px -> 138px に拡張！西暦4桁がしっかり収まるサイズ！ */
   opacity: 1;
   visibility: visible;
   margin-right: 3px;
@@ -2169,10 +2169,10 @@ select.seconds-fixed-00,
   flex: 1.8 !important;
 }
 
-/* 補正モード画面（#reverseTimeBlock 内の年月日計算あり：flex: 0.75, max-width: 64px） */
+/* 補正モード画面（#reverseTimeBlock 内の年月日計算あり：flex: 0.65, max-width: 54px） */
 #correctionMode #reverseTimeBlock .time-input-wrapper {
-  flex: 0.75 !important;
-  max-width: 64px !important;
+  flex: 0.65 !important;
+  max-width: 54px !important; /* 64px -> 54px に縮小（年月日拡張分をここで吸収） */
   min-width: 0 !important;
 }
 
@@ -2247,10 +2247,10 @@ input[type="time"].time-empty + .time-placeholder-guide {
   width: auto !important;
 }
 
-/* 補正モード画面（#reverseTimeBlock 内の年月日計算あり：flex: 1.35, max-width: 120px） */
+/* 補正モード画面（#reverseTimeBlock 内の年月日計算あり：flex: 1.55, max-width: 138px） */
 #correctionMode #reverseTimeBlock .date-input-wrapper {
-  flex: 1.35 !important;
-  max-width: 120px !important;
+  flex: 1.55 !important;
+  max-width: 138px !important; /* 120px -> 138px に拡張！西暦4桁がしっかり収まるサイズ！ */
   min-width: 0 !important;
 }
 

@@ -11,8 +11,6 @@ let inputHelperEnabled = false;
 let includeDateEnabled = false;
 let includeDateEnabledCorrection = false; // 補正画面用の年月日トグル状態
 let autoJumpTimer = null;
-let scrollLockTimeoutId = null;
-let keypadScrollTimeoutId = null;
 
 // セレクトボックス未選択時の灰色表示同期用ヘルパー
 function updateSelectPlaceholderColor(selectId) {
@@ -630,33 +628,25 @@ function openTimePicker(group) {
     if (secContainer) secContainer.classList.remove("sec-locked");
   }
 
-  // ドラムロール展開時に、結果枠が隠れないように裏画面をスクロールして持ち上げる
-  let needsScroll = false;
-  const targetResultId = (group === "display" || group === "standard") ? "result" : "reverseResult";
-  const targetEl = document.getElementById(targetResultId);
-  if (targetEl && targetEl.innerHTML.trim() !== "") {
-    const rect = targetEl.getBoundingClientRect();
-    const pickerHeight = 370; // ピッカーの高さ350px + 余白
-    // 結果枠の下端がピッカーに隠れる場合、スクロールする
-    if (rect.bottom > window.innerHeight - pickerHeight) {
-      window.scrollBy({ top: rect.bottom - (window.innerHeight - pickerHeight), behavior: "smooth" });
-      needsScroll = true;
-    }
-  }
-
   overlay.classList.add("show");
   sheet.classList.add("show");
-  document.body.classList.add("picker-open"); // 背景暗幕と結果ハイライト（ぼかし解除）を即時実行
+  document.body.classList.add("result-highlighted"); // ぼかし解除を即時適用
 
-  if (scrollLockTimeoutId) clearTimeout(scrollLockTimeoutId);
-  if (needsScroll) {
-    // スクロールが必要な場合は、スムーズスクロールが妨害されないようロックを遅延させる
-    scrollLockTimeoutId = setTimeout(() => {
-      document.body.classList.add("scroll-locked");
-    }, 350);
-  } else {
-    document.body.classList.add("scroll-locked"); // 即時ロック
+  // ピッカー展開と同時に、結果枠が隠れないように裏画面を即時スクロール（smoothはiOSでキャンセルされるためauto）
+  const targetResultId = (group === "display" || group === "standard") ? "result" : "reverseResult";
+  const targetEl = document.getElementById(targetResultId);
+  if (targetEl) {
+    const rect = targetEl.getBoundingClientRect();
+    const pickerHeight = 390; // ピッカーの高さ350px + 余白
+    if (rect.bottom > window.innerHeight - pickerHeight) {
+      window.scrollBy({ top: rect.bottom - (window.innerHeight - pickerHeight), behavior: "auto" });
+    }
   }
+  
+  // スクロールと overflow: hidden が同一フレームで処理されるとiOSでスクロールが無視されるため、ロックをわずかに遅延
+  setTimeout(() => {
+    document.body.classList.add("scroll-locked");
+  }, 50);
 
   // 現在の入力値を読み取り
   let timeVal = "";
@@ -707,6 +697,7 @@ function closeTimePicker() {
   if (overlay) overlay.classList.remove("show");
   if (sheet) sheet.classList.remove("show");
   document.body.classList.remove("scroll-locked"); // 裏画面スクロールロック解除！
+  document.body.classList.remove("result-highlighted");
 
   // picker-focused をクリア（指示①）
   document.querySelectorAll(".picker-focused").forEach(el => el.classList.remove("picker-focused"));
@@ -2432,3 +2423,30 @@ if (document.readyState === "loading") {
 } else {
   initPlaceholderGuides();
 }
+
+/* ==========================================================================
+   テンキーキーボード表示時の自動スクロール（入力補助OFF時など）
+   ========================================================================== */
+document.addEventListener("focusin", function(e) {
+  if (e.target.tagName === "INPUT" && 
+      e.target.type !== "checkbox" && 
+      e.target.type !== "radio" && 
+      e.target.type !== "button" && 
+      e.target.type !== "date") {
+    
+    // キーボード展開アニメーション完了を待ってからスクロール判定
+    setTimeout(() => {
+      const isErrorMode = document.getElementById("errorMode").style.display !== "none";
+      const targetResultId = isErrorMode ? "result" : "reverseResult";
+      const targetEl = document.getElementById(targetResultId);
+      
+      if (targetEl) {
+        const rect = targetEl.getBoundingClientRect();
+        const keyboardHeight = 350; // iOS/Androidの一般的なキーボード高さ + 余白
+        if (rect.bottom > window.innerHeight - keyboardHeight) {
+          window.scrollBy({ top: rect.bottom - (window.innerHeight - keyboardHeight), behavior: "smooth" });
+        }
+      }
+    }, 400);
+  }
+});

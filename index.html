@@ -365,7 +365,7 @@
       <p style="margin-bottom: 24px;">バージョン: <strong>v3.0.0</strong></p>
 
       <h3 style="margin-top:24px;">## 著作権および利用規約 (Copyright and Usage Policy)</h3>
-      <p>本作品（ソフトウェア、コード、ドキュメント、および関連する全ての内容を含む）の著作権は、© 2025 H.Fukazu に帰属します。<br>**© 2025 H.Fukazu. All Rights Reserved.**</p><br>
+      <p>本作品（ソフトウェア、コード、ドキュメント、および関連する全ての内容を含む）の著作権は、© 2025 H.Fukazu に帰属します。<br>**© 2025 H.Fukazu**</p>
       <h3 style="margin-top:24px;"> 厳禁事項 (Strictly Prohibited)</h3>
       <p>著作者からの書面による事前の明示的な許可なく、以下の行為を固く禁じます。</p>
       <ul>
@@ -429,15 +429,14 @@
     </div>
   </div>
 
-  <script src="script.js?v=3.0.0" defer></script>
+  <!-- ✅ 最適化: ロック画面のみを最初に読み込み、メイン機能はバックグラウンドで事前読み込み -->
+  <script src="script-init.js?v=3.0.0" defer></script>
   <script>
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
-        // Service Worker自体にもキャッシュバスティングを適用し、更新を強制
         navigator.serviceWorker.register('./service-worker.js?v=3.0.0')
           .then(registration => {
             console.log('Service Worker 登録成功:', registration.scope);
-            // 起動時に明示的にアップデートを確認
             registration.update();
           })
           .catch(error => {

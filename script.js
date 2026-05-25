@@ -1,4 +1,4 @@
-const currentVersion = "3.0.0";
+const currentVersion = "3.0.1";
 let lastError = null;
 let hasCalculated = false;
 let reverseMode = "toStandard";
@@ -11,6 +11,8 @@ let inputHelperEnabled = false;
 let includeDateEnabled = false;
 let includeDateEnabledCorrection = false; // 補正画面用の年月日トグル状態
 let autoJumpTimer = null;
+let scrollLockTimeoutId = null;
+let keypadScrollTimeoutId = null;
 
 // セレクトボックス未選択時の灰色表示同期用ヘルパー
 function updateSelectPlaceholderColor(selectId) {
@@ -628,9 +630,33 @@ function openTimePicker(group) {
     if (secContainer) secContainer.classList.remove("sec-locked");
   }
 
+  // ドラムロール展開時に、結果枠が隠れないように裏画面をスクロールして持ち上げる
+  let needsScroll = false;
+  const targetResultId = (group === "display" || group === "standard") ? "result" : "reverseResult";
+  const targetEl = document.getElementById(targetResultId);
+  if (targetEl && targetEl.innerHTML.trim() !== "") {
+    const rect = targetEl.getBoundingClientRect();
+    const pickerHeight = 370; // ピッカーの高さ350px + 余白
+    // 結果枠の下端がピッカーに隠れる場合、スクロールする
+    if (rect.bottom > window.innerHeight - pickerHeight) {
+      window.scrollBy({ top: rect.bottom - (window.innerHeight - pickerHeight), behavior: "smooth" });
+      needsScroll = true;
+    }
+  }
+
   overlay.classList.add("show");
   sheet.classList.add("show");
-  document.body.classList.add("scroll-locked"); // 裏画面スクロール完全ロック起動！
+  document.body.classList.add("picker-open"); // 背景暗幕と結果ハイライト（ぼかし解除）を即時実行
+
+  if (scrollLockTimeoutId) clearTimeout(scrollLockTimeoutId);
+  if (needsScroll) {
+    // スクロールが必要な場合は、スムーズスクロールが妨害されないようロックを遅延させる
+    scrollLockTimeoutId = setTimeout(() => {
+      document.body.classList.add("scroll-locked");
+    }, 350);
+  } else {
+    document.body.classList.add("scroll-locked"); // 即時ロック
+  }
 
   // 現在の入力値を読み取り
   let timeVal = "";
@@ -768,7 +794,7 @@ function generateKeypad() {
 document.addEventListener("DOMContentLoaded", function () {
   // 起動時のポップアップ
   if (localStorage.getItem("lastVersion") !== currentVersion) {
-    alert("Time RegulusはV3.0.0です！");
+    alert("Time RegulusはV3.0.1です！");
     localStorage.setItem("lastVersion", currentVersion);
   }
 
@@ -1632,6 +1658,10 @@ function calculateError() {
         messageStyle = `font-size: 14px; color: #FFFF00; font-weight: bold; line-height: 1.5;`; 
     }
     
+    resultElement.style.border = '';
+    resultElement.style.borderRadius = '';
+    resultElement.style.padding = '';
+    resultElement.style.backgroundColor = '';
     resultElement.innerHTML = `
         <span style="${messageStyle}">
             ${messageContent}
@@ -1669,9 +1699,13 @@ function calculateError() {
   const seconds = totalSeconds % 60;
 
   if (totalSeconds === 0) {
+    resultElement.style.border = '2px solid var(--accent)';
+    resultElement.style.borderRadius = '10px';
+    resultElement.style.padding = '12px 16px';
+    resultElement.style.backgroundColor = '';
     resultElement.innerHTML = `
-      <span style="color: var(--accent); font-weight: bold;">Precision Sync!</span><br>
-      <span style="color: var(--text-sub); font-size: 15px;">表示時刻は標準時刻と完全に一致しています。</span>
+      <p style="margin: 0 0 4px; font-size: 17px; color: var(--accent); font-weight: bold;">Precision Sync!</p>
+      <p style="margin: 0; font-size: 14px; color: var(--text-sub);">表示時刻は標準時刻と完全に一致しています。</p>
     `;
     document.getElementById("toReverseButton").style.display = "none";
     lastError = null;
@@ -1695,9 +1729,13 @@ function calculateError() {
     directionColor = "var(--error-early-color)"; // 太文字の黄緑
   }
 
+  resultElement.style.border = `2px solid ${directionColor}`;
+  resultElement.style.borderRadius = '10px';
+  resultElement.style.padding = '12px 16px';
+  resultElement.style.backgroundColor = '';
   resultElement.innerHTML = `
-    <span style="color: var(--accent); font-weight: bold;">${parts.join("")}</span><br>
-    <span style="color: ${directionColor}; font-weight: bold;">${directionText}</span>
+    <p style="margin: 0 0 6px; font-size: 17px; color: var(--accent); font-weight: bold; letter-spacing: 0.5px;">${parts.join('')}</p>
+    <p style="margin: 0; font-size: 16px; color: ${directionColor}; font-weight: bold;">${directionText}</p>
   `;
 
   gtag('event', 'calculate_error'); 
@@ -1959,17 +1997,19 @@ function handleReverseCalculation() {
   resultElement.style.color = 'var(--text-main)'; 
 
   resultElement.innerHTML = `
-    <div style="padding: 0 10px;">
-      <p style="margin: 0; line-height: 1.5;">${baseLabel}が</p>
-      <div style="background-color: var(--bg-dark); border: 1px solid ${resultBorderColor}; border-radius: 6px; padding: 6px 10px; margin: 4px 0; display: inline-block;">
-        <strong style="color: ${resultColor};">${baseStr}</strong>
+    <div style="padding: 6px 10px; line-height: 1.9; width: 100%; box-sizing: border-box;">
+      <div style="display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; margin-bottom: 0;">
+        <span style="font-size: 13px; text-align: right; white-space: nowrap; padding-right: 4px;">${baseLabel}が</span>
+        <span style="font-size: 14px; font-weight: bold; color: ${resultColor}; background: var(--bg-dark); border: 1px solid ${resultBorderColor}; border-radius: 6px; padding: 2px 8px; letter-spacing: 0.5px; white-space: nowrap;">${baseStr}</span>
+        <span></span>
       </div>
-      <p style="margin: 0; line-height: 1.5;">のとき</p>
-      <p style="margin: 10px 0 0; line-height: 1.5;">${resultLabel}は</p>
-      <div style="background-color: var(--bg-dark); border: 1px solid ${resultBorderColor}; border-radius: 6px; padding: 6px 10px; margin: 4px 0; display: inline-block;">
-        <strong style="color: ${resultColor};">${resultStr}</strong>
+      <p style="margin: 0; font-size: 13px; text-align: center;">のとき</p>
+      <div style="display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; margin-top: 0;">
+        <span style="font-size: 13px; text-align: right; white-space: nowrap; padding-right: 4px;">${resultLabel}は</span>
+        <span style="font-size: 14px; font-weight: bold; color: ${resultColor}; background: var(--bg-dark); border: 1px solid ${resultBorderColor}; border-radius: 6px; padding: 2px 8px; letter-spacing: 0.5px; white-space: nowrap;">${resultStr}</span>
+        <span></span>
       </div>
-      <p style="margin: 0; line-height: 1.5;">である</p>
+      <p style="margin: 0; font-size: 13px; text-align: center;">である</p>
     </div>
   `;
 

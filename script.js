@@ -631,22 +631,25 @@ function openTimePicker(group) {
   overlay.classList.add("show");
   sheet.classList.add("show");
   document.body.classList.add("result-highlighted"); // ぼかし解除を即時適用
+  document.body.classList.add("picker-open-padding"); // スクロール限界に達しないよう最下部に余白を追加
 
-  // ピッカー展開と同時に、結果枠が隠れないように裏画面を即時スクロール（smoothはiOSでキャンセルされるためauto）
-  const targetResultId = (group === "display" || group === "standard") ? "result" : "reverseResult";
-  const targetEl = document.getElementById(targetResultId);
-  if (targetEl) {
-    const rect = targetEl.getBoundingClientRect();
-    const pickerHeight = 390; // ピッカーの高さ350px + 余白
-    if (rect.bottom > window.innerHeight - pickerHeight) {
-      window.scrollBy({ top: rect.bottom - (window.innerHeight - pickerHeight), behavior: "auto" });
-    }
-  }
-  
-  // スクロールと overflow: hidden が同一フレームで処理されるとiOSでスクロールが無視されるため、ロックをわずかに遅延
+  // 余白追加のDOM更新を待ってからスクロールを実行
   setTimeout(() => {
-    document.body.classList.add("scroll-locked");
-  }, 50);
+    const targetResultId = (group === "display" || group === "standard") ? "result" : "reverseResult";
+    const targetEl = document.getElementById(targetResultId);
+    if (targetEl) {
+      const rect = targetEl.getBoundingClientRect();
+      const pickerHeight = 390; // ピッカーの高さ350px + 余白
+      if (rect.bottom > window.innerHeight - pickerHeight) {
+        window.scrollBy({ top: rect.bottom - (window.innerHeight - pickerHeight), behavior: "smooth" });
+      }
+    }
+    
+    // スムーズスクロール完了後に画面ロックを適用
+    setTimeout(() => {
+      document.body.classList.add("scroll-locked");
+    }, 400);
+  }, 10);
 
   // 現在の入力値を読み取り
   let timeVal = "";
@@ -698,6 +701,7 @@ function closeTimePicker() {
   if (sheet) sheet.classList.remove("show");
   document.body.classList.remove("scroll-locked"); // 裏画面スクロールロック解除！
   document.body.classList.remove("result-highlighted");
+  document.body.classList.remove("picker-open-padding"); // 余白を解除
 
   // picker-focused をクリア（指示①）
   document.querySelectorAll(".picker-focused").forEach(el => el.classList.remove("picker-focused"));

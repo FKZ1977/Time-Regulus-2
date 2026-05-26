@@ -755,19 +755,16 @@ document.addEventListener("DOMContentLoaded", function () {
     el.addEventListener("mousedown", handler, { passive: false });
     el.addEventListener("touchstart", handler, { passive: false });
 
-    // iOS テンキーの「∧∨」ナビゲーションによるフォーカス移動を防止（「日」入力枠選択時のみ）
+    // iOS テンキーの「∧∨」ナビゲーションによるフォーカス移動を防止
     el.addEventListener("focus", function() {
       if (isDirectField && !inputHelperEnabled) {
         // 直接入力枠で、かつ入力補助OFFのときはフォーカス移動させる
         return;
       }
-      if (isDayFieldFocused) {
-        el.blur();
-      } else if (inputHelperEnabled) {
-        // 入力補助ONのときに直接入力枠へフォーカスが当たったら即座にblurしてピッカーを起動
-        el.blur();
-        openTimePicker(group);
-      }
+      // 入力補助ONのときは、キーボードナビゲーション（∧∨）による意図しないピッカー起動を防ぐため、
+      // focusイベント単体でのピッカー自動起動を完全に廃止し、即座にフォーカスを外す（blur）のみにする。
+      // これにより、ユーザーが指でタップした（touchstart）ときだけピッカーが起動するようになり、再浮上バグを根本解決！
+      el.blur();
     });
   };
 

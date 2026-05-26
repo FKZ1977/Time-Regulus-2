@@ -157,6 +157,28 @@ function toggleInputHelper(enabled) {
     document.body.classList.remove("input-helper-on-mode");
   }
 
+  // 入力補助ONのときは、テンキー左上の「∧∨」キーボードナビゲーションを完全に無効化（グレーアウト）するため、
+  // すべての直接入力時分秒フィールドを readonly ＆ tabindex="-1" に設定。
+  // 入力補助OFFのときは、手動入力できるように readonly を解除し tabindex="0" に戻す。
+  const timeFields = [
+    "displayHour_direct", "displayMin_direct", "displaySec_direct",
+    "standardHour_direct", "standardMin_direct", "standardSec_direct",
+    "errorHours_direct", "errorMinutes_direct", "errorSeconds_direct",
+    "reverseDisplayHour_direct", "reverseDisplayMin_direct", "reverseDisplaySec_direct"
+  ];
+  timeFields.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) {
+      if (enabled) {
+        el.readOnly = true;
+        el.tabIndex = -1;
+      } else {
+        el.readOnly = false;
+        el.tabIndex = 0;
+      }
+    }
+  });
+
   // 年月日の表示状態を再同期
   toggleIncludeDate(includeDateEnabled);
   toggleIncludeDateCorrection(includeDateEnabledCorrection);

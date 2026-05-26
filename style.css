@@ -2732,3 +2732,9 @@ body.input-helper-off-mode #reverseDisplayDateGroup_direct {
   transition: none !important;
   animation: none !important;
 }
+
+/* 年月日も計算トグルがOFFのときに「日」の枠を見えなくする（スペースは維持して時分秒を動かさない） */
+.omit-days-active {
+  visibility: hidden !important;
+  pointer-events: none !important;
+}

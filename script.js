@@ -102,6 +102,16 @@ function toggleIncludeDateCorrection(enabled) {
     });
   }
 
+  // 「年月日も計算」がOFFのとき、誤差の「日」の枠も非表示にする
+  const errorDaysWrappers = document.querySelectorAll(".error-days-wrapper");
+  errorDaysWrappers.forEach(el => {
+    if (isOmit) {
+      el.classList.add("omit-days-active");
+    } else {
+      el.classList.remove("omit-days-active");
+    }
+  });
+
   // 再計算
   handleReverseCalculation();
 }
@@ -1264,9 +1274,12 @@ function showCorrectionMode() {
   toggleReverseMode(false);
 
   // 初期状態でテンキーを起動する自動フォーカス処理
+  // 「年月日も計算」OFFのときは errorDays_direct が visibility:hidden で不可視のため、
+  // 不可視要素へのフォーカスによるiOS Safariフリーズを回避し、次の可視入力枠にフォーカスする
   if (!inputHelperEnabled) {
     setTimeout(() => {
-      const target = document.getElementById("errorDays_direct");
+      const targetId = includeDateEnabledCorrection ? "errorDays_direct" : "errorHours_direct";
+      const target = document.getElementById(targetId);
       if (target) {
         target.focus();
         if (target.select) target.select();
@@ -1851,6 +1864,11 @@ function handleReverseCalculation() {
     timeDateVal = buildDateString(rY, rM, rD);
   }
 
+  // 年月日も計算がOFFのときは、誤差の「日」は強制的に0日とする（非表示化に合わせた安全ガード）
+  if (!includeDateEnabledCorrection) {
+    days = 0;
+  }
+
   // 誤差時間は常に直接入力から取得
   const eH = document.getElementById("errorHours_direct").value;
   const eM = document.getElementById("errorMinutes_direct").value;
@@ -1884,16 +1902,20 @@ function handleReverseCalculation() {
   // 時間入力項目が一部不足している場合に親切なエラーを表示
   if (!hasTime && hasError) {
     const missing = [];
-    if (includeDateEnabledCorrection && !timeDateVal) missing.push("年月日");
+    const dateMissing = includeDateEnabledCorrection && !timeDateVal;
+    if (dateMissing) missing.push("年月日");
     if (!timeTimeVal) missing.push("時分");
     if (timeSec === "" || timeSec === "ss" || timeSec === "--") missing.push("秒");
     
+    const timeLabel = reverseMode === "toDisplay" ? "探している時刻" : "表示時刻";
+
     if (missing.length === (includeDateEnabledCorrection ? 3 : 2)) {
-      resultElement.innerText = reverseMode === "toDisplay"
-        ? "探している時刻を入力してください"
-        : "表示時刻を入力してください";
+      resultElement.innerText = `${timeLabel}を入力してください`;
+    } else if (dateMissing && missing.length === 1) {
+      // 年月日だけが不足している場合 → 黄色の小さい文字で目立たせる
+      resultElement.innerHTML = `<span style="color: #e6c300; font-size: 0.82em;">⚠ ${timeLabel}の年月日が不足</span>`;
     } else {
-      resultElement.innerText = `${reverseMode === "toDisplay" ? "探している時刻" : "表示時刻"}: ${missing.join(", ")}が不足`;
+      resultElement.innerHTML = `<span style="color: #e6c300; font-size: 0.82em;">⚠ ${timeLabel}: ${missing.join(", ")}が不足</span>`;
     }
     return;
   }

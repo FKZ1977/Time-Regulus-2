@@ -11,6 +11,7 @@ let inputHelperEnabled = false;
 let includeDateEnabled = false;
 let includeDateEnabledCorrection = false; // 補正画面用の年月日トグル状態
 let autoJumpTimer = null;
+let isPickerClosing = false; // ピッカーを閉じる際の一時的な再起動防止ガード（iOSゴーストタップ対策）
 
 // セレクトボックス未選択時の灰色表示同期用ヘルパー
 function updateSelectPlaceholderColor(selectId) {
@@ -486,6 +487,8 @@ function onDrumValueChange() {
 }
 
 function openTimePicker(group) {
+  if (isPickerClosing) return; // 閉じる処理中のゴースト起動を完全ブロック！
+
   activeTimePickerGroup = group;
 
   // 既存 of picker-focused をクリア
@@ -608,6 +611,17 @@ function closeTimePicker() {
   document.querySelectorAll(".picker-focused").forEach(el => el.classList.remove("picker-focused"));
 
   activeTimePickerGroup = null;
+
+  // 強制的に入力フォーカスを外してキーボードやiOSスクロールの誤動作を防止
+  if (document.activeElement && document.activeElement.tagName === "INPUT") {
+    document.activeElement.blur();
+  }
+
+  // iOSのタップすり抜け・ゴーストタップによる即時再起動を防ぐため、400msの間起動をブロック
+  isPickerClosing = true;
+  setTimeout(() => {
+    isPickerClosing = false;
+  }, 400);
 }
 
 function checkPass() {

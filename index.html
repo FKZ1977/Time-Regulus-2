@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <title>Time Regulus v3.0.1</title>
+  <title>Time Regulus v3.0.2</title>
 
 <!-- Google tag (gtag.js) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-R7PW7DY4GF"></script>
@@ -17,7 +17,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <link rel="manifest" href="manifest.json">
   <link rel="apple-touch-icon" href="icon-192.png">
-  <link rel="stylesheet" href="style.css?v=3.0.1">
+  <link rel="stylesheet" href="style.css?v=3.0.2">
 
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -53,7 +53,7 @@
 <body class="fade-in">
   <div id="lockScreen">
     <h1 class="fkz anim-title-rise">Time Regulus</h1>
-    <p class="subtitle anim-slow-fade">タイム　レグルス　v3.0.1</p>
+    <p class="subtitle anim-slow-fade">タイム　レグルス　v3.0.2</p>
     <label for="passcode" class="anim-slow-fade">暗証番号を入力：</label><br>
     <input type="password" id="passcode" placeholder="例：12345" tabindex="1" readonly class="anim-slow-fade">
     <button class="action-btn anim-slow-fade" onclick="checkPass()" tabindex="2">開く</button>
@@ -112,43 +112,35 @@
 
     <div id="errorModeDisplayInputGroup" class="input-group date-omitted">
       <label>表示時刻：</label>
-      
-      <!-- 入力補助 ON 時の入力欄 -->
-      <div class="datetime-row input-helper-on" style="display: none;">
-        <div class="date-input-wrapper" style="display: none;" id="displayDateWrapper">
+
+      <div class="datetime-row">
+        <!-- 【入力補助 ON 時の 日付カレンダー入力欄】 -->
+        <div class="date-input-wrapper input-helper-on" style="display: none; flex: 1.6; max-width: 140px; margin-right: 0;" id="displayDateWrapper">
           <input type="date" id="displayDate" placeholder="yyyy/mm/dd">
           <span class="date-placeholder-guide">yyyy  /  mm  /  dd</span>
         </div>
-        <div class="time-capsule-wrapper">
-          <div class="time-input-wrapper">
-            <input type="time" id="displayTime" placeholder="hh:mm">
-            <span class="time-placeholder-guide">hh  :  mm</span>
-          </div>
-          <span class="helper-colon">:</span>
-          <select id="displaySeconds" class="seconds-select">
-            <option value="">ss</option>
-          </select>
-        </div>
-      </div>
 
-      <!-- 入力補助 OFF 時の直接入力欄 -->
-      <div class="datetime-direct-row input-helper-off">
-        <div class="direct-group direct-group-date" id="displayDateGroup_direct" style="display: none;">
+        <!-- 【入力補助 OFF 時の 直接日付テンキー入力欄】 -->
+        <div class="direct-group direct-group-date input-helper-off" id="displayDateGroup_direct" style="display: none;">
           <input type="tel" id="displayYear_direct" placeholder="yyyy" maxlength="4" class="direct-year">
           <span class="delimiter">/</span>
           <input type="tel" id="displayMonth_direct" placeholder="mm" maxlength="2" class="direct-two">
           <span class="delimiter">/</span>
           <input type="tel" id="displayDay_direct" placeholder="dd" maxlength="2" class="direct-two">
         </div>
-        <div class="direct-capsule-wrapper">
-          <div class="direct-group direct-group-time">
-            <input type="tel" id="displayHour_direct" placeholder="hh" maxlength="2" class="direct-two">
-            <span class="delimiter">:</span>
-            <input type="tel" id="displayMin_direct" placeholder="mm" maxlength="2" class="direct-two">
+
+        <!-- 【共通の時刻入力欄 (常にテンキー用直接入力枠を表示 - 三分割均等幅)】 -->
+        <div class="direct-capsule-wrapper" style="flex: 1.8; display: flex; align-items: center; gap: 4px;">
+          <div class="direct-group" style="flex: 1; justify-content: center; height: 38px !important;">
+            <input type="tel" id="displayHour_direct" placeholder="hh" maxlength="2" class="direct-two" style="text-align: center;">
           </div>
-          <span class="direct-colon">:</span>
-          <div class="direct-group direct-group-sec">
-            <input type="tel" id="displaySec_direct" placeholder="ss" maxlength="2" class="direct-two">
+          <span class="direct-colon" style="margin: 0 2px;">:</span>
+          <div class="direct-group" style="flex: 1; justify-content: center; height: 38px !important;">
+            <input type="tel" id="displayMin_direct" placeholder="mm" maxlength="2" class="direct-two" style="text-align: center;">
+          </div>
+          <span class="direct-colon" style="margin: 0 2px;">:</span>
+          <div class="direct-group" style="flex: 1; justify-content: center; height: 38px !important;">
+            <input type="tel" id="displaySec_direct" placeholder="ss" maxlength="2" class="direct-two" style="text-align: center;">
           </div>
         </div>
       </div>
@@ -161,43 +153,35 @@
     <div id="errorModeStandardInputGroup" class="input-group date-omitted">
       <label>標準時刻：</label>
       <button class="action-btn" id="standardNowButton" onclick="setNowToStandard()" style="margin-left: 8px;">NOW🔄</button>
-      
-      <!-- 入力補助 ON 時の入力欄 -->
-      <div class="datetime-row input-helper-on" style="display: none;">
-        <div class="date-input-wrapper" style="display: none;" id="standardDateWrapper">
+
+      <div class="datetime-row">
+        <!-- 【入力補助 ON 時の 日付カレンダー入力欄】 -->
+        <div class="date-input-wrapper input-helper-on" style="display: none; flex: 1.6; max-width: 140px; margin-right: 0;" id="standardDateWrapper">
           <input type="date" id="standardDate" placeholder="yyyy/mm/dd">
           <span class="date-placeholder-guide">yyyy  /  mm  /  dd</span>
         </div>
-        <div class="time-capsule-wrapper">
-          <div class="time-input-wrapper">
-            <input type="time" id="standardTime" placeholder="hh:mm">
-            <span class="time-placeholder-guide">hh  :  mm</span>
-          </div>
-          <span class="helper-colon">:</span>
-          <select id="standardSeconds" class="seconds-select">
-            <option value="">ss</option>
-          </select>
-        </div>
-      </div>
 
-      <!-- 入力補助 OFF 時の直接入力欄 -->
-      <div class="datetime-direct-row input-helper-off">
-        <div class="direct-group direct-group-date" id="standardDateGroup_direct" style="display: none;">
+        <!-- 【入力補助 OFF 時の 直接日付テンキー入力欄】 -->
+        <div class="direct-group direct-group-date input-helper-off" id="standardDateGroup_direct" style="display: none;">
           <input type="tel" id="standardYear_direct" placeholder="yyyy" maxlength="4" class="direct-year">
           <span class="delimiter">/</span>
           <input type="tel" id="standardMonth_direct" placeholder="mm" maxlength="2" class="direct-two">
           <span class="delimiter">/</span>
           <input type="tel" id="standardDay_direct" placeholder="dd" maxlength="2" class="direct-two">
         </div>
-        <div class="direct-capsule-wrapper">
-          <div class="direct-group direct-group-time">
-            <input type="tel" id="standardHour_direct" placeholder="hh" maxlength="2" class="direct-two">
-            <span class="delimiter">:</span>
-            <input type="tel" id="standardMin_direct" placeholder="mm" maxlength="2" class="direct-two">
+
+        <!-- 【共通の時刻入力欄 (常にテンキー用直接入力枠を表示 - 三分割均等幅)】 -->
+        <div class="direct-capsule-wrapper" style="flex: 1.8; display: flex; align-items: center; gap: 4px;">
+          <div class="direct-group" style="flex: 1; justify-content: center; height: 38px !important;">
+            <input type="tel" id="standardHour_direct" placeholder="hh" maxlength="2" class="direct-two" style="text-align: center;">
           </div>
-          <span class="direct-colon">:</span>
-          <div class="direct-group direct-group-sec">
-            <input type="tel" id="standardSec_direct" placeholder="ss" maxlength="2" class="direct-two">
+          <span class="direct-colon" style="margin: 0 2px;">:</span>
+          <div class="direct-group" style="flex: 1; justify-content: center; height: 38px !important;">
+            <input type="tel" id="standardMin_direct" placeholder="mm" maxlength="2" class="direct-two" style="text-align: center;">
+          </div>
+          <span class="direct-colon" style="margin: 0 2px;">:</span>
+          <div class="direct-group" style="flex: 1; justify-content: center; height: 38px !important;">
+            <input type="tel" id="standardSec_direct" placeholder="ss" maxlength="2" class="direct-two" style="text-align: center;">
           </div>
         </div>
       </div>
@@ -226,39 +210,33 @@
     </div>
 
     <label>補正に使う誤差：</label>
-    <!-- 入力補助 ON 時の入力欄 -->
-    <div class="flex-wrap input-helper-on" style="display: none;">
-      <div class="unit-input" style="flex: 1.0;">
+    
+    <!-- ON/OFF切り替え用日数と、共通時分秒 -->
+    <div class="flex-wrap" style="height: 38px !important; align-items: center !important;">
+      <!-- 【入力補助 ON 時の日数入力欄】 -->
+      <div class="unit-input input-helper-on" style="display: none; flex: 1.0; height: 32px !important; align-items: center !important;">
         <input type="number" id="errorDays" min="0" step="1" placeholder="d" tabindex="13" inputmode="numeric" pattern="[0-9]*">
         <span class="unit-label">日</span>
       </div>
-      <div class="unit-capsule-wrapper" style="flex: 3.0;">
-        <div class="time-input-wrapper">
-          <input type="time" id="errorTime" placeholder="hh:mm" tabindex="14">
-          <span class="time-placeholder-guide">hh  :  mm</span>
-        </div>
-        <span class="helper-colon">:</span>
-        <select id="errorSeconds" tabindex="15">
-          <option value="">ss</option>
-        </select>
-      </div>
-      <span class="unit-label">時分秒</span>
-    </div>
-
-    <!-- 入力補助 OFF 時の直接入力欄 -->
-    <div class="flex-wrap input-helper-off">
-      <div class="unit-input" style="flex: 1.0;">
+      <!-- 【入力補助 OFF 時の日数入力欄】 -->
+      <div class="unit-input input-helper-off" style="flex: 1.0; height: 32px !important; align-items: center !important;">
         <input type="tel" id="errorDays_direct" placeholder="d" tabindex="13" inputmode="numeric" pattern="[0-9]*" class="direct-error-val">
         <span class="unit-label">日</span>
       </div>
-      <div class="unit-capsule-wrapper" style="flex: 3.0;">
-        <div class="direct-group-error-time" id="errorTimeGroup_direct">
-          <input type="tel" id="errorHours_direct" placeholder="hh" maxlength="2" tabindex="14">
-          <span class="delimiter">:</span>
-          <input type="tel" id="errorMinutes_direct" placeholder="mm" maxlength="2" tabindex="15">
+
+      <!-- 【共通の時分秒入力欄 (常にテンキー用直接入力枠を表示 - 三分割均等幅)】 -->
+      <div class="unit-capsule-wrapper" style="flex: 3.0; display: flex; align-items: center; gap: 4px;">
+        <div class="direct-group-error-time" id="errorHoursGroup_direct" style="flex: 1; justify-content: center; height: 32px !important; border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 6px; background-color: #1f1f2f; display: flex; align-items: center;">
+          <input type="tel" id="errorHours_direct" placeholder="hh" maxlength="2" tabindex="14" style="text-align: center; background: transparent; border: none; color: var(--text-main); width: 100%; outline: none; height: 100%;">
         </div>
-        <span class="direct-colon">:</span>
-        <input type="tel" id="errorSeconds_direct" placeholder="ss" maxlength="2" tabindex="16" class="direct-error-val error-sec-direct">
+        <span class="direct-colon" style="margin: 0 2px;">:</span>
+        <div class="direct-group-error-time" id="errorMinutesGroup_direct" style="flex: 1; justify-content: center; height: 32px !important; border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 6px; background-color: #1f1f2f; display: flex; align-items: center;">
+          <input type="tel" id="errorMinutes_direct" placeholder="mm" maxlength="2" tabindex="15" style="text-align: center; background: transparent; border: none; color: var(--text-main); width: 100%; outline: none; height: 100%;">
+        </div>
+        <span class="direct-colon" style="margin: 0 2px;">:</span>
+        <div class="direct-group-error-time" id="errorSecondsGroup_direct" style="flex: 1; justify-content: center; height: 32px !important; border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 6px; background-color: #1f1f2f; display: flex; align-items: center;">
+          <input type="tel" id="errorSeconds_direct" placeholder="ss" maxlength="2" tabindex="16" class="direct-error-val error-sec-direct" style="text-align: center; background: transparent; border: none; color: var(--text-main); width: 100%; outline: none; height: 100%;">
+        </div>
       </div>
       <span class="unit-label">時分秒</span>
     </div>
@@ -270,8 +248,8 @@
         <option value="early">遅れている</option>
       </select>
       <div class="segmented-control" id="errorDirectionToggleContainer">
-        <button type="button" class="segment-btn active-late" id="btnLate" onclick="setDirection('late')" tabindex="17">進んでいる</button>
-        <button type="button" class="segment-btn" id="btnEarly" onclick="setDirection('early')">遅れている</button>
+        <button type="button" class="segment-btn active-late" id="btnLate" onclick="toggleDirection()" tabindex="17">進んでいる</button>
+        <button type="button" class="segment-btn" id="btnEarly" onclick="toggleDirection()">遅れている</button>
       </div>
     </div>
 
@@ -298,44 +276,37 @@
     </div>
 
     <div id="reverseTimeBlock" class="input-group">
-      <label id="reverseTimeLabel" for="reverseDisplayTime">表示時刻:</label>
+      <label id="reverseTimeLabel" for="reverseDisplayHour_direct">表示時刻:</label>
       
-      <!-- 入力補助 ON 時の入力欄 -->
-      <div class="datetime-row input-helper-on" style="display: none;">
-        <div class="date-input-wrapper" style="display: none;" id="reverseDisplayDateWrapper" tabindex="18">
+      <!-- ON/OFF切り替え用日付と、共通時分秒 -->
+      <div class="datetime-direct-row" style="height: 38px !important; display: flex; align-items: center !important;">
+        <!-- 【入力補助 ON 時の 日付カレンダー入力欄】 -->
+        <div class="date-input-wrapper input-helper-on" style="display: none; flex: 1.6; max-width: 140px; margin-right: 0;" id="reverseDisplayDateWrapper" tabindex="18">
           <input type="date" id="reverseDisplayDate" placeholder="yyyy/mm/dd">
           <span class="date-placeholder-guide">yyyy  /  mm  /  dd</span>
         </div>
-        <div class="time-capsule-wrapper">
-          <div class="time-input-wrapper">
-            <input type="time" id="reverseDisplayTime" placeholder="hh:mm" step="60" tabindex="19">
-            <span class="time-placeholder-guide">hh  :  mm</span>
-          </div>
-          <span class="helper-colon">:</span>
-          <select id="reverseDisplaySeconds" class="seconds-select" tabindex="20">
-            <option value="">ss</option>
-          </select>
-        </div>
-      </div>
-
-      <!-- 入力補助 OFF 時の直接入力欄 -->
-      <div class="datetime-direct-row input-helper-off">
-        <div class="direct-group direct-group-date" id="reverseDisplayDateGroup_direct" style="display: none;">
+        
+        <!-- 【入力補助 OFF 時の 直接日付テンキー入力欄】 -->
+        <div class="direct-group direct-group-date input-helper-off" id="reverseDisplayDateGroup_direct" style="display: none;">
           <input type="tel" id="reverseDisplayYear_direct" placeholder="yyyy" maxlength="4" class="direct-year" tabindex="18">
           <span class="delimiter">/</span>
           <input type="tel" id="reverseDisplayMonth_direct" placeholder="mm" maxlength="2" class="direct-two" tabindex="19">
           <span class="delimiter">/</span>
           <input type="tel" id="reverseDisplayDay_direct" placeholder="dd" maxlength="2" class="direct-two" tabindex="20">
         </div>
-        <div class="direct-capsule-wrapper">
-          <div class="direct-group direct-group-time">
-            <input type="tel" id="reverseDisplayHour_direct" placeholder="hh" maxlength="2" class="direct-two" tabindex="21">
-            <span class="delimiter">:</span>
-            <input type="tel" id="reverseDisplayMin_direct" placeholder="mm" maxlength="2" class="direct-two" tabindex="22">
+        
+        <!-- 【共通の時刻入力欄 (常にテンキー用直接入力枠を表示 - 三分割均等幅)】 -->
+        <div class="direct-capsule-wrapper" style="flex: 1.8; display: flex; align-items: center; gap: 4px;">
+          <div class="direct-group" style="flex: 1; justify-content: center; height: 38px !important;">
+            <input type="tel" id="reverseDisplayHour_direct" placeholder="hh" maxlength="2" class="direct-two" tabindex="21" style="text-align: center;">
           </div>
-          <span class="direct-colon">:</span>
-          <div class="direct-group direct-group-sec">
-            <input type="tel" id="reverseDisplaySec_direct" placeholder="ss" maxlength="2" class="direct-two" tabindex="23">
+          <span class="direct-colon" style="margin: 0 2px;">:</span>
+          <div class="direct-group" style="flex: 1; justify-content: center; height: 38px !important;">
+            <input type="tel" id="reverseDisplayMin_direct" placeholder="mm" maxlength="2" class="direct-two" tabindex="22" style="text-align: center;">
+          </div>
+          <span class="direct-colon" style="margin: 0 2px;">:</span>
+          <div class="direct-group" style="flex: 1; justify-content: center; height: 38px !important;">
+            <input type="tel" id="reverseDisplaySec_direct" placeholder="ss" maxlength="2" class="direct-two" tabindex="23" style="text-align: center;">
           </div>
         </div>
       </div>
@@ -362,7 +333,7 @@
     <h1 class="fkz" style="margin-top: 40px;">Information</h1>
     <div id="informationContent" style="margin-top: 30px; text-align: left; max-width: 500px; margin-left: auto; margin-right: auto;">
       <p style="margin-bottom: 8px;">このアプリは <strong>H.Fukazu</strong> によって制作されました。</p>
-      <p style="margin-bottom: 24px;">バージョン: <strong>v3.0.1</strong></p>
+      <p style="margin-bottom: 24px;">バージョン: <strong>v3.0.2</strong></p>
 
       <h3 style="margin-top:24px;">## 著作権および利用規約 (Copyright and Usage Policy)</h3>
       <p>本作品（ソフトウェア、コード、ドキュメント、および関連する全ての内容を含む）の著作権は、© 2025 H.Fukazu に帰属します。<br>**© 2025 H.Fukazu. All Rights Reserved.**</p><br>
@@ -429,12 +400,12 @@
     </div>
   </div>
 
-  <script src="script.js?v=3.0.1" defer></script>
+  <script src="script.js?v=3.0.2" defer></script>
   <script>
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
         // Service Worker自体にもキャッシュバスティングを適用し、更新を強制
-        navigator.serviceWorker.register('./service-worker.js?v=3.0.1')
+        navigator.serviceWorker.register('./service-worker.js?v=3.0.2')
           .then(registration => {
             console.log('Service Worker 登録成功:', registration.scope);
             // 起動時に明示的にアップデートを確認

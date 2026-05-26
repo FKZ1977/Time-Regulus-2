@@ -733,9 +733,9 @@ select:has(option[value=""]:checked) {
 
 /* 進んでいるが選択された状態（ピンク） */
 .segment-btn.active-late {
-  background-color: var(--toggle-bg) !important;
+  background-color: var(--error-late-color) !important;
   color: #ffffff !important;
-  box-shadow: 0 0 10px rgba(255, 0, 170, 0.4);
+  box-shadow: 0 0 10px rgba(255, 77, 77, 0.4);
 }
 
 /* 遅れているが選択された状態（緑） */
@@ -834,7 +834,10 @@ input:checked + .switch-slider:before {
 /* ON/OFFの入力欄高さを完全に統一して画面ガタつきを根絶 */
 .datetime-row input[type="date"],
 .datetime-row input[type="time"],
-.datetime-row .seconds-select {
+.datetime-row .seconds-select,
+.datetime-direct-row input[type="date"],
+.datetime-direct-row input[type="time"],
+.datetime-direct-row .seconds-select {
   box-sizing: border-box !important;
   height: 38px !important; /* 38px に完全統一 */
   padding: 0 6px !important; /* 縦パディングを完全に排除して親要素に揃える */
@@ -848,7 +851,10 @@ input:checked + .switch-slider:before {
 }
 .datetime-row input[type="date"]:focus,
 .datetime-row input[type="time"]:focus,
-.datetime-row .seconds-select:focus {
+.datetime-row .seconds-select:focus,
+.datetime-direct-row input[type="date"]:focus,
+.datetime-direct-row input[type="time"]:focus,
+.datetime-direct-row .seconds-select:focus {
   border-color: var(--accent) !important;
   box-shadow: 0 0 6px var(--accent) !important;
   outline: none !important;
@@ -905,10 +911,10 @@ input:checked + .switch-slider:before {
   box-shadow: 0 0 6px var(--accent);
 }
 
-.datetime-direct-row input {
+.direct-group-date input {
   text-align: center;
   padding: 0 !important; /* 高さを揃えるため縦パディングを0にする */
-  height: 100% !important; /* 高さを親の41pxいっぱいに広げる */
+  height: 100% !important; /* 高さを親のいっぱいに広げる */
   font-size: 16px;
   background-color: transparent !important; /* 背景を透明にして一体化 */
   color: var(--text-main);
@@ -920,20 +926,21 @@ input:checked + .switch-slider:before {
   width: 100%;
 }
 
-.datetime-direct-row .direct-year {
-  flex: 1.4;
-  min-width: 0;
+.direct-group-date .direct-year {
+  flex: 1.4 !important;
+  min-width: 0 !important;
 }
-.datetime-direct-row .direct-two {
-  flex: 0.9;
-  min-width: 0;
+.direct-group-date .direct-two {
+  flex: 0.9 !important;
+  min-width: 0 !important;
 }
-.datetime-direct-row .delimiter {
+.direct-group-date .delimiter {
   color: var(--text-sub) !important;
   opacity: 0.6 !important; /* プレースホルダーと同じ不透明度にして一体化 */
   font-size: 15px;
   font-weight: bold;
   padding: 0 1px;
+  align-self: center !important;
 }
 .datetime-direct-row .direct-space {
   display: none; /* グループ化に伴い不要になったスペース要素は非表示 */
@@ -1431,8 +1438,6 @@ input[type="time"]::-webkit-calendar-picker-indicator {
   width: 100%;
   height: 100%;
   background-color: rgba(0, 0, 0, 0.25); /* 裏の文字がしっかり透けて見えるように黒幕を薄く (0.4 -> 0.25) */
-  backdrop-filter: blur(1.5px); /* 裏の文字が十分に読める程度の弱めのぼかしに変更 (4px -> 1.5px) */
-  -webkit-backdrop-filter: blur(1.5px); /* iOS 互換 */
   z-index: 99999;
   opacity: 0;
   pointer-events: none;
@@ -1827,16 +1832,8 @@ select.seconds-fixed-00,
   margin-right: 0 !important;
   padding: 0 !important;
   border: none !important;
-  visibility: hidden;
-  
-  /* 消去時は即座に幅を縮めて左に詰める */
-  transition: flex 0.25s cubic-bezier(0.25, 1, 0.5, 1),
-              max-width 0.25s cubic-bezier(0.25, 1, 0.5, 1),
-              opacity 0.22s ease,
-              visibility 0.22s ease,
-              margin-right 0.25s ease,
-              padding 0.25s ease;
-  transition-delay: 0s;
+  visibility: hidden !important;
+  overflow: hidden !important; /* 文字のはみ出しを完全シャットアウト！ */
 }
 
 #errorModeDisplayInputGroup.date-omitted #displayDateGroup_direct,
@@ -1847,16 +1844,8 @@ select.seconds-fixed-00,
   margin-right: 0 !important;
   padding: 0 !important;
   border: none !important;
-  visibility: hidden;
-  
-  /* 消去時は即座に幅を縮めて左に詰める */
-  transition: flex 0.25s cubic-bezier(0.25, 1, 0.5, 1),
-              max-width 0.25s cubic-bezier(0.25, 1, 0.5, 1),
-              opacity 0.22s ease,
-              visibility 0.22s ease,
-              margin-right 0.25s ease,
-              padding 0.25s ease;
-  transition-delay: 0s;
+  visibility: hidden !important;
+  overflow: hidden !important; /* 文字のはみ出しを完全シャットアウト！ */
 }
 
 /* ==========================================================================
@@ -2109,29 +2098,21 @@ select.seconds-fixed-00,
   margin-right: 0 !important;
   padding: 0 !important;
   border: none !important;
-  visibility: hidden;
-  
-  /* 消去時は即座に幅を0に縮めて左にスライド */
-  transition: flex 0.25s cubic-bezier(0.25, 1, 0.5, 1),
-              max-width 0.25s cubic-bezier(0.25, 1, 0.5, 1),
-              opacity 0.22s ease,
-              visibility 0.22s ease,
-              margin-right 0.25s ease,
-              padding 0.25s ease !important;
-  transition-delay: 0s;
+  visibility: hidden !important;
+  overflow: hidden !important; /* 文字のはみ出しを完全シャットアウト！ */
 }
 
 #correctionMode #reverseTimeBlock .datetime-row.omit-date-active .time-input-wrapper,
 #correctionMode #reverseTimeBlock .datetime-direct-row.omit-date-active .direct-group-time {
-  flex: 1.1 !important;
-  max-width: 145px !important; /* OFFの時は時分を元のたっぷりした幅（145px）に戻す */
+  flex: 1 !important;
+  max-width: none !important;
 }
 
 #correctionMode #reverseTimeBlock .datetime-row.omit-date-active .seconds-select,
 #correctionMode #reverseTimeBlock .datetime-direct-row.omit-date-active .direct-group-sec {
-  flex: 0.7 !important;
-  max-width: 80px !important; /* OFFの時は秒を元のたっぷりした幅（80px）に戻す */
-  min-width: 75px !important;
+  flex: 1 !important;
+  max-width: none !important;
+  min-width: 0 !important;
 }
 
 /* ==========================================================================
@@ -2358,7 +2339,7 @@ body.result-highlighted #reverseResult {
 
 /* ピッカー展開時、最下部の要素をスクロールで持ち上げるための余白 */
 body.picker-open-padding {
-  padding-bottom: 400px !important;
+  padding-bottom: 500px !important; /* 補正モードでの十分なスクロール可動域を確保するため400pxから500pxへ拡張 */
 }
 
 /* ==========================================================================
@@ -2679,4 +2660,75 @@ body.picker-open-padding {
   border-radius: 0 !important;
   background-color: transparent !important;
   background: transparent !important;
+}
+
+/* ==========================================================================
+   入力補助ON/OFF ＆ 年月日ON/OFF の完全マトリクス表示制御
+   ========================================================================== */
+
+/* 1. 入力補助 ON 時 (カレンダー・ドラムロール起動) */
+body.input-helper-on-mode #displayDateWrapper,
+body.input-helper-on-mode #standardDateWrapper,
+body.input-helper-on-mode #reverseDisplayDateWrapper {
+  display: block !important; /* 年月日ONならカレンダーWrapperを表示 */
+}
+body.input-helper-on-mode #displayDateGroup_direct,
+body.input-helper-on-mode #standardDateGroup_direct,
+body.input-helper-on-mode #reverseDisplayDateGroup_direct {
+  display: none !important; /* 直接日付Groupは非表示 */
+}
+
+/* 2. 入力補助 OFF 時 (テンキー直接入力) */
+body.input-helper-off-mode #displayDateWrapper,
+body.input-helper-off-mode #standardDateWrapper,
+body.input-helper-off-mode #reverseDisplayDateWrapper {
+  display: none !important; /* カレンダーWrapperは非表示 */
+}
+body.input-helper-off-mode #displayDateGroup_direct,
+body.input-helper-off-mode #standardDateGroup_direct,
+body.input-helper-off-mode #reverseDisplayDateGroup_direct {
+  display: flex !important; /* 直接日付Groupを表示 */
+}
+
+/* 3. 年月日も計算が OFF のとき (強制両非表示 ＆ overflow:hidden で文字はみ出し完全抹殺) */
+#errorModeDisplayInputGroup.date-omitted #displayDateWrapper,
+#errorModeStandardInputGroup.date-omitted #standardDateWrapper,
+#errorModeDisplayInputGroup.date-omitted #displayDateGroup_direct,
+#errorModeStandardInputGroup.date-omitted #standardDateGroup_direct,
+#reverseTimeBlock .datetime-row.omit-date-active #reverseDisplayDateWrapper,
+#reverseTimeBlock .datetime-direct-row.omit-date-active #reverseDisplayDateWrapper,
+#reverseTimeBlock .datetime-direct-row.omit-date-active #reverseDisplayDateGroup_direct {
+  display: none !important;
+  flex: 0 !important;
+  max-width: 0 !important;
+  width: 0 !important;
+  opacity: 0 !important;
+  overflow: hidden !important;
+  visibility: hidden !important;
+}
+
+/* 4. 時分秒テンキー入力枠の３分割完全均等幅 (1:1:1) 強制化 */
+.direct-capsule-wrapper .direct-group,
+.unit-capsule-wrapper .direct-group-error-time {
+  flex: 1 !important;
+  max-width: none !important;
+  min-width: 0 !important;
+  width: 100% !important;
+}
+
+.direct-capsule-wrapper .direct-group input,
+.unit-capsule-wrapper .direct-group-error-time input {
+  width: 100% !important;
+  flex: 1 !important;
+  text-align: center !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  box-sizing: border-box !important;
+}
+
+/* 5. スワップ時の transition 暴走抑止用クラス */
+.no-transition,
+.no-transition * {
+  transition: none !important;
+  animation: none !important;
 }

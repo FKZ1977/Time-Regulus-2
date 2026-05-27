@@ -232,9 +232,10 @@ function syncInputValues(toON) {
     document.getElementById("standardMonth_direct").value = stdD.m;
     document.getElementById("standardDay_direct").value = stdD.d;
 
-    const errD = document.getElementById("errorDays").value;
-    document.getElementById("errorDays_direct").value = errD;
-
+    // errorDays は常に errorDays_direct から値を引き継ぐか、同期不要。
+    // 入力補助ONでもOFFでも「日」は errorDays_direct を使っているため、
+    // errorDays から errorDays_direct への上書きは行わないようにする。
+    // (staleな値で上書きされるのを防ぐため)
     const revD = parseDateString(document.getElementById("reverseDisplayDate").value);
     document.getElementById("reverseDisplayYear_direct").value = revD.y;
     document.getElementById("reverseDisplayMonth_direct").value = revD.m;
@@ -1096,7 +1097,26 @@ document.addEventListener("DOMContentLoaded", function () {
   });
 
   // --- 補正誤差 ---
-  setupDirectInputField({ id: "errorDays_direct", nextId: "errorHours_direct" });
+  // 「日」の入力完了後、入力補助ONのときは時分秒がhookTimePickerでフォーカスを即座にblurするため、
+  // 自動ジャンプ先を時分秒に向けるとiOS Safariがフリーズ（デッドロック）する。
+  // 入力補助ONのときはキーボードを閉じるだけにし、OFFのときのみ次の入力枠にジャンプする。
+  setupDirectInputField({
+    id: "errorDays_direct",
+    customEnterHandler: function() {
+      if (inputHelperEnabled) {
+        // 入力補助ON: 時分秒はドラムピッカーで入力するため、キーボードを閉じる
+        const el = document.getElementById("errorDays_direct");
+        if (el) el.blur();
+      } else {
+        // 入力補助OFF: テンキーで直接入力するため、次の枠にジャンプ
+        const nextEl = document.getElementById("errorHours_direct");
+        if (nextEl) {
+          nextEl.focus();
+          if (nextEl.select) nextEl.select();
+        }
+      }
+    }
+  });
   setupDirectInputField({ id: "errorHours_direct", nextId: "errorMinutes_direct", maxVal: 23 });
   setupDirectInputField({ id: "errorMinutes_direct", nextId: "errorSeconds_direct", maxVal: 59 });
   setupDirectInputField({
@@ -1853,11 +1873,12 @@ function handleReverseCalculation() {
 
   direction = document.getElementById("errorDirection").value;
 
+  // 日数入力はON/OFFにかかわらず常に errorDays_direct が表示されており、そこに入力されているため一元化して取得
+  days = Number(document.getElementById("errorDays_direct").value || 0);
+
   if (inputHelperEnabled) {
-    days = Number(document.getElementById("errorDays").value || 0);
     timeDateVal = document.getElementById("reverseDisplayDate").value;
   } else {
-    days = Number(document.getElementById("errorDays_direct").value || 0);
     const rY = document.getElementById("reverseDisplayYear_direct").value;
     const rM = document.getElementById("reverseDisplayMonth_direct").value;
     const rD = document.getElementById("reverseDisplayDay_direct").value;

@@ -1053,7 +1053,7 @@ function cancelDecoyTimer() {
   const display = document.getElementById("decoyCountdown");
   if (display) {
     display.style.visibility = "hidden";
-    display.textContent = "00:00.00";
+    display.textContent = "00:00.0";
   }
   const pauseBtn = document.getElementById("decoyPauseBtn");
   if (pauseBtn) {
@@ -1075,7 +1075,7 @@ function _updateDecoyCountdown() {
     // 時間切れ
     clearInterval(_decoyTimerInterval);
     _decoyTimerInterval = null;
-    if (display) display.textContent = "00:00.00";
+    if (display) display.textContent = "00:00.0";
     
     // アラーム発動（ピンク色にしてバイブレーション）
     const decoyScreen = document.getElementById("decoyScreen");
@@ -1096,7 +1096,7 @@ function _updateDecoyCountdown() {
     // 残り時間描画
     const m = String(Math.floor(remain / 60000)).padStart(2, "0");
     const s = String(Math.floor((remain % 60000) / 1000)).padStart(2, "0");
-    const ms = String(Math.floor((remain % 1000) / 10)).padStart(2, "0"); // 2桁 (0.01秒)
+    const ms = String(Math.floor((remain % 1000) / 100)); // 1桁 (0.1秒)
     if (display) display.textContent = `${m}:${s}.${ms}`;
   }
 }

@@ -709,6 +709,14 @@ let _decoyHoldTimer   = null; // 長押し判定タイマー
 let _decoyHoldStarted = false;
 
 function showDecoyScreen() {
+  // Google Analytics: ダミー画面への遷移をカウント（国別データなどもAnalytics上で確認可能）
+  if (typeof gtag === 'function') {
+    gtag('event', 'view_decoy_screen', {
+      'event_category': 'Security',
+      'event_label': 'Decoy Screen Triggered'
+    });
+  }
+
   document.getElementById("lockScreen").style.display = "none";
   const decoy = document.getElementById("decoyScreen");
   decoy.style.display = "block";
@@ -2589,10 +2597,9 @@ function renderResultList() {
         textSpan.style.marginRight = "8px";
 
         // 日付あり・なしに関わらず、同じHTML構造で表示する
-        // 画面幅が狭いときに改行されないよう、固定幅での縦揃えをやめてシンプルな左詰めにしています
         textSpan.innerHTML = `
-          <span style="font-size: 13px; color: var(--text-sub); display: block;">${baseLabel}が ${baseStr} のとき</span>
-          <span style="font-size: 14px; font-weight: bold; color: ${resultColor}; display: block; margin-top: 1px;">${resultLabel}は ${resultStr} である</span>
+          <span style="font-size: 13px; color: var(--text-sub); display: block;">${baseLabel}が ${baseStr} →</span>
+          <span style="font-size: 14px; font-weight: bold; color: ${resultColor}; display: block; margin-top: 1px;">${resultLabel}は ${resultStr}</span>
         `;
         line.appendChild(textSpan);
         

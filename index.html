@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <title>Time Regulus v3.0.2</title>
+  <title>Time Regulus v3.0.3</title>
 
 <!-- Google tag (gtag.js) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-R7PW7DY4GF"></script>
@@ -17,7 +17,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <link rel="manifest" href="manifest.json">
   <link rel="apple-touch-icon" href="icon-192.png">
-  <link rel="stylesheet" href="style.css?v=3.0.2">
+  <!-- ★【起動高速化】ロック画面用CSS（小・ブロッキング）→ 先に読み込んで即表示 -->
+  <link rel="stylesheet" href="style-lock.css?v=3.0.3">
+  <!-- ★【起動高速化】メインCSS（大・非ブロッキング）→ ロック画面表示後に裏で読み込む -->
+  <link rel="stylesheet" href="style-main.css?v=3.0.3"
+        media="print" onload="this.media='all'">
+  <noscript><link rel="stylesheet" href="style-main.css?v=3.0.3"></noscript>
 
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -53,7 +58,7 @@
 <body class="fade-in">
   <div id="lockScreen">
     <h1 class="fkz anim-title-rise">Time Regulus</h1>
-    <p class="subtitle anim-slow-fade">タイム　レグルス　v3.0.2</p>
+    <p class="subtitle anim-slow-fade">タイム　レグルス　v3.0.3</p>
     <label for="passcode" class="anim-slow-fade">暗証番号を入力：</label><br>
     <input type="password" id="passcode" placeholder="例：12345" tabindex="1" readonly class="anim-slow-fade">
     <button class="action-btn anim-slow-fade" onclick="checkPass()" tabindex="2">開く</button>
@@ -115,7 +120,7 @@
 
       <div class="datetime-row">
         <!-- 【入力補助 ON 時の 日付カレンダー入力欄】 -->
-        <div class="date-input-wrapper input-helper-on" style="display: none; flex: 1.6; max-width: 140px; margin-right: 0;" id="displayDateWrapper">
+        <div class="date-input-wrapper input-helper-on" style="display: none;" id="displayDateWrapper">
           <input type="date" id="displayDate" placeholder="yyyy/mm/dd">
           <span class="date-placeholder-guide">yyyy  /  mm  /  dd</span>
         </div>
@@ -156,7 +161,7 @@
 
       <div class="datetime-row">
         <!-- 【入力補助 ON 時の 日付カレンダー入力欄】 -->
-        <div class="date-input-wrapper input-helper-on" style="display: none; flex: 1.6; max-width: 140px; margin-right: 0;" id="standardDateWrapper">
+        <div class="date-input-wrapper input-helper-on" style="display: none;" id="standardDateWrapper">
           <input type="date" id="standardDate" placeholder="yyyy/mm/dd">
           <span class="date-placeholder-guide">yyyy  /  mm  /  dd</span>
         </div>
@@ -256,7 +261,7 @@
     <br>
 
     <!-- 横長スワップボタンの独立配置コンテナ -->
-    <div style="text-align: center; margin: 0 auto; width: 100%; max-width: 310px;">
+    <div style="text-align: center; margin: 0 auto 12px auto; width: 100%; max-width: 310px;">
       <button class="action-btn toggle-btn active-toggle" id="reverseModeToggleBtn" onclick="toggleReverseMode()">
         <span class="swap-text-container">
           <span class="swap-text-left" id="swapTextLeft">補正時刻を求める</span>
@@ -281,7 +286,7 @@
       <!-- ON/OFF切り替え用日付と、共通時分秒 -->
       <div class="datetime-direct-row" style="height: 38px !important; display: flex; align-items: center !important;">
         <!-- 【入力補助 ON 時の 日付カレンダー入力欄】 -->
-        <div class="date-input-wrapper input-helper-on" style="display: none; flex: 1.6; max-width: 140px; margin-right: 0;" id="reverseDisplayDateWrapper" tabindex="18">
+        <div class="date-input-wrapper input-helper-on" style="display: none;" id="reverseDisplayDateWrapper" tabindex="18">
           <input type="date" id="reverseDisplayDate" placeholder="yyyy/mm/dd">
           <span class="date-placeholder-guide">yyyy  /  mm  /  dd</span>
         </div>
@@ -400,12 +405,12 @@
     </div>
   </div>
 
-  <script src="script.js?v=3.0.2" defer></script>
+  <script src="script.js?v=3.0.3" defer></script>
   <script>
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
         // Service Worker自体にもキャッシュバスティングを適用し、更新を強制
-        navigator.serviceWorker.register('./service-worker.js?v=3.0.2')
+        navigator.serviceWorker.register('./service-worker.js?v=3.0.3')
           .then(registration => {
             console.log('Service Worker 登録成功:', registration.scope);
             // 起動時に明示的にアップデートを確認

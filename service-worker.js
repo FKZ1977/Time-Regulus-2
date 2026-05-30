@@ -1,9 +1,10 @@
-const CACHE_NAME = "time-regulus-v3.0.2"; // キャッシュバスティング用バージョンアップ (v3.0.2)
+const CACHE_NAME = "time-regulus-v3.0.3"; // 起動高速化 + v3.0.3へバージョンアップ
 const urlsToCache = [
   "./",
   "./index.html",
-  "./style.css?v=3.0.2",
-  "./script.js?v=3.0.2",
+  "./style-lock.css?v=3.0.3",
+  "./style-main.css?v=3.0.3",
+  "./script.js?v=3.0.3",
   "./manifest.json",
   "./icon-192.png",
   "./icon-512.png",

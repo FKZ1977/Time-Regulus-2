@@ -1,0 +1,246 @@
+/* ============================================================
+   style-lock.css  ─  Time Regulus v3.0.3
+   暗証番号画面（ロック画面）専用スタイル
+   ※ このファイルは起動時に最初に読み込まれる軽量CSSです
+   ============================================================ */
+
+* {
+  box-sizing: border-box;
+  touch-action: manipulation;
+}
+
+:root {
+  --bg-dark: #0e0f11;
+  --bg-dark-navy: #151c27;
+  --card-bg: rgba(120, 110, 255, 0.38);
+  --accent: #00ffe0;
+  --text-main: #e0e0e0;
+  --text-sub: #999;
+  --btn-bg: #00ffe0;
+  --btn-text: #000;
+  --deep-green: #134d33;
+  --toggle-bg: #ff00aa;
+  --toggle-text: #fff;
+  --error-late-color: #ff4d4d;
+  --error-early-color: #00ff80;
+  --result-standard-bg: rgba(0, 255, 224, 0.1);
+  --result-display-bg: rgba(255, 0, 170, 0.1);
+}
+
+/* ─── フェードイン（body全体） ─── */
+.fade-in {
+  animation: fadeIn 1.2s ease-in-out forwards;
+  opacity: 0;
+}
+@keyframes fadeIn {
+  to { opacity: 1; }
+}
+
+/* ─── 浮上アニメーション（modeSelectタイトル用） ─── */
+.rise-in {
+  animation: riseFade 1.2s ease-out forwards;
+  opacity: 0;
+  transform: translateY(20px);
+}
+@keyframes riseFade {
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes riseInLong {
+  0%   { opacity: 0; transform: translateY(20px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+@keyframes riseInShort {
+  0%   { opacity: 0; transform: translateY(20px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+.rise-in-long  { animation: riseInLong  1s ease-out forwards; }
+.rise-in-short { animation: riseInShort 1s ease-out forwards; }
+
+/* ─── html / body 基本 ─── */
+html, body {
+  width: 100%;
+  overflow-x: hidden;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  font-family: 'Inter', sans-serif;
+  background: var(--bg-dark);
+  color: var(--text-main);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: 100vh;
+}
+
+/* ─── ロック画面コンテナ ─── */
+#lockScreen {
+  text-align: center;
+  margin-top: 0px;
+}
+
+/* ─── メインタイトル h1.fkz ─── */
+h1.fkz {
+  font-size: 40px;
+  color: var(--accent);
+  text-shadow: 0 0 12px var(--accent);
+  margin-top: 60px;
+  letter-spacing: 4px;
+}
+
+/* ─── サブタイトル ─── */
+.subtitle {
+  font-size: 16px;
+  color: var(--text-sub);
+  margin-bottom: 40px;
+}
+
+/* ─── 入力フォーカス共通 ─── */
+input:focus, select:focus, button:focus {
+  outline: 2px solid var(--accent);
+  box-shadow: 0 0 6px var(--accent);
+}
+
+/* ─── 暗証番号入力欄 ─── */
+#lockScreen input {
+  width: 140px;
+  text-align: center;
+  padding: 10px;
+  font-size: 18px;
+  border-radius: 8px;
+  border: none;
+  color: var(--text-main);
+}
+
+/* ─── 共通 input / select ─── */
+input, select {
+  padding: 10px;
+  font-size: 16px;
+  border-radius: 8px;
+  border: none;
+  background-color: #1f1f2f;
+  color: var(--text-main);
+}
+
+/* ─── 「開く」ボタン（.action-btn） ─── */
+.action-btn {
+  background-color: var(--btn-bg);
+  color: var(--btn-text);
+  border: none;
+  padding: 12px 24px;
+  font-size: 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  margin-top: 20px;
+  box-shadow: 0 4px 12px rgba(0,255,224,0.3);
+  transition: transform 0.2s ease, background-color 0.3s ease;
+}
+.action-btn:hover {
+  transform: scale(1.05);
+  background-color: #00e6cc;
+}
+
+/* ─── テンキーグリッド ─── */
+.keypad-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 45px);
+  grid-template-rows: repeat(3, 45px);
+  gap: 10px;
+  justify-content: center;
+  margin: 20px auto;
+}
+
+.keypad-grid button {
+  font-size: 18px;
+  border: none;
+  border-radius: 8px;
+  background-color: rgba(255, 255, 255, 0.08);
+  color: var(--accent);
+  cursor: pointer;
+  box-shadow: 0 0 6px rgba(0,255,224,0.2);
+  transition: background-color 0.2s ease;
+}
+.keypad-grid button:hover {
+  background-color: rgba(0,255,224,0.2);
+}
+
+/* ─── エラーメッセージ ─── */
+#error {
+  color: red;
+  min-height: 1.2em;
+  margin-top: 4px;
+  margin-bottom: 4px;
+  font-size: 14px;
+}
+
+/* ─── Informationリンク ─── */
+.info-link {
+  color: var(--accent);
+  font-size: 14px;
+  margin-top: 40px;
+  text-align: center;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+.info-link:hover {
+  transform: scale(1.05);
+}
+
+/* ─── プレースホルダー ─── */
+input::placeholder {
+  color: var(--text-sub) !important;
+  opacity: 0.6;
+}
+
+/* ─── 星の瞬きアニメーション（テンキーボタン） ─── */
+@keyframes starSparkle {
+  0%, 100% {
+    background-color: rgba(255, 255, 255, 0.08);
+    color: var(--accent);
+    box-shadow: 0 0 6px rgba(0, 255, 224, 0.2);
+    transform: scale(1);
+  }
+  25%, 75% {
+    background-color: rgba(0, 255, 224, 0.4);
+    color: #ffffff;
+    box-shadow: 0 0 15px var(--accent);
+    transform: scale(1.08);
+  }
+  50% {
+    background-color: rgba(255, 255, 255, 0.08);
+    color: var(--accent);
+    box-shadow: 0 0 6px rgba(0, 255, 224, 0.2);
+    transform: scale(1);
+  }
+}
+
+.sparkle-btn-anim {
+  animation: starSparkle 0.25s ease-in-out;
+  animation-iteration-count: 2;
+}
+
+/* ─── ゆっくりフェードイン（サブタイトル・ボタン等） ─── */
+@keyframes slowFadeIn {
+  0%   { opacity: 0; }
+  100% { opacity: 1; }
+}
+
+.anim-slow-fade {
+  animation: slowFadeIn 0.8s ease-out forwards;
+  animation-delay: 0.3s !important;
+  opacity: 0;
+}
+
+/* ─── タイトル浮上アニメーション ─── */
+@keyframes titleRiseUp {
+  0%   { opacity: 0; transform: translateY(20px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+.anim-title-rise {
+  animation: titleRiseUp 1.5s ease-out forwards;
+  animation-delay: 0.8s !important;
+  opacity: 0;
+}

@@ -1,0 +1,2761 @@
+* {
+  box-sizing: border-box;
+  touch-action: manipulation;
+}
+
+:root {
+  --bg-dark: #0e0f11;
+  --bg-dark-navy: #151c27; /* 標準時刻が上の時の新しい背景色 */
+  --card-bg: rgba(120, 110, 255, 0.38);
+  --accent: #00ffe0; /* 水色/メインカラー */
+  --text-main: #e0e0e0;
+  --text-sub: #999;
+  --btn-bg: #00ffe0;
+  --btn-text: #000;
+  --deep-green: #134d33;
+  --toggle-bg: #ff00aa; /* ピンク */
+  --toggle-text: #fff;
+  --error-late-color: #ff4d4d; /* 赤色 (進み) */
+  --error-early-color: #00ff80; /* 黄緑色 (遅れ) */
+  --result-standard-bg: rgba(0, 255, 224, 0.1);
+  --result-display-bg: rgba(255, 0, 170, 0.1);
+}
+
+.fade-in {
+  animation: fadeIn 1.2s ease-in-out forwards;
+  opacity: 0;
+}
+@keyframes fadeIn {
+  to {
+    opacity: 1;
+  }
+}
+
+.rise-in {
+  animation: riseFade 1.2s ease-out forwards;
+  opacity: 0;
+  transform: translateY(20px);
+}
+@keyframes riseFade {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* 新しいアニメーション */
+@keyframes riseInLong {
+  0% { opacity: 0; transform: translateY(20px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+@keyframes riseInShort {
+  0% { opacity: 0; transform: translateY(20px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+.rise-in-long { animation: riseInLong 1s ease-out forwards; }
+.rise-in-short { animation: riseInShort 1s ease-out forwards; }
+
+/* 入力フィールドスワップアニメーション */
+@keyframes slideUpOut {
+  to { transform: translateY(-100%); opacity: 0.2; }
+}
+@keyframes slideDownOut {
+  to { transform: translateY(100%); opacity: 0.2; }
+}
+@keyframes slideUpIn {
+  from { transform: translateY(100%); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+@keyframes slideDownIn {
+  from { transform: translateY(-100%); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+.animate-up-out { animation: slideUpOut 0.15s ease-in forwards; }
+.animate-down-out { animation: slideDownOut 0.15s ease-in forwards; }
+.animate-up-in { animation: slideUpIn 0.15s ease-out forwards; }
+.animate-down-in { animation: slideDownIn 0.15s ease-out forwards; }
+
+/* 記録成功メッセージのアニメーション */
+@keyframes fadeOut {
+    0% { opacity: 1; }
+    100% { opacity: 0; }
+}
+
+.fade-in-out {
+    animation: fadeIn 0.1s ease-in forwards; /* 即座にフェードイン */
+}
+.fade-out {
+    animation: fadeOut 0.5s ease-out forwards; /* 0.5秒でフェードアウト */
+}
+
+
+html, body {
+  width: 100%;
+  overflow-x: hidden;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  font-family: 'Inter', sans-serif;
+  background: var(--bg-dark);
+  color: var(--text-main);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: 100vh;
+}
+
+input:focus, select:focus, button:focus {
+  outline: 2px solid var(--accent);
+  box-shadow: 0 0 6px var(--accent);
+}
+
+h1.fkz {
+  font-size: 40px;
+  color: var(--accent);
+  text-shadow: 0 0 12px var(--accent);
+  margin-top: 60px;
+  letter-spacing: 4px;
+}
+
+.subtitle {
+  font-size: 16px;
+  color: var(--text-sub);
+  margin-bottom: 40px;
+}
+
+.mode-card {
+  background: var(--card-bg);
+  backdrop-filter: blur(12px);
+  border-radius: 16px;
+  padding: 20px;
+  width: 94%;
+  max-width: 393px; /* iPhone 16の幅393pxを上限とする */
+  box-shadow: 0 0 20px rgba(0,0,0,0.4);
+  margin-top: 20px;
+}
+
+.mode-card h2 {
+  color: #fff;
+  font-weight: bold;
+  font-size: 20px;
+  margin-bottom: 16px;
+}
+
+.deep-green {
+  background-color: var(--deep-green);
+}
+
+.input-group {
+  margin-top: 12px;
+  margin-bottom: 20px;
+}
+
+input[type="datetime-local"] {
+  width: 220px;
+}
+
+.seconds-select {
+  width: 80px;
+  margin-top: 8px;
+}
+
+/* 誤差計算モードで標準時刻が上の時の「00秒」のスタイル */
+.seconds-fixed-00 {
+  background-color: var(--bg-dark-navy) !important; 
+  border: 1px solid var(--accent) !important;
+  color: var(--error-late-color) !important; /* 赤色文字 */
+  font-weight: bold;
+  pointer-events: none;
+  text-align: center;
+  box-shadow: none;
+  /* セレクトボックスの矢印を非表示 */
+  -webkit-appearance: none; 
+  -moz-appearance: none;    
+  appearance: none;         
+}
+
+#errorDirection {
+  width: 160px;
+  display: inline-block;
+  margin-left: 8px;
+}
+
+
+/* 誤差計算モードの「補正時刻を計算→」リンク風テキストのスタイル */
+.to-reverse-link {
+    /* 右寄せ */
+    text-align: right;
+    width: 100%; /* 親要素の幅いっぱいに広げ、text-align: rightを有効にする */
+    display: block; /* ブロック要素にする */
+    
+    /* 水色の文字（--accentは水色/メインカラー） */
+    color: var(--accent); 
+    font-size: 16px; 
+    font-weight: bold; 
+    
+    /* リンク風のカーソルと体裁 */
+    cursor: pointer; 
+    padding: 10px 0; /* 上下のパディング */
+    margin-top: 10px; /* 上部の余白 */
+    
+    /* ボタンとしてのデフォルトスタイルを上書き */
+    background: none;
+    border: none;
+    text-decoration: none; 
+}
+
+/* ホバー時のスタイル（任意: マウスオーバー時に少し薄くする） */
+.to-reverse-link:hover {
+    opacity: 0.8;
+}
+
+
+/* 誤差の方向の文字色 */
+.error-late { /* 進んでいる (late) は赤色 */
+    color: var(--error-late-color);
+    font-weight: bold;
+}
+.error-early { /* 遅れている (early) は黄緑色 */
+    color: var(--error-early-color);
+    font-weight: bold;
+}
+
+
+/* iOS Safari・Chrome対策: 日付・時刻入力欄のインナー Shadow DOM を完全にリセット */
+input[type="date"]::-webkit-date-and-time-value,
+input[type="time"]::-webkit-date-and-time-value {
+  margin: 0 !important;
+  padding: 0 !important;
+  height: 100% !important;
+  min-height: 100% !important;
+  line-height: 1 !important;
+  display: block !important;
+  text-align: center !important;
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+}
+input[type="date"]::-webkit-datetime-edit,
+input[type="time"]::-webkit-datetime-edit {
+  padding: 0 !important;
+  margin: 0 !important;
+  height: 100% !important;
+  box-sizing: border-box !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important; /* PC・スマホ共通で横方向中央寄せ */
+  text-align: center !important;
+  width: 100% !important;
+}
+input[type="date"]::-webkit-datetime-edit-fields-wrapper,
+input[type="time"]::-webkit-datetime-edit-fields-wrapper {
+  display: inline-flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+  width: auto !important;
+  margin: 0 auto !important;
+}
+/* カレンダー・時計マークを表示しつつ、サイズと余白を最小化して38px内に完璧に収める */
+input[type="date"]::-webkit-calendar-picker-indicator,
+input[type="time"]::-webkit-calendar-picker-indicator {
+  display: block !important; /* 表示を復活させてPCでピッカーを起動可能にする */
+  width: 14px !important;
+  height: 14px !important;
+  padding: 0 !important;
+  margin: 0 0 0 4px !important; /* 右側にスマートに配置 */
+  cursor: pointer !important;
+  opacity: 0.6 !important;
+  transition: opacity 0.2s ease;
+  background-size: contain !important;
+}
+input[type="date"]::-webkit-calendar-picker-indicator:hover,
+input[type="time"]::-webkit-calendar-picker-indicator:hover {
+  opacity: 1 !important;
+}
+
+/* セレクトボックスの未選択プレースホルダー "ss" を確実に灰色（var(--text-sub)）にする定義 */
+select.placeholder-active {
+  color: var(--text-sub) !important;
+  opacity: 0.6 !important;
+}
+select.placeholder-active option {
+  color: var(--text-main) !important; /* 選択肢自体は通常の白っぽい色にする */
+}
+
+input, select {
+  padding: 10px;
+  font-size: 16px;
+  border-radius: 8px;
+  border: none;
+  background-color: #1f1f2f;
+  color: var(--text-main);
+}
+
+.action-btn {
+  background-color: var(--btn-bg);
+  color: var(--btn-text);
+  border: none;
+  padding: 12px 24px;
+  font-size: 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  margin-top: 20px;
+  box-shadow: 0 4px 12px rgba(0,255,224,0.3);
+  transition: transform 0.2s ease, background-color 0.3s ease;
+}
+.action-btn:hover {
+  transform: scale(1.05);
+  background-color: #00e6cc;
+}
+
+.toggle-btn {
+  background-color: var(--btn-bg); /* 通常のボタンのデフォルト */
+  color: var(--btn-text);
+  box-shadow: 0 4px 12px rgba(0,255,224,0.3);
+  border-radius: 8px;
+  padding: 12px 24px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: transform 0.2s ease, background-color 0.3s ease, box-shadow 0.3s ease;
+}
+.toggle-btn:hover {
+  transform: scale(1.05);
+}
+
+/* 1. 表示時刻 → 補正時刻 (toStandard) : 水色 */
+.toggle-btn.active-toggle {
+  background-color: var(--accent);
+  color: var(--btn-text);
+  box-shadow: 0 0 10px rgba(0, 255, 224, 0.5);
+  transform: scale(1);
+}
+.toggle-btn.active-toggle:hover {
+  background-color: #00e6cc;
+  transform: scale(1.05);
+}
+
+/* 2. 探している時刻 → 表示時刻 (toDisplay) : ピンク */
+.toggle-btn.active-toggle-pink {
+  background-color: var(--toggle-bg);
+  color: var(--toggle-text);
+  box-shadow: 0 0 10px rgba(255, 0, 170, 0.5);
+  transform: scale(1);
+}
+.toggle-btn.active-toggle-pink:hover {
+  background-color: var(--toggle-bg); /* ピンクのまま */
+  transform: scale(1.05);
+}
+
+.back-btn {
+  background: none;
+  border: none;
+  color: var(--accent);
+  font-size: 16px;
+  margin-bottom: 20px;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+.back-btn:hover {
+  transform: scale(1.05);
+}
+
+.result-box {
+  margin-top: 30px;
+  font-size: 18px;
+  line-height: 1.6;
+  color: var(--accent);
+  text-align: center;
+  margin: 20px 0;
+  /* 枠表示ON/OFFの切り替えをスムーズに */
+  transition: border-color 0.25s ease, padding 0.2s ease, border-radius 0.2s ease;
+  box-sizing: border-box;
+}
+.result-box p {
+  margin: 20px 0;
+}
+
+#error {
+  color: red;
+  min-height: 1.2em;
+  margin-top: 4px;
+  margin-bottom: 4px;
+  font-size: 14px;
+}
+
+.flex-wrap {
+  display: flex;
+  flex-direction: row;
+  gap: 6px;
+  flex-wrap: nowrap; /* はみ出さずに綺麗に収まります */
+  overflow-x: hidden; /* 横スクロールバーを非表示に */
+  margin-bottom: 24px;
+}
+
+.unit-input {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  margin-bottom: 0;
+  flex: 1 1 0px; /* 均等に均す */
+  min-width: 0;
+}
+
+.unit-input input,
+.unit-input select {
+  width: 100%;
+  padding: 6px 4px;
+  font-size: 14px;
+  border-radius: 6px;
+  border: none;
+  background-color: #1f1f2f !important;
+  color: var(--text-main);
+  text-align: right;
+}
+
+.unit-label {
+  font-size: 14px;
+  color: var(--text-main);
+  white-space: nowrap;
+  margin-left: 2px;
+}
+
+#lockScreen {
+  text-align: center;
+  margin-top: 0px;
+}
+
+#lockScreen input {
+  width: 140px;
+  text-align: center;
+  padding: 10px;
+  font-size: 18px;
+  border-radius: 8px;
+  border: none;
+  color: var(--text-main);
+}
+
+#modeSelect {
+  padding-top: 80px;
+}
+
+#errorMode, #correctionMode {
+  padding-top: 60px;
+}
+
+.keypad-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 45px);
+  grid-template-rows: repeat(3, 45px);
+  gap: 10px;
+  justify-content: center;
+  margin: 20px auto;
+}
+
+.keypad-grid button {
+  font-size: 18px;
+  border: none;
+  border-radius: 8px;
+  background-color: rgba(255, 255, 255, 0.08);
+  color: var(--accent);
+  cursor: pointer;
+  box-shadow: 0 0 6px rgba(0,255,224,0.2);
+  transition: background-color 0.2s ease;
+}
+.keypad-grid button:hover {
+  background-color: rgba(0,255,224,0.2);
+}
+
+.show-list-link {
+  color: var(--accent);
+  font-size: 16px;
+  margin-top: 12px;
+  text-align: right;
+  cursor: pointer;
+}
+
+.info-link {
+  color: var(--accent);
+  font-size: 14px;
+  margin-top: 40px;
+  text-align: center;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+.info-link:hover {
+  transform: scale(1.05);
+}
+
+/* 結果一覧のスタイル */
+.result-list-group-outer {
+    padding: 16px;
+    margin-bottom: 24px;
+    border: 2px solid var(--text-sub);
+    border-radius: 12px;
+    background-color: rgba(255, 255, 255, 0.03);
+    box-shadow: 0 0 10px rgba(0,0,0,0.3);
+}
+
+.result-list-group-inner {
+    border-radius: 8px;
+    padding: 12px;
+    margin-bottom: 12px;
+    text-align: left;
+}
+
+.delete-btn {
+    /* 背景色をグレー系（暗い背景色）に変更 */
+    background-color: var(--bg-dark); 
+    /* 文字色をグレー系（サブテキスト色）に変更 */
+    color: var(--text-sub); 
+    /* 枠線をサブテキストの色で追加 */
+    border: 1px solid var(--text-sub); 
+    padding: 4px 8px;
+    font-size: 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    /* アニメーションを削除 */
+    transition: none;
+}
+.delete-btn:hover {
+    /* ホバー時の色変更を削除し、固定色に設定 */
+    background-color: var(--bg-dark);
+    color: var(--text-sub);
+    /* 押せる要素であることを示すため、わずかに透明度を変更（任意ですが推奨） */
+    opacity: 0.8;
+}
+/* 成功メッセージ */
+.success-message {
+    color: var(--accent); 
+    font-weight: bold; 
+    font-size: 15px;
+    opacity: 0;
+    transition: opacity 0.1s ease-in, transform 0.1s ease-in;
+}
+
+/* Informationページの文字詰め */
+#informationContent p {
+    margin-bottom: 8px; /* 段落の間隔を狭める */
+}
+
+/* style.css (末尾の定義を変更) */
+
+/* 中央の🔃ボタンのスタイル */
+.sync-center-btn {
+    /* **変更点:** ボタンの枠と背景を削除し、テキスト（アイコン）として表示する */
+    background-color: transparent; /* 背景を透明に */
+    border: none; /* 枠線を削除 */
+    box-shadow: none; /* 影を削除 */
+    
+    /* ボタンのサイズとフォントを調整 */
+    width: auto; /* 幅をテキストに合わせる */
+    padding: 0; /* パディングを削除 */
+    margin-top: 0; 
+    font-size: 28px; /* 🔃アイコンを大きく表示 */
+    cursor: pointer; /* クリック可能であることを示す */
+    
+    /* 必要に応じて文字色を調整 */
+    color: #333; 
+}
+
+/* 🔃ボタン（交換ボタン）の位置調整とフォーカスリングの削除 */
+#swapButton {
+    position: absolute; 
+    
+    /* 垂直方向の位置調整: 上に動かすために translateY の負の値を大きくします */
+    top: 50%; 
+    /* 50%の位置から上に150%分移動させます。この値を調整して高さを微調整してください。 */
+    transform: translateY(-100%); 
+    
+    /* 水平方向の右寄せを維持 */
+    right: 20px; 
+    
+    /* アイコンに見せるスタイルを維持 */
+    background-color: transparent !important; 
+    border: none !important; 
+    box-shadow: none !important; 
+    padding: 0; 
+    width: auto;
+    font-size: 28px;
+    cursor: pointer; 
+    z-index: 10; 
+    
+    /* ★【新規追加】押した時の水色の枠（フォーカスリング）を削除 */
+    outline: none !important;
+}
+
+/* ★【新規追加】クリック中（アクティブ時）の背景色変化も無効化 */
+#swapButton:active {
+    background-color: transparent !important;
+}
+
+#resetLink {
+    display: block; /* ブロック要素にして中央寄せを可能にする */
+    text-align: center;
+    text-decoration: none; /* 下線を削除 */
+    color: var(--toggle-bg); /* ピンク色 (var(--toggle-bg)) に設定 */
+    font-size: 14px; /* サイズを調整 */
+    font-weight: bold; /* 文字を太くする */
+    margin-top: 30px; /* 上部の余白を維持 */
+    cursor: pointer; /* マウスオーバー時にカーソルをポインタに変更 */
+}
+
+#resetLink:hover {
+    text-decoration: underline; /* ホバー時に下線を表示 */
+}
+
+/* スマホ向けの新しい入力レイアウト（年月日・時分・秒 of 3列横並び） */
+.datetime-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  max-width: 310px; /* PC・スマホで年月日枠を広げてマークを綺麗に収めるため310pxに拡張 */
+  margin: 6px auto 0 auto; /* 画面中央に配置 */
+  box-sizing: border-box;
+  height: 38px !important; /* コンテナの高さを38pxに完全固定 */
+}
+
+.datetime-row input[type="date"] {
+  flex: 1.6; /* 年月日の幅をさらに広く確保 (1.4 -> 1.6) */
+  min-width: 0;
+  width: auto;
+  text-align: center;
+}
+
+.datetime-row input[type="time"] {
+  flex: 1.1; /* 時：分の幅 */
+  min-width: 0;
+  width: auto;
+  text-align: center;
+}
+
+.datetime-row .seconds-select {
+  flex: 0.7; /* 秒の幅はコンパクトに */
+  min-width: 62px; /* 文字被り防止のため最小幅を62pxに確保 */
+  width: auto;
+  text-align: center;
+  margin-top: 0;
+  padding-right: 20px !important; /* スクロール矢印との被りを完全に防ぐ */
+}
+
+/* プレースホルダーの薄い字（グレー）スタイル設定 */
+input::placeholder {
+  color: var(--text-sub) !important;
+  opacity: 0.6;
+}
+
+/* 日付・時刻入力欄のプレースホルダー色の制御 */
+input[type="date"],
+input[type="time"] {
+  color: var(--text-sub) !important;
+  opacity: 0.6 !important;
+  position: relative !important; /* インジケーター絶対配置の基準にするため追加 */
+}
+input[type="date"].has-value,
+input[type="date"]:focus,
+input[type="time"].has-value,
+input[type="time"]:focus {
+  color: var(--text-main) !important;
+  opacity: 1 !important;
+}
+
+/* モバイルブラウザでの未入力/プレースホルダー時のカラー設定 */
+input[type="date"]::placeholder,
+input[type="time"]::placeholder {
+  color: var(--text-sub) !important;
+}
+
+/* セレクトボックスの「ss」デフォルトオプションを薄い字にする */
+select option:first-child {
+  color: var(--text-sub);
+}
+
+select {
+  /* 初期状態で未選択（値が空）のときは薄い字にする */
+  color: var(--text-main);
+}
+select:has(option[value=""]:checked) {
+  color: var(--text-sub);
+}
+
+/* 「誤差の方向」をスマートフォンでタップしやすく、はみ出さない縦並び配置にする */
+.input-group-direction {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 6px;
+}
+
+.input-group-direction label {
+  display: block;
+}
+
+#errorDirection {
+  width: 100%; /* 横幅いっぱいに広げて誤タップを防止 */
+  margin-left: 0;
+}
+
+/* 「標準時刻」のコンパクトなNOWボタン配置 */
+#standardNowButton {
+  margin-top: 0;
+  padding: 6px 12px;
+  font-size: 13px;
+  vertical-align: middle;
+}
+
+/* セグメントコントロール（横長トグル） */
+.segmented-control {
+  display: flex;
+  background-color: #1f1f2f; /* 入力エリアの背景色と統一 */
+  border-radius: 8px;
+  padding: 4px;
+  width: 100%;
+  margin-top: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.segment-btn {
+  flex: 1;
+  background: transparent;
+  border: none;
+  color: var(--text-sub);
+  padding: 10px;
+  font-size: 16px;
+  font-weight: bold;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  outline: none;
+  text-align: center;
+}
+
+/* 進んでいるが選択された状態（ピンク） */
+.segment-btn.active-late {
+  background-color: var(--error-late-color) !important;
+  color: #ffffff !important;
+  box-shadow: 0 0 10px rgba(255, 77, 77, 0.4);
+}
+
+/* 遅れているが選択された状態（緑） */
+.segment-btn.active-early {
+  background-color: var(--error-early-color) !important;
+  color: #0e0f11 !important; /* 視認性の高い暗い文字 */
+  box-shadow: 0 0 10px rgba(0, 255, 128, 0.4);
+}
+
+/* フォーカス時のアクセシビリティ */
+.segment-btn:focus {
+  outline: none;
+}
+.segment-btn:focus-visible {
+  outline: 2px solid var(--accent);
+}
+
+/* JSからの強制フォーカス時に不要な青枠線（アウトライン）を出さないようにする */
+.show-list-link:focus {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+/* 結果一覧ページのレイアウトを固定（中身が空でも幅が縮まないようにする） */
+#resultListPage {
+  width: 94%;
+  max-width: 393px;
+  margin-top: 20px;
+  text-align: left; /* 基本的な中身を左寄りに */
+}
+
+/* 結果一覧ページのメインタイトルは中央寄せを維持 */
+#resultListPage h1.fkz {
+  text-align: center;
+}
+
+/* ==========================================
+   入力補助トグル ＆ 直接入力用CSS
+   ========================================== */
+
+/* トグルスイッチデザイン */
+.helper-toggle-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 4px;
+  margin-bottom: 20px;
+}
+.helper-toggle-label {
+  font-size: 16px;
+  font-weight: bold;
+  color: var(--text-main);
+}
+.switch-container {
+  position: relative;
+  display: inline-block;
+  width: 50px;
+  height: 28px;
+}
+.switch-container input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+.switch-slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #1f1f2f;
+  border: 1px solid rgba(255,255,255,0.1);
+  transition: .3s;
+  border-radius: 34px;
+}
+.switch-slider:before {
+  position: absolute;
+  content: "";
+  height: 20px;
+  width: 20px;
+  left: 3px;
+  bottom: 3px;
+  background-color: white;
+  transition: .3s;
+  border-radius: 50%;
+}
+input:checked + .switch-slider {
+  background-color: var(--accent);
+  border-color: var(--accent);
+}
+input:checked + .switch-slider:before {
+  transform: translateX(22px);
+}
+
+/* ON/OFFの入力欄高さを完全に統一して画面ガタつきを根絶 */
+.datetime-row input[type="date"],
+.datetime-row input[type="time"],
+.datetime-row .seconds-select,
+.datetime-direct-row input[type="date"],
+.datetime-direct-row input[type="time"],
+.datetime-direct-row .seconds-select {
+  box-sizing: border-box !important;
+  height: 38px !important; /* 38px に完全統一 */
+  padding: 0 6px !important; /* 縦パディングを完全に排除して親要素に揃える */
+  font-size: 16px !important;
+  background-color: #1f1f2f !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  border-radius: 8px !important;
+  color: var(--text-main) !important;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  line-height: 36px !important; /* テキストの縦中央揃え */
+}
+.datetime-row input[type="date"]:focus,
+.datetime-row input[type="time"]:focus,
+.datetime-row .seconds-select:focus,
+.datetime-direct-row input[type="date"]:focus,
+.datetime-direct-row input[type="time"]:focus,
+.datetime-direct-row .seconds-select:focus {
+  border-color: var(--accent) !important;
+  box-shadow: 0 0 6px var(--accent) !important;
+  outline: none !important;
+}
+
+/* 直接入力コンテナ（グループ間に切れ目 gap: 6px を空ける） */
+.datetime-direct-row {
+  display: flex;
+  align-items: center;
+  gap: 6px; /* 各スロットグループ間の切れ目（隙間） */
+  width: 100%;
+  max-width: 310px; /* 入力補助ONに合わせて310pxに拡張 */
+  margin: 6px auto 0 auto; /* 画面中央に配置 */
+  box-sizing: border-box;
+  height: 38px !important; /* コンテナの高さを38pxに完全固定 */
+}
+
+/* 各スロットグループ（繋がりカードデザイン） */
+.direct-group {
+  display: flex;
+  align-items: center;
+  gap: 0; /* グループ内は隙間ゼロで一体化 */
+  background-color: #1f1f2f !important;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 0 4px;
+  overflow: hidden;
+  box-sizing: border-box;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  height: 38px !important; /* グループの高さをON側の38pxに完全同期！ */
+}
+
+/* 年月日グループ */
+.direct-group-date {
+  flex: 1.6 !important; /* 補助ONの日付幅に完全同期させて1.6に拡張 */
+  max-width: 140px !important; /* 補助ON側のラッパー幅制限に完全同期し、ズレをゼロにする！ */
+}
+
+/* 時分グループ */
+.direct-group-time {
+  flex: 1.1 !important;
+}
+
+/* 秒グループ */
+.direct-group-sec {
+  flex: 0.7 !important;
+  min-width: 62px !important; /* 補助ON側の最小幅に完全同期し、ズレをゼロにする！ */
+  justify-content: center !important;
+}
+
+/* いずれかの入力枠がフォーカスされた際、カード全体が水色に美しく発光 */
+.direct-group:focus-within {
+  border-color: var(--accent);
+  box-shadow: 0 0 6px var(--accent);
+}
+
+.direct-group-date input {
+  text-align: center;
+  padding: 0 !important; /* 高さを揃えるため縦パディングを0にする */
+  height: 100% !important; /* 高さを親のいっぱいに広げる */
+  font-size: 16px;
+  background-color: transparent !important; /* 背景を透明にして一体化 */
+  color: var(--text-main);
+  border: none !important;
+  box-shadow: none !important;
+  border-radius: 0;
+  outline: none !important;
+  box-sizing: border-box;
+  width: 100%;
+}
+
+.direct-group-date .direct-year {
+  flex: 1.4 !important;
+  min-width: 0 !important;
+}
+.direct-group-date .direct-two {
+  flex: 0.9 !important;
+  min-width: 0 !important;
+}
+.direct-group-date .delimiter {
+  color: var(--text-sub) !important;
+  opacity: 0.6 !important; /* プレースホルダーと同じ不透明度にして一体化 */
+  font-size: 15px;
+  font-weight: bold;
+  padding: 0 1px;
+  align-self: center !important;
+}
+.datetime-direct-row .direct-space {
+  display: none; /* グループ化に伴い不要になったスペース要素は非表示 */
+}
+.flex-wrap.input-helper-off input {
+  text-align: center;
+}
+
+/* ==========================================
+   補正時刻計算画面の縦圧縮レイアウト
+   ========================================== */
+#correctionMode {
+  padding: 10px 12px 14px 12px !important;
+  margin-top: 10px !important;
+}
+#correctionMode h2 {
+  margin-top: 4px !important;
+  margin-bottom: 6px !important;
+  font-size: 18px !important;
+}
+#correctionMode .back-btn {
+  margin-bottom: 8px !important;
+  font-size: 14px !important;
+}
+#correctionMode .helper-toggle-wrapper {
+  margin-top: 2px !important;
+  margin-bottom: 8px !important;
+  gap: 8px !important;
+}
+#correctionMode .helper-toggle-label {
+  font-size: 14px !important;
+}
+#correctionMode .switch-container {
+  width: 44px !important;
+  height: 24px !important;
+}
+#correctionMode .switch-slider:before {
+  height: 18px !important;
+  width: 18px !important;
+  left: 2px !important;
+  bottom: 2px !important;
+}
+#correctionMode input:checked + .switch-slider:before {
+  transform: translateX(20px) !important;
+}
+#correctionMode label {
+  font-size: 14px !important;
+}
+#correctionMode .flex-wrap {
+  margin-bottom: 6px !important;
+  gap: 4px !important;
+  height: 32px !important; /* 誤差行コンテナの高さを32pxに完全強制固定 */
+  overflow: hidden !important; /* iOSでのインプット膨らみによる縦伸びを強制遮断 */
+  align-items: center !important;
+  box-sizing: border-box !important;
+}
+#correctionMode .unit-input {
+  gap: 1px !important;
+  height: 32px !important;
+  align-items: center !important;
+}
+#correctionMode .unit-input input,
+#correctionMode .unit-input select {
+  box-sizing: border-box !important;
+  height: 32px !important; /* 誤差入力枠の高さを32pxに完全固定 */
+  padding: 0 4px !important; /* 縦パディングを0にしてiOSでの膨らみを防止 */
+  font-size: 14px !important;
+  border-radius: 6px !important;
+  line-height: 30px !important; /* 行の高さを揃えて中央に */
+  text-align: center !important; /* 【新規追加】日数プレースホルダー d や数値を完璧に中央寄せ！ */
+}
+
+/* 【新規追加】input[type="number"] のスピンボタン（右側の上下矢印）を完全に非表示にし、プレースホルダーdを完璧にど真ん中に中央寄せ！ */
+#correctionMode .unit-input input[type="number"]::-webkit-outer-spin-button,
+#correctionMode .unit-input input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none !important;
+  margin: 0 !important;
+}
+#correctionMode .unit-input input[type="number"] {
+  -moz-appearance: textfield !important; /* Firefox用 */
+}
+
+/* iOS Safari 固有の誤差時間入力インナー要素リセット */
+#errorTime {
+  padding: 0 4px !important;
+  line-height: 30px !important;
+}
+#errorTime::-webkit-date-and-time-value {
+  height: 30px !important;
+  line-height: 30px !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  min-height: 30px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+#correctionMode .unit-input input.direct-error-val {
+  text-align: center;
+}
+#correctionMode .unit-label {
+  font-size: 12px !important;
+}
+
+/* 補正誤差・手入力用の時分繋がりグループ */
+.direct-group-error-time {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  height: 32px !important; /* 32pxに完全固定 */
+  background-color: #1f1f2f !important;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 0 4px;
+  box-sizing: border-box;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+.direct-group-error-time:focus-within {
+  border-color: var(--accent);
+  box-shadow: 0 0 6px var(--accent);
+}
+.direct-group-error-time input {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  width: 100%;
+  text-align: center;
+  padding: 0 !important;
+  height: 100% !important;
+  color: var(--text-main);
+  font-size: 14px !important;
+}
+.direct-group-error-time .delimiter {
+  color: var(--text-sub);
+  font-size: 13px;
+  font-weight: bold;
+  padding: 0 1px;
+}
+#correctionMode .input-group-direction {
+  display: flex !important;
+  flex-direction: row !important; /* 横並び（1列配置） */
+  align-items: center !important; /* 縦中央揃え */
+  justify-content: space-between !important; /* 両端寄せ */
+  gap: 8px !important;
+  margin-top: 10px !important;
+  margin-bottom: 12px !important;
+  width: 100% !important;
+  max-width: 310px !important; /* 入力枠の幅に同期させて美しく揃える */
+  margin-left: auto !important;
+  margin-right: auto !important;
+}
+#correctionMode .input-group-direction label {
+  font-size: 12px !important; /* 13.5px -> 12px に微調整してラベルの横幅をスリム化 */
+  font-weight: bold !important;
+  color: var(--text-main) !important;
+  white-space: nowrap !important; /* 絶対に折り返さない */
+  margin: 0 !important;
+}
+#correctionMode .segmented-control {
+  width: 175px !important; /* 155px -> 175px に横幅を広げて中の文字改行を完全防止 */
+  margin-top: 0 !important; /* 上マージンをリセットして縦ラインを完璧に揃える */
+  padding: 2px !important;
+}
+#correctionMode .segment-btn {
+  padding: 6px 2px !important; /* 左右のパディングを少し詰めて文字の格納力を最大化 */
+  font-size: 12.5px !important; /* ボタン幅拡大に伴い 12px -> 12.5px で視認性向上 */
+  font-weight: bold !important;
+}
+#correctionMode #reverseTimeBlock {
+  margin-top: 6px !important;
+  margin-bottom: 8px !important;
+}
+#correctionMode .datetime-direct-row,
+#correctionMode .datetime-row {
+  margin-top: 4px !important;
+  margin-bottom: 0 !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
+  padding: 0 !important;
+  height: 38px !important; /* コンテナの高さを38pxに完全強制固定 */
+  overflow: hidden !important; /* iOSインプット膨らみによる縦伸びを強制遮断 */
+  max-width: 310px !important; /* 横幅を310pxに統一！ */
+  align-items: center !important; /* 子要素を縦中央に揃える */
+  box-sizing: border-box !important;
+}
+
+/* iOS Safari 固有の補正日時入力インナー要素リセット */
+#reverseDisplayDate,
+#reverseDisplayTime {
+  padding: 0 6px !important;
+  line-height: 36px !important;
+}
+#reverseDisplayDate::-webkit-date-and-time-value,
+#reverseDisplayTime::-webkit-date-and-time-value {
+  height: 36px !important;
+  line-height: 36px !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  min-height: 36px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+#correctionMode .datetime-row input[type="date"],
+#correctionMode .datetime-row input[type="time"],
+#correctionMode .datetime-row .seconds-select {
+  box-sizing: border-box !important;
+  height: 38px !important; /* 38pxに完全同期 */
+  padding: 0 6px !important; /* 縦パディングを完全に排除して親要素に揃える */
+  margin: 0 !important; /* 余計なマージンを完全排除 */
+  font-size: 16px !important;
+  background-color: #1f1f2f !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  border-radius: 8px !important;
+  color: var(--text-main) !important;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  line-height: 36px !important; /* テキストの縦中央揃え */
+}
+#correctionMode .datetime-row input[type="date"]:focus,
+#correctionMode .datetime-row input[type="time"]:focus,
+#correctionMode .datetime-row .seconds-select:focus {
+  border-color: var(--accent) !important;
+  box-shadow: 0 0 6px var(--accent) !important;
+  outline: none !important;
+}
+#correctionMode .datetime-direct-row input {
+  padding: 0 !important;
+  margin: 0 !important; /* 余計なマージンを完全排除 */
+  height: 100% !important;
+  font-size: 16px !important;
+}
+#correctionMode .direct-group {
+  margin: 0 !important; /* 余計なマージンを完全排除 */
+  height: 38px !important; /* グループ高さを38pxに強制固定 */
+  box-sizing: border-box !important;
+}
+#correctionMode #reverseResult {
+  margin: 6px 0 !important;
+  font-size: 14px !important;
+  border-radius: 8px !important;
+}
+#correctionMode #reverseResult p {
+  margin: 2px 0 !important;
+  font-size: 13px !important;
+}
+#correctionMode #reverseResult strong {
+  font-size: 14px !important;
+}
+#correctionMode #reverseResult div {
+  padding: 2px 4px !important;
+}
+#correctionMode #addToListButton {
+  margin-top: 4px !important;
+  padding: 8px 16px !important;
+  font-size: 14px !important;
+}
+#correctionMode #reverseModeToggleBtn {
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
+  padding: 8px 16px !important;
+  font-size: 15px !important;
+  height: 42px !important; /* 目立つように高さを42pxにサイズアップ */
+  box-sizing: border-box !important;
+}
+
+/* 年月日省略（トグルOFF）時の古いフレックス中央寄せ定義は削除されました */
+
+/* ==========================================
+   結果一覧画面のさらなる縦圧縮
+   ========================================== */
+#resultListPage {
+  padding: 15px 16px !important;
+  margin-top: 10px !important;
+}
+#resultListPage h1.fkz {
+  margin-top: 8px !important;
+  font-size: 28px !important;
+  margin-bottom: 12px !important;
+}
+#resultListPage .back-btn {
+  margin-bottom: 8px !important;
+  font-size: 14px !important;
+}
+#resultListContainer {
+  margin-top: 10px !important;
+}
+.result-list-group-outer {
+  padding: 8px 10px !important;
+  margin-bottom: 12px !important;
+  border-radius: 8px !important;
+}
+.result-list-group-outer h3 {
+  font-size: 14px !important;
+  margin-top: 2px !important;
+  margin-bottom: 8px !important;
+  padding-bottom: 4px !important;
+}
+.result-list-group-inner {
+  padding: 6px 8px !important;
+  margin-bottom: 6px !important;
+  border-radius: 6px !important;
+}
+.result-list-group-inner strong {
+  font-size: 13px !important;
+}
+.result-list-group-inner div {
+  margin-bottom: 4px !important;
+}
+.result-list-group-inner div span {
+  font-size: 13px !important;
+}
+.result-list-group-inner button.delete-btn {
+  padding: 2px 6px !important;
+  font-size: 11px !important;
+  border-radius: 3px !important;
+}
+
+/* 補正誤差のhh, mm個別インプットのフォーカス時発光を排除し、外側のグループ全体だけが光るようにする設定 */
+#correctionMode .direct-group-error-time input:focus {
+  border: none !important;
+  box-shadow: none !important;
+  outline: none !important;
+}
+
+/* ==========================================
+   究極の解決：すべての入力枠の背景色を、初期の美しい「#1f1f2f」に完全統一・復元！
+   ========================================== */
+
+/* 全画面、ON/OFFトグル、すべての入力・選択要素の背景色を一律で #1f1f2f !important に強制統一！ */
+input,
+select,
+.datetime-row input[type="date"],
+.datetime-row input[type="time"],
+.datetime-row .seconds-select,
+.direct-group,
+.direct-group-error-time,
+.unit-input input,
+.unit-input select,
+#correctionMode .datetime-row input[type="date"],
+#correctionMode .datetime-row input[type="time"],
+#correctionMode .datetime-row .seconds-select,
+#correctionMode .direct-group,
+#correctionMode .direct-group-error-time,
+#correctionMode .unit-input input,
+#correctionMode .unit-input select {
+  background-color: #1f1f2f !important;
+}
+
+/* 直接入力（手入力）の枠内にある input 自体は、枠全体（.direct-group）と一体化させるために【完全に背景透明】のまま維持！ */
+.datetime-direct-row input,
+.direct-group input,
+.direct-group-error-time input {
+  background-color: transparent !important;
+}
+
+/* ==========================================
+   全画面共通：入力枠内の文字色・プレースホルダーの統一設計（ON/OFF調和）
+   ========================================== */
+
+/* 値が入力されている、またはアクティブな入力文字はすべて「純白色」で統一してくっきり表示 */
+input, 
+select,
+input[type="date"].has-value,
+input[type="date"]:focus,
+input[type="time"].has-value,
+input[type="time"]:focus,
+select:not(.placeholder-active) {
+  color: #ffffff !important;
+  opacity: 1 !important; /* 不透明度は常に100%（透過なし！） */
+}
+
+/* 直接入力（手入力）の placeholder は美しい灰色に（透過は使わず色のみで表現） */
+input::placeholder {
+  color: #777788 !important; /* 透過を使わない美しい薄灰色 */
+}
+
+/* 入力補助ON（カレンダー・時計）の日付・時刻入力欄のデフォルト（未入力ガイド表示）は灰色に */
+input[type="date"],
+input[type="time"] {
+  color: #777788 !important; /* 透過を使わない美しい薄灰色。背景は絶対に透けさせない！ */
+  opacity: 1 !important; /* 不透明度は常に100%を維持して背景色を透けさせない！ */
+}
+
+/* セレクトボックス（秒）の未選択プレースホルダー（ss）は灰色に（iOS Safari のOSデフォルト白化バグも完全撃破！） */
+select.placeholder-active,
+.seconds-select.placeholder-active,
+#standardSeconds.placeholder-active,
+#displaySeconds.placeholder-active,
+#reverseDisplaySeconds.placeholder-active,
+#errorSeconds.placeholder-active,
+select.placeholder-active option:first-child,
+.seconds-select option[value=""] {
+  color: #777788 !important;
+  -webkit-text-fill-color: #777788 !important; /* iOS Safari強制上書き用 */
+  opacity: 1 !important;
+}
+
+/* ==========================================
+   入力枠内テキスト・プレースホルダーの極美中央寄せ
+   ========================================== */
+
+/* セレクトボックスのテキストを iOS / Android / PC 全環境で完璧に中央寄せ */
+select {
+  text-align: center !important;
+  text-align-last: center !important;
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+  text-indent: 0 !important;
+}
+
+/* カレンダー入力の日付テキストを完璧にど真ん中へ中央寄せ */
+input[type="date"]::-webkit-datetime-edit {
+  display: inline-flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+  text-align: center !important;
+  width: 100% !important;
+  margin: 0 auto !important;
+  padding: 0 !important;
+}
+
+/* カレンダーおよび時計ピッカーマークを右端に絶対配置して中央寄せの邪魔をさせない */
+input[type="date"]::-webkit-calendar-picker-indicator,
+input[type="time"]::-webkit-calendar-picker-indicator {
+  position: absolute !important;
+  right: 8px !important;
+  margin: 0 !important;
+}
+
+/* ==========================================
+   プレミアム起動演出：星の瞬き ＆ 遅延タイトル浮上アニメーション
+   ========================================== */
+
+/* 1. 星のように瞬くプレミアムキーパッドアニメーション */
+@keyframes starSparkle {
+  0%, 100% {
+    background-color: rgba(255, 255, 255, 0.08);
+    color: var(--accent);
+    box-shadow: 0 0 6px rgba(0, 255, 224, 0.2);
+    transform: scale(1);
+  }
+  25%, 75% {
+    background-color: rgba(0, 255, 224, 0.4);
+    color: #ffffff;
+    box-shadow: 0 0 15px var(--accent);
+    transform: scale(1.08);
+  }
+  50% {
+    background-color: rgba(255, 255, 255, 0.08);
+    color: var(--accent);
+    box-shadow: 0 0 6px rgba(0, 255, 224, 0.2);
+    transform: scale(1);
+  }
+}
+
+.sparkle-btn-anim {
+  animation: starSparkle 0.25s ease-in-out;
+  animation-iteration-count: 2; /* 2回素早く瞬く */
+}
+
+/* 2. サブタイトルやボタンなどをゆっくり浮かび上がらせる（0.8秒かけてふわっと表示） */
+/* 2. サブタイトルやボタンなどをゆっくり浮かび上がらせる（瞬き途中の0.3秒遅延で、その場で0.8秒かけてふわっとフェードイン） */
+@keyframes slowFadeIn {
+  0% { opacity: 0; }
+  100% { opacity: 1; }
+}
+
+.anim-slow-fade {
+  animation: slowFadeIn 0.8s ease-out forwards;
+  animation-delay: 0.3s !important; /* 瞬きが始まって中盤の0.3秒後にフェードイン開始 */
+  opacity: 0; /* 初期状態は非表示 */
+}
+
+/* 3. メインタイトル Time Regulus を「最後に」ゆっくり上昇させながらすーっと現す（0.8秒遅延して1.5秒かけてもっとゆっくり堂々とフェードイン上昇） */
+@keyframes titleRiseUp {
+  0% { opacity: 0; transform: translateY(20px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+.anim-title-rise {
+  animation: titleRiseUp 1.5s ease-out forwards; /* もっとゆっくり透明からフェードインさせるため1.5秒に設定 */
+  animation-delay: 0.8s !important; /* 瞬きがほぼ収まり、周りの文字が出揃う0.8秒後に堂々と上昇開始 */
+  opacity: 0; /* 初期状態は非表示 */
+}
+
+/* ==========================================================================
+   秒専用 極上カスタム無限ドラムロールピッカー（Time Regulus Picker）スタイル
+   ========================================================================== */
+
+/* 1. オーバーレイ（背景フェード） */
+.picker-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.25); /* 裏の文字がしっかり透けて見えるように黒幕を薄く (0.4 -> 0.25) */
+  z-index: 99999;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+
+.picker-overlay.show {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* 2. ボトムシートコンテナ (ガラスモルフィズム) */
+.picker-bottom-sheet {
+  position: fixed;
+  bottom: 0;
+  left: 50%;
+  width: 100%;
+  max-width: 393px; /* iPhoneの代表的横幅に上限を固定して浮遊カードに見せる */
+  height: 350px;
+  background: rgba(21, 28, 39, 0.85); /* アッシュネイビー */
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-top: 1px solid rgba(0, 255, 224, 0.3); /* 美しい水色の極細境界線 */
+  border-left: 1px solid rgba(0, 255, 224, 0.15);
+  border-right: 1px solid rgba(0, 255, 224, 0.15);
+  border-radius: 20px 20px 0 0;
+  box-shadow: 0 -10px 35px rgba(0, 0, 0, 0.6);
+  z-index: 100000;
+  transform: translate(-50%, 100%); /* 初期は画面下に隠す */
+  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  box-sizing: border-box;
+}
+
+.picker-bottom-sheet.show {
+  transform: translate(-50%, 0); /* 画面下からスッとせり上がる */
+}
+
+/* 3. ヘッダー部 */
+.picker-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 20px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  box-sizing: border-box;
+}
+
+.picker-title {
+  font-size: 15px;
+  font-weight: bold;
+  color: var(--text-main);
+  letter-spacing: 1px;
+}
+
+.picker-confirm-btn {
+  background: none;
+  border: none;
+  font-size: 16px;
+  font-weight: bold;
+  color: var(--accent); /* 水色 */
+  cursor: pointer;
+  padding: 4px 12px;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+  outline: none !important;
+}
+
+.picker-confirm-btn:hover {
+  opacity: 0.8;
+}
+
+.picker-confirm-btn:active {
+  transform: scale(0.95);
+}
+
+/* 4. コンテンツ・ドラムロール部 */
+.picker-content {
+  height: 290px; /* 350px - ヘッダー約60px に対し、290pxの十分な領域を確保 */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  box-sizing: border-box;
+}
+
+/* 3連結ホイールを横並びにするラッパー */
+.picker-wheels-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px; /* ホイール間の余白 */
+  width: 100%;
+  max-width: 360px;
+  margin: 0 auto;
+  box-sizing: border-box;
+}
+
+/* ドラム全体の仕切りコロン (プレミアム感漂うネオンシャドウ) */
+.picker-separator {
+  font-size: 24px;
+  font-weight: bold;
+  color: var(--accent);
+  text-shadow: 0 0 10px rgba(0, 255, 224, 0.6);
+  user-select: none;
+  -webkit-user-select: none;
+  margin-bottom: 4px; /* コロンの上下中央の微調整 */
+}
+
+/* ドラム全体を囲むコンテナ (7項目表示用に高さを252pxに拡張) */
+.picker-wheel-container {
+  position: relative;
+  width: 80px; /* 3列綺麗に収まるスリム幅 */
+  height: 252px; /* 36px * 7項目 = 252px */
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+/* 無限スクロールを行うホイール要素（スクロールバー非表示） */
+.picker-wheel {
+  width: 100%;
+  height: 100%;
+  overflow-y: scroll;
+  scroll-behavior: auto; /* 座標ワープ時は瞬時移動させるためauto固定 */
+  -webkit-overflow-scrolling: touch;
+  scroll-snap-type: y mandatory; /* スナップ吸着をネイティブレベルでアシスト */
+  scrollbar-width: none; /* Firefoxスクロールバー非表示 */
+  -ms-overflow-style: none; /* IEスクロールバー非表示 */
+  box-sizing: border-box;
+}
+
+.picker-wheel::-webkit-scrollbar {
+  display: none; /* Chrome/Safariスクロールバー非表示 */
+}
+
+/* 5. 選択枠インディケータ */
+.picker-selection-indicator {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  width: 100%;
+  height: 36px;
+  transform: translateY(-50%);
+  border-top: 1px solid rgba(0, 255, 224, 0.35); /* 選択行のネオン風アウトライン */
+  border-bottom: 1px solid rgba(0, 255, 224, 0.35);
+  background: rgba(0, 255, 224, 0.06);
+  pointer-events: none;
+  border-radius: 6px;
+  z-index: 3;
+}
+
+/* 6. ドラム要素（各アイテム） */
+.picker-item {
+  height: 36px;
+  line-height: 36px;
+  text-align: center;
+  font-size: 16px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.25); /* 初期状態（見えている前後項目）は薄暗く */
+  scroll-snap-align: center; /* 常に中央にスナップアライン */
+  transition: color 0.15s ease, font-size 0.15s ease, transform 0.15s ease, text-shadow 0.15s ease;
+  user-select: none;
+  -webkit-user-select: none;
+  box-sizing: border-box;
+  cursor: pointer; /* タップできることを示す */
+}
+
+/* ホバー時（PC）またはタッチされた際、見えている数字が美しく発光 */
+.picker-item:hover {
+  color: rgba(0, 255, 224, 0.6);
+  text-shadow: 0 0 5px rgba(0, 255, 224, 0.3);
+}
+
+/* 中央で選択されているアクティブアイテム（JSから動的に付与） */
+.picker-item.active {
+  color: #ffffff !important; /* 中央は純白 */
+  font-size: 22px !important; /* 大きく強調 */
+  font-weight: bold !important;
+  text-shadow: 0 0 10px rgba(0, 255, 224, 0.7);
+}
+
+/* 7. 上下を立体的にフェード消去する美麗3Dグラデーションマスク (高さを108pxに拡張) */
+.picker-mask-top,
+.picker-mask-bottom {
+  position: absolute;
+  left: 0;
+  width: 100%;
+  height: 108px; /* 36px * 3個分をマスク */
+  pointer-events: none;
+  z-index: 2;
+}
+
+.picker-mask-top {
+  top: 0;
+  background: linear-gradient(to bottom, rgba(21, 28, 39, 0.98) 0%, rgba(21, 28, 39, 0.75) 45%, rgba(21, 28, 39, 0) 100%);
+}
+
+.picker-mask-bottom {
+  bottom: 0;
+  background: linear-gradient(to top, rgba(21, 28, 39, 0.98) 0%, rgba(21, 28, 39, 0.75) 45%, rgba(21, 28, 39, 0) 100%);
+}
+
+/* 標準時刻が上配置のときの秒ホイールロック (すり抜けメインスクロールバグ完全撃破版) */
+.picker-wheel-container.sec-locked {
+  opacity: 0.35 !important;
+  touch-action: none !important; /* タッチドラッグ操作をブラウザレベルで強制ロック（すり抜けを完全防止！） */
+}
+.picker-wheel-container.sec-locked .picker-wheel {
+  overflow-y: hidden !important; /* ホイールの縦スクロールを完全に禁止 */
+  touch-action: none !important;
+}
+.picker-wheel-container.sec-locked .picker-selection-indicator {
+  border-top-color: var(--error-late-color) !important;
+  border-bottom-color: var(--error-late-color) !important;
+  background: rgba(255, 77, 77, 0.08) !important;
+}
+
+/* 標準時刻が上のときの「00秒」固定時の赤色文字を強制適用 (一律白上書きやiOSのdisabledグレー化に勝つ優先度) */
+input.seconds-fixed-00,
+select.seconds-fixed-00,
+.datetime-direct-row input.seconds-fixed-00,
+.direct-group input.seconds-fixed-00,
+#errorModeStandardInputGroup input.seconds-fixed-00,
+#errorModeStandardInputGroup select.seconds-fixed-00 {
+  color: var(--error-late-color) !important;
+  -webkit-text-fill-color: var(--error-late-color) !important; /* iOS Safari用 */
+  opacity: 1 !important;
+  font-weight: bold !important;
+}
+
+/* ==========================================================================
+   表示時刻・標準時刻：極上ディレイ＆時分秒サイズ維持・完全スライド不動アニメーション
+   ========================================================================== */
+
+/* 親コンテナの基本設定（トグルON/OFFで全体の高さが変化するのを防ぐため、余白・高さを完全に固定） */
+#errorModeDisplayInputGroup {
+  position: relative;
+  padding-top: 26px; /* ラベルが上に置かれるための余白（常に26pxで完全固定！） */
+  box-sizing: border-box;
+}
+
+#errorModeStandardInputGroup {
+  position: relative;
+  padding-top: 26px;
+  margin-top: 0 !important; /* 個別のマージンは廃止し、中間の swap-button-wrapper のマージンで一括管理！ */
+  box-sizing: border-box;
+}
+
+/* 🔃 ボタンの親コンテナ（表示と標準の間のマージンを一括固定！上下入れ替わっても絶対にズレない） */
+#swap-button-wrapper {
+  position: relative !important;
+  width: 100% !important;
+  max-width: 310px !important; /* 入力枠の幅に完全同期 */
+  height: 0 !important; /* 高さをゼロにすることで、レイアウトの縦空間を圧迫しない */
+  margin: 38px auto !important; /* 上下に38px（合計76px）の超ゆったりマージンで上下枠を完全に引き離す！ */
+  box-sizing: border-box !important;
+}
+
+/* 🔃 ボタンの絶対配置 (上の入力枠のすぐ右外側に完全固定し、下の入力枠やNOWボタンと絶対に重ならないプレミアム設計) */
+#swapButton {
+  position: absolute !important;
+  top: -24px !important; /* 1行分（約24px）上に引き上げ、下の枠やNOWボタンとの重なりを100%完全排除！ */
+  transform: translateY(-50%) !important; /* 上の入力枠の縦中央にぴったり整列 */
+  right: -12px !important; /* 入力枠（幅310px）の右側外端に配置 */
+  background-color: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+  width: auto !important;
+  font-size: 28px !important;
+  cursor: pointer !important;
+  z-index: 10 !important;
+  outline: none !important;
+  transition: transform 0.1s ease !important; /* タップフィードバック用のスムーズな縮小 */
+}
+
+/* タップされたときに僅かに縮小する極上フィードバック効果 */
+#swapButton:active {
+  background-color: transparent !important;
+  transform: translateY(-50%) scale(0.85) !important;
+}
+
+/* ラベルの基本設定 (左端に完全固定し、まっすぐ上下にスライド) */
+#errorModeDisplayInputGroup label,
+#errorModeStandardInputGroup label {
+  position: absolute;
+  top: 0;
+  left: 12px !important; /* 左端に完全固定！ */
+  height: 26px;
+  line-height: 26px;
+  font-size: 15px;
+  font-weight: bold;
+  color: var(--text-main);
+  transform: translateY(0);
+  margin: 0 !important;
+  pointer-events: none; /* 入力の邪魔をしない */
+  
+  /* 通常（ONのとき、上に戻る）：即座に上にスライド移動する */
+  transition: all 0.25s cubic-bezier(0.25, 1, 0.5, 1);
+  transition-delay: 0s;
+  z-index: 4;
+}
+
+/* 年月日省略時 (.date-omitted / 下がるとき) のラベルスライド（スッと下にスライド移動） */
+#errorModeDisplayInputGroup.date-omitted label,
+#errorModeStandardInputGroup.date-omitted label {
+  top: 26px; /* padding-top(26px) の位置から、入力枠の高さ(38px)の縦中央へと下ろす */
+  height: 38px;
+  line-height: 38px;
+  
+  /* OFFのとき（下がるとき）：ディレイなしで即座にスッとスライドさせて入力枠の動きと完全に同期 */
+  transition: all 0.25s cubic-bezier(0.25, 1, 0.5, 1);
+  transition-delay: 0s;
+}
+
+/* NOWボタンの絶対配置 (標準時刻ラベルのすぐ右隣・入力枠の真上に完全固定！サイズアップ＆隙間マージン確保) */
+#standardNowButton {
+  position: absolute;
+  top: -10px; /* 下枠と絶対に接しないようにさらに上に引き上げる（美しい隙間を確保！） */
+  left: 96px !important; /* 「標準時刻：」ラベルのすぐ右隣に完全固定！トグルON/OFFで一切動きません */
+  margin-top: 0 !important;
+  padding: 0 !important; /* 高さと文字を中央で一致させるため */
+  font-size: 14px !important; /* トグルスイッチより一回り大きい、見やすく押しやすい極上サイズ */
+  font-weight: normal !important; /* 太字を完全に排除し、極めてスッキリした通常の太さ（400）へ */
+  color: #ffffff !important; /* 白抜きの文字（純白） */
+  -webkit-text-stroke: 1px #00403a !important; /* iOS等のウェブキット環境で最もシャープで美しく描画される1pxのアウトライン */
+  text-shadow: 0 0 4px rgba(0, 255, 240, 0.5) !important; /* 太らせないよう四方影を廃止し、外側の極薄ネオン発光のみを適用！ */
+  z-index: 5;
+  width: 72px !important; /* 押しやすい幅広サイズ */
+  height: 32px !important; /* トグルスイッチ(28px)より十分に大きい32px */
+  line-height: 32px !important; /* 縦中央揃え */
+  border-radius: 6px !important;
+  box-shadow: 0 4px 10px rgba(0, 255, 224, 0.35) !important;
+}
+
+/* 入力枠の基本設定（トグルON/OFF時にサイズを維持したまま、滑らかにスライド移動させる transition） */
+#errorModeDisplayInputGroup .datetime-row,
+#errorModeDisplayInputGroup .datetime-direct-row,
+#errorModeStandardInputGroup .datetime-row,
+#errorModeStandardInputGroup .datetime-direct-row {
+  margin: 0 auto !important; /* 常に中央寄せで完全固定 */
+  width: 100%;
+  max-width: 310px; /* デフォルト（ON時）は310px幅 */
+  transition: max-width 0.25s cubic-bezier(0.25, 1, 0.5, 1),
+              margin-left 0.25s cubic-bezier(0.25, 1, 0.5, 1);
+  /* ONのとき（右に戻るとき）：即座に移動 */
+  transition-delay: 0s;
+  box-sizing: border-box;
+}
+
+/* 年月日省略時 (.date-omitted / 下がるとき) の入力枠スライド（コロンから5px離して上品な隙間＆右端ピッタリ！） */
+#errorModeDisplayInputGroup.date-omitted .datetime-row,
+#errorModeDisplayInputGroup.date-omitted .datetime-direct-row,
+#errorModeStandardInputGroup.date-omitted .datetime-row,
+#errorModeStandardInputGroup.date-omitted .datetime-direct-row {
+  max-width: 215px !important; /* 時分の横幅をスリムに潰さず、たっぷり215pxまで確保！ */
+  margin-left: 85px !important; /* コロン「：」からちょうど5px離した 85px に完全統一し、美しく整列！ */
+  transition-delay: 0s;
+}
+
+/* ★超プレミアム幅スライドアニメーション：年月日入力枠の「幅収縮・即時消去」制御★ */
+/* 通常時（ONのとき）の年月日枠 */
+#errorModeDisplayInputGroup input[type="date"],
+#errorModeStandardInputGroup input[type="date"],
+#errorModeDisplayInputGroup .direct-group-date,
+#errorModeStandardInputGroup .direct-group-date {
+  flex: 1.6 !important;
+  max-width: 140px;
+  opacity: 1;
+  visibility: visible;
+  margin-right: 6px;
+  
+  /* ONのとき（現れる）：ラベルが上に移動完了したあと（0.22s後）にスッと幅を広げてフェードイン */
+  transition: flex 0.25s cubic-bezier(0.25, 1, 0.5, 1),
+              max-width 0.25s cubic-bezier(0.25, 1, 0.5, 1),
+              opacity 0.22s ease,
+              visibility 0.22s ease,
+              margin-right 0.25s ease,
+              padding 0.25s ease;
+  transition-delay: 0.22s;
+}
+
+/* 年月日省略時 (.date-omitted / 消えるとき)：カレンダーラッパーをごともろとも完全に消去！ */
+#errorModeDisplayInputGroup.date-omitted .date-input-wrapper,
+#errorModeStandardInputGroup.date-omitted .date-input-wrapper {
+  display: none !important;
+}
+
+#errorModeDisplayInputGroup.date-omitted .date-input-wrapper input[type="date"],
+#errorModeStandardInputGroup.date-omitted .date-input-wrapper #standardDate {
+  flex: 0 !important;
+  max-width: 0 !important;
+  opacity: 0 !important;
+  margin-right: 0 !important;
+  padding: 0 !important;
+  border: none !important;
+  visibility: hidden !important;
+  overflow: hidden !important; /* 文字のはみ出しを完全シャットアウト！ */
+}
+
+#errorModeDisplayInputGroup.date-omitted #displayDateGroup_direct,
+#errorModeStandardInputGroup.date-omitted #standardDateGroup_direct {
+  flex: 0 !important;
+  max-width: 0 !important;
+  opacity: 0 !important;
+  margin-right: 0 !important;
+  padding: 0 !important;
+  border: none !important;
+  visibility: hidden !important;
+  overflow: hidden !important; /* 文字のはみ出しを完全シャットアウト！ */
+}
+
+/* ==========================================================================
+   補正モード画面：入れ替えプレミアムアニメーション切替ボタン定義
+   ========================================================================== */
+
+#reverseModeToggleBtn {
+  width: 100% !important;
+  max-width: 310px !important; /* 入力枠幅と完全同期 */
+  margin: 16px auto !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  height: 44px !important;
+  border-radius: 10px !important;
+  padding: 0 12px !important;
+  overflow: hidden !important;
+  position: relative !important;
+  box-shadow: 0 4px 15px rgba(0, 255, 224, 0.25) !important;
+  transition: transform 0.2s ease, background-color 0.3s ease, box-shadow 0.3s ease !important;
+}
+
+#reverseModeToggleBtn:hover {
+  transform: scale(1.03) !important;
+}
+
+#reverseModeToggleBtn:active {
+  transform: scale(0.97) !important; /* クリック時の押し心地フィードバック */
+}
+
+#reverseModeToggleBtn.active-toggle-pink {
+  box-shadow: 0 4px 15px rgba(255, 0, 170, 0.25) !important;
+}
+
+.swap-text-container {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 12px !important;
+  width: 100% !important;
+  height: 100% !important;
+  user-select: none !important;
+  -webkit-user-select: none !important;
+}
+
+.swap-text-left {
+  font-size: 14.5px !important; /* 主役は大きめの 14.5px */
+  font-weight: 800 !important; /* 超太字で強調 */
+  opacity: 1 !important;
+  transition: transform 0.25s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.25s ease, font-size 0.25s ease, font-weight 0.25s ease !important;
+  display: inline-block !important;
+}
+
+/* ネオンブルー（水色）背景の時：白文字の周りに、濃いネオンブルー（#00403a）で四方に1pxのクッキリした縁取りを施す！さらにネオンシャドウで浮かび上がらせる！ */
+#reverseModeToggleBtn.active-toggle .swap-text-left {
+  color: #ffffff !important; /* 純白にして視認性を限界突破！ */
+  text-shadow: -1px -1px 0 #00403a, 1px -1px 0 #00403a, -1px 1px 0 #00403a, 1px 1px 0 #00403a, 0 0 5px rgba(0, 255, 240, 0.9) !important;
+}
+
+/* ネオンピンク背景の時：白文字の周りに、濃いネオンピンク（#4a0031）で四方に1px의 クッキリした縁取りを施す！ */
+#reverseModeToggleBtn.active-toggle-pink .swap-text-left {
+  color: #ffffff !important; /* 純白にして視認性を限界突破！ */
+  text-shadow: -1px -1px 0 #4a0031, 1px -1px 0 #4a0031, -1px 1px 0 #4a0031, 1px 1px 0 #4a0031, 0 0 5px rgba(255, 0, 170, 0.9) !important;
+}
+
+.swap-text-right {
+  font-size: 12px !important; /* サブは二回り小さい 12px */
+  font-weight: 400 !important; /* 細字（Regular）で控えめに */
+  text-shadow: none !important;
+  transition: transform 0.25s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.25s ease, font-size 0.25s ease, font-weight 0.25s ease !important;
+  display: inline-block !important;
+}
+
+/* 水色背景の時のサブ文字：文字がしっかり読めるように、ネオンブルーに対してコントラストのあるダークネイビーを半透明で適用 */
+#reverseModeToggleBtn.active-toggle .swap-text-right {
+  color: rgba(14, 15, 17, 0.6) !important;
+  font-weight: 500 !important; /* 少しだけ太めにして可読性を確保 */
+}
+
+/* ピンク背景の時のサブ文字：半透明白で自然に馴染ませる */
+#reverseModeToggleBtn.active-toggle-pink .swap-text-right {
+  color: rgba(255, 255, 255, 0.6) !important;
+}
+
+.swap-arrow {
+  font-size: 15px !important;
+  font-weight: 500 !important;
+  transition: transform 0.25s ease !important;
+  display: inline-block !important;
+}
+
+/* 矢印も背景色に応じて自動的に可読カラーへ切り替え */
+#reverseModeToggleBtn.active-toggle .swap-arrow {
+  color: rgba(14, 15, 17, 0.7) !important;
+}
+#reverseModeToggleBtn.active-toggle-pink .swap-arrow {
+  color: rgba(255, 255, 255, 0.7) !important;
+}
+
+/* 左のテキストが右へスライドしながらスッと消える */
+.swap-text-left.slide-to-right {
+  transform: translateX(110px) scale(0.8) !important;
+  opacity: 0 !important;
+}
+
+/* 右のテキストが左へスライドしながらスッと消える */
+.swap-text-right.slide-to-left {
+  transform: translateX(-110px) scale(0.8) !important;
+  opacity: 0 !important;
+}
+
+/* 補正モード画面の「年月日も計算」トグルをスワップボタンの下で綺麗に左寄せ配置 */
+.correction-date-toggle-wrapper {
+  max-width: 310px !important;
+  margin: 12px auto 8px auto !important; /* スワップボタンとの距離を広すぎないよう12pxに半減して微調整 */
+  display: flex !important;
+  justify-content: flex-start !important; /* 左寄せ！ */
+  align-items: center !important;
+  gap: 12px !important;
+  padding-left: 4px !important; /* スワップボタンの左端ラインと完璧に合わせる */
+}
+
+/* ==========================================================================
+   補正時刻の計算：表示時刻・探している時刻の横並び（row）一元管理スタイル
+   ========================================================================== */
+
+#reverseTimeBlock {
+  display: flex !important;
+  flex-direction: row !important; /* 横並び（1列配置） */
+  align-items: center !important; /* 縦中央揃え */
+  justify-content: flex-start !important;
+  gap: 4px !important; /* gapを4pxに微調整 */
+  width: 100% !important;
+  max-width: 354px !important; /* ★346px -> 354px に微拡張し、内部の年月日枠にゆとりを持たせる */
+  margin: 24px auto 14px auto !important; /* ★margin-top: 14px -> 24px に広げて、年月日も計算トグルとの間の隙間を完璧に確保！ */
+  padding-left: 0 !important;  /* 左右パディングを完全0にして両サイドを限界まで密着！ */
+  padding-right: 0 !important;
+  box-sizing: border-box !important;
+}
+
+/* ラベルを左側に固定し、コロンを右に寄せて文字を左へ伸ばす極上設計 */
+#correctionMode #reverseTimeLabel {
+  width: 108px !important; /* 90px -> 108px に拡張し、フォントサイズ大幅アップに完璧対応 */
+  min-width: 108px !important;
+  text-align: right !important; /* 文字を右寄せにして、コロン（：）を入力枠のすぐ左側にピタッと密着させる！ */
+  font-size: 14.5px !important; /* 13.5px -> 14.5px にさらにフォントサイズアップ！劇的にくっきり大きく読みやすく！ */
+  letter-spacing: -0.2px !important; /* 自然な文字間隔 */
+  font-weight: bold;
+  white-space: nowrap !important;
+  margin: 0 !important;
+  display: block !important;
+  padding-right: 6px !important; /* 入力枠との間にわずかな綺麗な隙間を作る */
+}
+
+/* 入力枠コンテナを flex 内で余った領域に綺麗にフィットさせる（ID 2個の最強セレクタで上部の310px競合を完全撃破！） */
+#correctionMode #reverseTimeBlock .datetime-row,
+#correctionMode #reverseTimeBlock .datetime-direct-row {
+  flex: 1 !important;
+  width: auto !important;
+  max-width: 242px !important; /* 354px - 108px - 4px = 242px に拡張して右スペースを最適化！ */
+  margin: 0 !important;
+  height: 38px !important;
+  display: flex; /* !important を排除し、JSによるON/OFFの display 制御を正しく機能させる */
+  align-items: center !important;
+  gap: 3px !important; /* 入力枠同士のgapを3pxに詰めて無駄な余白をカット */
+  box-sizing: border-box !important;
+}
+
+/* 年月日も計算ONの時（年月日枠あり）の、年月日枠の横幅設定
+   ★ 時分秒はカプセル（time-capsule-wrapper / direct-capsule-wrapper）の内部flex比率で管理するため
+     カプセル外からmax-widthを個別指定しない。カプセル全体が残り幅に広がる設計。
+   242px（コンテナ）- 148px（年月日）- 6px（margin-right）- 12px（colon）= 76px がカプセルに確保される。
+*/
+#correctionMode #reverseTimeBlock .date-input-wrapper {
+  flex: 1.85 !important;
+  max-width: 165px !important; /* 直接入力側と表示上の位置・幅を完璧に一致させるための微調整 */
+  min-width: 0 !important;
+}
+#correctionMode #reverseTimeBlock #reverseDisplayDateGroup_direct {
+  flex: 1.65 !important;
+  max-width: 156px !important;
+  min-width: 0 !important;
+}
+
+/* 秒セレクトボックスのパディングをスリム化してはみ出し・矢印被りを完全防止 */
+#correctionMode #reverseTimeBlock .seconds-select {
+  padding-left: 2px !important;
+  padding-right: 8px !important; /* 矢印スペースを極限までカット */
+  font-size: 13.5px !important;
+}
+
+/* --- 3. 新設された「仕切りコロン」の極美デザイン --- */
+.helper-colon,
+.direct-colon {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 12px !important;
+  height: 100% !important;
+  background-color: transparent !important; /* 背景透明化 */
+  color: rgba(255, 255, 255, 0.4) !important; /* 半透明の白 */
+  font-size: 16px !important;
+  font-weight: bold !important;
+  border: none !important; /* ボーダーを完全消去して一体化！ */
+  box-sizing: border-box !important;
+  user-select: none !important;
+  pointer-events: none !important;
+  z-index: 3 !important;
+  margin: 0 !important; /* 重ね合わせマージンは不要に */
+  padding: 0 !important;
+  
+  /* スライドアニメーション時の滑らかな追従 transition アシスト */
+  transition: flex 0.25s cubic-bezier(0.25, 1, 0.5, 1),
+              max-width 0.25s cubic-bezier(0.25, 1, 0.5, 1),
+              min-width 0.25s cubic-bezier(0.25, 1, 0.5, 1),
+              margin 0.25s cubic-bezier(0.25, 1, 0.5, 1) !important;
+}
+
+/* 補正モード（#reverseTimeBlock）の時間枠・秒枠・グループに対する極上スライドアニメーションの transition 設定 */
+#correctionMode #reverseTimeBlock .date-input-wrapper {
+  flex: 1.85 !important;
+  max-width: 165px !important; /* 直接入力側と表示上の位置・幅を完璧に一致させるための微調整 */
+  opacity: 1;
+  visibility: visible;
+  margin-right: 0; /* margin-rightは .date-input-wrapper / .direct-group-date の共通ルール（6px）に任せる */
+  
+  /* ONのとき（現れる）：滑らかに幅を広げてフェードイン */
+  transition: flex 0.25s cubic-bezier(0.25, 1, 0.5, 1),
+              max-width 0.25s cubic-bezier(0.25, 1, 0.5, 1),
+              opacity 0.22s ease,
+              visibility 0.22s ease,
+              margin-right 0.25s ease,
+              padding 0.25s ease !important;
+  transition-delay: 0s;
+}
+
+#correctionMode #reverseTimeBlock #reverseDisplayDateGroup_direct {
+  flex: 1.65 !important;
+  max-width: 156px !important;
+  opacity: 1;
+  visibility: visible;
+  margin-right: 0; /* margin-rightは .date-input-wrapper / .direct-group-date の共通ルール（6px）に任せる */
+  
+  /* ONのとき（現れる）：滑らかに幅を広げてフェードイン */
+  transition: flex 0.25s cubic-bezier(0.25, 1, 0.5, 1),
+              max-width 0.25s cubic-bezier(0.25, 1, 0.5, 1),
+              opacity 0.22s ease,
+              visibility 0.22s ease,
+              margin-right 0.25s ease,
+              padding 0.25s ease !important;
+  transition-delay: 0s;
+}
+
+#correctionMode #reverseTimeBlock .time-input-wrapper,
+#correctionMode #reverseTimeBlock .direct-group-time,
+#correctionMode #reverseTimeBlock .seconds-select,
+#correctionMode #reverseTimeBlock .direct-group-sec {
+  /* トグル切り替え時に、幅がスッと滑らかに伸縮して左スライド詰めされる transition アシスト */
+  transition: flex 0.25s cubic-bezier(0.25, 1, 0.5, 1),
+              max-width 0.25s cubic-bezier(0.25, 1, 0.5, 1),
+              min-width 0.25s cubic-bezier(0.25, 1, 0.5, 1) !important;
+}
+
+/* 年月日省略（トグルOFF）のとき、日付枠を滑らかに幅0にしてスッと消去し、時分秒を左寄せスライド！ */
+#correctionMode #reverseTimeBlock .datetime-row.omit-date-active .date-input-wrapper,
+#correctionMode #reverseTimeBlock .datetime-direct-row.omit-date-active #reverseDisplayDateGroup_direct {
+  flex: 0 !important;
+  max-width: 0 !important;
+  opacity: 0 !important;
+  margin-right: 0 !important;
+  padding: 0 !important;
+  border: none !important;
+  visibility: hidden !important;
+  overflow: hidden !important; /* 文字のはみ出しを完全シャットアウト！ */
+}
+
+#correctionMode #reverseTimeBlock .datetime-row.omit-date-active .time-input-wrapper,
+#correctionMode #reverseTimeBlock .datetime-direct-row.omit-date-active .direct-group-time {
+  flex: 1 !important;
+  max-width: none !important;
+}
+
+#correctionMode #reverseTimeBlock .datetime-row.omit-date-active .seconds-select,
+#correctionMode #reverseTimeBlock .datetime-direct-row.omit-date-active .direct-group-sec {
+  flex: 1 !important;
+  max-width: none !important;
+  min-width: 0 !important;
+}
+
+/* ==========================================================================
+   iPhone（iOS）用：input[type="time"] の極上プレースホルダーガイド制御
+   ========================================================================== */
+
+/* 
+   インプットを包むラッパーを完璧なフレックスアイテムとして振る舞わせる！
+   HTML構造で input[type="time"] を包んだため、親 .datetime-row の直下はラッパーになります。
+   そのため、元の input[type="time"] に適用されていたフレックスルールをこちらに継承します。
+*/
+.time-input-wrapper {
+  position: relative !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  box-sizing: border-box !important;
+  height: 38px !important;
+  
+  /* 誤差計算モード（#errorMode）等でのデフォルト比率 */
+  flex: 1.1 !important;
+  min-width: 0 !important;
+  width: auto !important;
+}
+
+/* 誤差入力部分（#correctionMode 内の補正に使う誤差：flex: 1.8） */
+.flex-wrap.input-helper-on .time-input-wrapper {
+  flex: 1.8 !important;
+}
+
+/* 補正モード画面（#reverseTimeBlock）の time-input-wrapper は
+   time-capsule-wrapper の内部flex比率（2.0:1.0）で自動決定されるため個別設定不要。
+   （年月日OFF時はカプセルが全幅に広がり、ON時はカプセルが86px程度になる） */
+
+/* 補正モード画面で年月日が非表示（トグルOFF）の時のたっぷりしたサイズ（flex: 1.1, max-width: 145px） */
+#correctionMode #reverseTimeBlock .datetime-row.omit-date-active .time-input-wrapper {
+  flex: 1.1 !important;
+  max-width: 145px !important;
+}
+
+/* ラッパーの中にある input[type="time"] 自体は、ラッパー一杯に完全にフィットさせる！ */
+.time-input-wrapper input[type="time"] {
+  width: 100% !important;
+  height: 100% !important;
+  margin: 0 !important;
+  box-sizing: border-box !important;
+}
+
+/* ガイド文字はラッパーの完全にど真ん中（inputの中心）に絶対配置！ */
+.time-placeholder-guide {
+  position: absolute !important;
+  left: 50% !important;
+  top: 50% !important;
+  transform: translate(-50%, -50%) !important;
+  color: rgba(255, 255, 255, 0.4) !important; /* 美しい半透明のプレースホルダー色 */
+  font-size: 13.5px !important; /* 14px -> 13.5px に微調整し、通常枠での収まりを極上に */
+  font-weight: normal !important;
+  pointer-events: none !important; /* タップを完全にスルー */
+  transition: opacity 0.15s ease, visibility 0.15s ease !important;
+  display: block !important;
+  white-space: nowrap !important;
+  z-index: 5 !important;
+  letter-spacing: normal !important;
+}
+
+/* 補正モード（#reverseTimeBlock）側の非常に狭い入力枠（幅64px）用 */
+#correctionMode #reverseTimeBlock .time-placeholder-guide {
+  font-size: 11px !important; /* フォントサイズを極限までコンパクトにし、64px幅でも1ミリもはみ出させない！ */
+}
+
+/* デフォルトでは非表示（透明）にしておく */
+input[type="time"] + .time-placeholder-guide {
+  opacity: 0 !important;
+  visibility: hidden !important;
+}
+
+/* インプットが空（JSがtime-emptyクラスを付与）の時だけ、ガイドを美しく浮かび上がらせる（iOS Safari対応！） */
+input[type="time"].time-empty + .time-placeholder-guide {
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+
+/* ==========================================================================
+   iPhone（iOS）用：input[type="date"] の極上プレースホルダーガイド制御
+   ========================================================================== */
+
+/* 
+   インプットを包むラッパーを完璧なフレックスアイテムとして振る舞わせる！
+   親 .datetime-row 内での元の input[type="date"] のフレックスルールをこちらに継承します。
+*/
+.date-input-wrapper {
+  position: relative !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  box-sizing: border-box !important;
+  height: 38px !important;
+  
+  /* 誤差計算モード（#errorMode）等でのデフォルト比率 */
+  flex: 1.6 !important;
+  max-width: 140px !important;
+  min-width: 0 !important;
+  width: auto !important;
+}
+
+/* 補正モード画面（#reverseTimeBlock 内の年月日計算あり：flex: 1.85, max-width: 165px） */
+#correctionMode #reverseTimeBlock .date-input-wrapper {
+  flex: 1.85 !important;
+  max-width: 165px !important; /* 直接入力側と境界線を完璧に一致させるための微調整 */
+  min-width: 0 !important;
+}
+
+/* ラッパーの中にある input[type="date"] 自体は、ラッパー一杯に完全にフィットさせる！ */
+.date-input-wrapper input[type="date"] {
+  width: 100% !important;
+  height: 100% !important;
+  margin: 0 !important;
+  box-sizing: border-box !important;
+}
+
+/* ガイド文字はラッパーの完全にど真ん中（inputの中心）に絶対配置！ */
+.date-placeholder-guide {
+  position: absolute !important;
+  left: 50% !important;
+  top: 50% !important;
+  transform: translate(-50%, -50%) !important;
+  color: rgba(255, 255, 255, 0.4) !important; /* 美しい半透明のプレースホルダー色 */
+  font-size: 13px !important; /* ちょうど良く収まるサイズ */
+  font-weight: normal !important;
+  pointer-events: none !important; /* タップを完全にスルー */
+  transition: opacity 0.15s ease, visibility 0.15s ease !important;
+  display: block !important;
+  white-space: nowrap !important;
+  z-index: 5 !important;
+  letter-spacing: normal !important;
+}
+
+/* 補正モード（#reverseTimeBlock）側の年月日枠用（スリムに調整） */
+#correctionMode #reverseTimeBlock .date-placeholder-guide {
+  font-size: 12.5px !important;
+}
+
+/* デフォルト非表示 */
+input[type="date"] + .date-placeholder-guide {
+  opacity: 0 !important;
+  visibility: hidden !important;
+}
+
+/* 空（JSがdate-emptyクラスを付与）の時だけ表示 */
+input[type="date"].date-empty + .date-placeholder-guide {
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+
+/* ==========================================================================
+   PC・モダンブラウザ用：カレンダー・時間入力枠のネイティブプレースホルダー透明化
+   ========================================================================== */
+
+/* 
+   PCのChrome/Safari/Edge等で、空値の時に自動表示される邪魔な「年/月/日」や「--:--」
+   といったネイティブプレースホルダーテキストを完全に透明化（-webkit-text-fill-color）！
+   これにより、私たちが新設した美しい灰色ガイド（yyyy / mm / dd 等）だけが100%重ならずに表示されます！
+*/
+input[type="date"]::-webkit-datetime-edit-text,
+input[type="date"]::-webkit-datetime-edit-year-field,
+input[type="date"]::-webkit-datetime-edit-month-field,
+input[type="date"]::-webkit-datetime-edit-day-field,
+input[type="time"]::-webkit-datetime-edit-text,
+input[type="time"]::-webkit-datetime-edit-hour-field,
+input[type="time"]::-webkit-datetime-edit-minute-field {
+  color: transparent !important;
+  -webkit-text-fill-color: transparent !important; /* iOS / Safari / PC Safari用強制透明化 */
+}
+
+/* 
+   値が入力された時（has-valueクラスがある時）、またはフォーカスされた時だけ、
+   入力されている数字（本物の年月日や時分）を純白色（#ffffff）でクッキリと表示！
+*/
+input[type="date"].has-value::-webkit-datetime-edit-text,
+input[type="date"].has-value::-webkit-datetime-edit-year-field,
+input[type="date"].has-value::-webkit-datetime-edit-month-field,
+input[type="date"].has-value::-webkit-datetime-edit-day-field,
+input[type="date"]:focus::-webkit-datetime-edit-text,
+input[type="date"]:focus::-webkit-datetime-edit-year-field,
+input[type="date"]:focus::-webkit-datetime-edit-month-field,
+input[type="date"]:focus::-webkit-datetime-edit-day-field,
+input[type="time"].has-value::-webkit-datetime-edit-text,
+input[type="time"].has-value::-webkit-datetime-edit-hour-field,
+input[type="time"].has-value::-webkit-datetime-edit-minute-field,
+input[type="time"]:focus::-webkit-datetime-edit-text,
+input[type="time"]:focus::-webkit-datetime-edit-hour-field,
+input[type="time"]:focus::-webkit-datetime-edit-minute-field {
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+}
+
+/* ==========================================================================
+   ピッカー表示中の裏画面タッチスクロール完全ロック制御
+   ========================================================================== */
+body.scroll-locked {
+  overflow: hidden !important;
+  touch-action: none !important; /* 画面全体のタッチドラッグ（スクロール）を完全ブロック！ */
+}
+
+/* ピッカー本体およびその中身の操作はロック中も許可する */
+body.scroll-locked #regulusTimePicker,
+body.scroll-locked #regulusTimePicker * {
+  touch-action: auto !important;
+}
+
+/* ロック中の秒ホイールはスクロール禁止を最優先維持する */
+body.scroll-locked .picker-wheel-container.sec-locked,
+body.scroll-locked .picker-wheel-container.sec-locked * {
+  touch-action: none !important;
+}
+
+/* ピッカー展開中、計算結果枠をオーバーレイ（ぼかし・暗幕）より手前に持ち上げてクッキリ見せる！ */
+body.result-highlighted #result,
+body.result-highlighted #reverseResult {
+  position: relative !important;
+  z-index: 100000 !important; /* .picker-overlay (99999) より上へ！ */
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5) !important; /* 浮遊感を強調 */
+}
+
+/* ピッカー展開時、最下部の要素をスクロールで持ち上げるための余白 */
+body.picker-open-padding {
+  padding-bottom: 500px !important; /* 補正モードでの十分なスクロール可動域を確保するため400pxから500pxへ拡張 */
+}
+
+/* ==========================================================================
+   時分秒入力枠の「カプセルラッパー手法」＆「完璧な三等分（1:1:1）」定義
+   ========================================================================== */
+
+/* --- 1. 全体レイアウトの gap を 0 にし、必要な隙間は日付の右側に集約 --- */
+.datetime-row,
+.datetime-direct-row,
+#correctionMode .datetime-direct-row,
+#correctionMode .datetime-row {
+  gap: 0 !important; /* 隙間をゼロにしてぴったりと密着結合させる */
+}
+
+/* 年月日ONの時のみ、日付枠の右側に正確に6pxの隙間を確保する */
+.date-input-wrapper,
+.direct-group-date {
+  margin-right: 6px !important;
+}
+
+/* --- 2. 時分秒を一体包囲する親カプセル（ラッパー）定義 --- */
+.time-capsule-wrapper,
+.direct-capsule-wrapper {
+  display: flex !important;
+  align-items: center !important;
+  gap: 0 !important;
+  position: relative !important;
+  box-sizing: border-box !important;
+  height: 38px !important; /* 標準の入力枠高さに完全同期 */
+  flex: 1.8 !important; /* 日付枠（1.6）と並んだときの美しい黄金比率 */
+  background-color: #1f1f2f !important; /* カプセル全体の美麗ディープネイビー背景 */
+  border-radius: 8px !important; /* 親自体に確実な角丸を適用してへこみを完全消滅！ */
+  border: 1px solid rgba(255, 255, 255, 0.1) !important; /* 親カプセル自体に1枚のボーダーを適用 */
+  overflow: hidden !important; /* 子要素の角丸はみ出しをシャットアウト */
+  width: auto !important;
+  min-width: 0 !important;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease !important;
+}
+
+/* 年月日省略時 (.date-omitted) のカプセルラッパーのサイズ拡張 (スライド不動性を絶対維持) */
+#errorModeDisplayInputGroup.date-omitted .time-capsule-wrapper,
+#errorModeDisplayInputGroup.date-omitted .direct-capsule-wrapper,
+#errorModeStandardInputGroup.date-omitted .time-capsule-wrapper,
+#errorModeStandardInputGroup.date-omitted .direct-capsule-wrapper {
+  flex: 1.0 !important;
+  width: 100% !important;
+}
+
+/* 補正モードで年月日非表示のときのカプセルサイズ拡張 */
+#correctionMode #reverseTimeBlock .datetime-row.omit-date-active .time-capsule-wrapper,
+#correctionMode #reverseTimeBlock .datetime-direct-row.omit-date-active .direct-capsule-wrapper {
+  flex: 1.0 !important;
+  width: 100% !important;
+}
+
+/* 補正モード・年月日ONのとき、カプセル内の秒比率をさらに調整し時分幅を広げつつ秒を限界まで短縮
+   コンテナ242px - 年月日148px - margin6px - colon12px = カプセル76px
+   カプセル76px × flex比: 時分(2.0) ≈ 54px / 秒(0.8) ≈ 22px
+   ※ omit-date-activeクラスがない＝年月日ONの状態 */
+#correctionMode #reverseTimeBlock .time-capsule-wrapper .seconds-select,
+#correctionMode #reverseTimeBlock .direct-capsule-wrapper .direct-group-sec {
+  flex: 0.8 !important; /* 秒の幅をさらに圧縮 */
+}
+
+/* 年月日ONのときの秒セレクトボックス：狭いカプセル内でも矢印が被らないようパディング微調整 */
+#correctionMode #reverseTimeBlock .time-capsule-wrapper .seconds-select {
+  font-size: 13px !important;
+  padding-left: 0 !important;
+  padding-right: 8px !important; /* 矢印スペースを最小限に */
+}
+
+/* 年月日ONのときの秒直接入力枠：カプセル内で中央揃え */
+#correctionMode #reverseTimeBlock .direct-capsule-wrapper .direct-group-sec input {
+  font-size: 14px !important;
+}
+
+/* --- 3. 時・分・秒の完璧な三等分フレックス比率 (2.0 : 1.0) --- */
+
+/* カプセル内の時分枠（ON/OFF）: 時と分を包むので 2.0 を確保 */
+.time-capsule-wrapper .time-input-wrapper,
+.direct-capsule-wrapper .direct-group-time {
+  flex: 2.0 !important;
+  height: 100% !important;
+  box-sizing: border-box !important;
+  background-color: transparent !important;
+  border: none !important; /* 中身のボーダーを完全に消去して親に溶け込ませる */
+  border-radius: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 0 !important;
+}
+
+/* カプセル内の秒枠（ON/OFF）: 秒は単一要素なので 1.0 にして完璧な三等分に！ */
+.time-capsule-wrapper .seconds-select,
+.direct-capsule-wrapper .direct-group-sec {
+  flex: 1.0 !important;
+  height: 100% !important;
+  box-sizing: border-box !important;
+  background-color: transparent !important;
+  border: none !important; /* 中身のボーダーを完全に消去 */
+  border-radius: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 0 !important;
+}
+
+/* 直接入力（手入力）側の時・分・秒インプットを枠一杯に均等に広げる */
+.direct-capsule-wrapper .direct-group-time input,
+.direct-capsule-wrapper .direct-group-sec input {
+  flex: 1 !important;
+  width: 100% !important;
+  height: 100% !important;
+  text-align: center !important;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  border-radius: 0 !important;
+  color: var(--text-main) !important;
+  font-size: 15px !important;
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+/* 手入力コロン（：）の透明化とセンタリング */
+.direct-capsule-wrapper .direct-group-time .delimiter {
+  color: rgba(255, 255, 255, 0.4) !important;
+  background: transparent !important;
+  border: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  font-size: 15px !important;
+}
+
+/* 入力補助 ON 側の input[type="time"] 自体をラッパー一杯に完全にフィットさせる */
+.time-capsule-wrapper .time-input-wrapper input[type="time"] {
+  width: 100% !important;
+  height: 100% !important;
+  margin: 0 !important;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  border-radius: 0 !important;
+}
+
+/* 秒セレクトボックスのボーダー消去・背景透明化 ＆ 中央揃え */
+.time-capsule-wrapper .seconds-select {
+  -webkit-appearance: none !important;
+  -moz-appearance: none !important;
+  appearance: none !important;
+  text-align: center !important;
+  text-align-last: center !important;
+  line-height: 36px !important;
+  padding: 0 !important;
+  color: var(--text-main) !important;
+  font-size: 15px !important;
+  width: 100% !important;
+  height: 100% !important;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  border-radius: 0 !important;
+}
+
+/* 補正誤差 (error) の時分と秒のドッキング（隙間完全埋め立て ＆ label時分秒右寄せ）（指示③） */
+#correctionMode .flex-wrap.input-helper-on,
+#correctionMode .flex-wrap.input-helper-off {
+  gap: 0 !important; /* 隙間をゼロに */
+}
+
+/* 補正誤差の「日」枠の右側に6pxの隙間を確保 */
+#correctionMode .unit-input:first-child {
+  margin-right: 6px !important;
+}
+
+/* --- 5. 補正誤差 (error) の「時分秒」新設極美ドッキングカプセル ＆ 完璧な三等分（1:1:1）超強固定義 --- */
+.unit-capsule-wrapper {
+  display: flex !important;
+  align-items: center !important;
+  gap: 0 !important; /* 内部の隙間ゼロ */
+  position: relative !important;
+  box-sizing: border-box !important;
+  height: 32px !important; /* 誤差スロット高さ32pxに完全同期 */
+  flex: 3.0 !important; /* 日枠の1.0に対して3.0を確保 */
+  background-color: #1f1f2f !important;
+  border-radius: 6px !important; /* 親カプセル自体に角丸を適用して左端の尖りを完全解消！ */
+  border: 1px solid rgba(255, 255, 255, 0.1) !important; /* 親カプセル自体に1枚のボーダーを適用 */
+  overflow: hidden !important; /* 子要素の角丸はみ出しをシャットアウト */
+}
+
+/* 補正誤差の「時・分・秒」を寸分の狂いもなく 1 : 1 : 1 の三等分に等幅配分する最強詳細度定義 */
+#correctionMode .flex-wrap .unit-capsule-wrapper .time-input-wrapper,
+#correctionMode .flex-wrap .unit-capsule-wrapper .direct-group-error-time {
+  flex: 2.0 !important; /* 時と分を包むので 2.0 を確保 */
+  max-width: none !important;
+  min-width: 0 !important;
+  width: auto !important;
+  height: 100% !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  box-sizing: border-box !important;
+}
+
+/* 手入力の時・分インプットが重なるバグを完全解決！flex: 1で均等に広げる */
+#correctionMode .flex-wrap .unit-capsule-wrapper .direct-group-error-time input {
+  flex: 1 !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  text-align: center !important;
+  background: transparent !important;
+}
+
+/* カプセル内のコロン（ON/OFF） */
+.unit-capsule-wrapper .helper-colon,
+.unit-capsule-wrapper .direct-colon {
+  height: 100% !important;
+  background-color: transparent !important;
+  margin: 0 !important;
+  width: 10px !important; /* コロンの幅をスリム化 */
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+/* カプセル内の秒枠を強制的に flex: 1.0 に固定して完璧な三等分に！ */
+#correctionMode .flex-wrap .unit-capsule-wrapper select,
+#correctionMode .flex-wrap .unit-capsule-wrapper .error-sec-direct {
+  flex: 1.0 !important; /* 秒は1.0にして完璧な三等分！ */
+  max-width: none !important;
+  min-width: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  box-sizing: border-box !important;
+  background-color: transparent !important; /* 背景透明化 */
+  border-radius: 0 !important;
+  color: var(--text-main) !important;
+  font-size: 14px !important;
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+/* 秒セレクトボックスのiOS Safari文字下がり・アピアランスの完全リセット */
+.unit-capsule-wrapper select {
+  -webkit-appearance: none !important;
+  -moz-appearance: none !important;
+  appearance: none !important;
+  text-align: center !important;
+  text-align-last: center !important;
+  line-height: 30px !important; /* 縦方向の中央寄せを確実に強制 */
+  padding: 0 !important; /* 内側余白リセット */
+  height: 32px !important;
+}
+
+/* 直接入力の秒枠プレースホルダーとテキストの中央寄せ */
+.unit-capsule-wrapper .error-sec-direct {
+  text-align: center !important;
+  line-height: 30px !important;
+}
+
+/* カプセル右端にピッタリ寄り添う「時分秒」の不動文字ラベルの美麗配置 */
+#correctionMode .unit-label {
+  margin-left: 6px !important; /* 秒枠の右隣に上品な隙間を空けて並べる */
+  font-size: 13.5px !important; /* 読みやすくプレミアムな13.5px */
+  font-weight: bold !important;
+  color: var(--text-main) !important;
+  white-space: nowrap !important;
+  display: inline-block !important;
+  align-self: center !important;
+}
+
+/* --- 4. フォーカス（入力中・選択中）時の「時分秒」親カプセル一体発光エフェクト（指示①） --- */
+
+/* 入力補助 ON/OFF 共通：時分秒いずれかのインプットにフォーカス、またはドラムロール起動時に親カプセルが美しくネオン発光 */
+.time-capsule-wrapper:focus-within,
+.time-capsule-wrapper.picker-focused,
+.direct-capsule-wrapper:focus-within {
+  border-color: var(--accent) !important;
+  box-shadow: 0 0 10px rgba(0, 255, 240, 0.5) !important;
+}
+
+/* 補正誤差 (error) の一体発光：親カプセル全体を美しく水色（ネオンブルー）に一体発光！ */
+#correctionMode .unit-capsule-wrapper:focus-within,
+#correctionMode .unit-capsule-wrapper.picker-focused {
+  border-color: var(--accent) !important;
+  box-shadow: 0 0 10px rgba(0, 255, 240, 0.5) !important;
+}
+
+/* ==========================================================================
+   親カプセル内部要素のボーダー＆影 100% 完全抹殺（差し込む光・縦線の絶対的消滅）
+   ========================================================================== */
+.time-capsule-wrapper .time-input-wrapper,
+.time-capsule-wrapper input,
+.time-capsule-wrapper select,
+.time-capsule-wrapper .helper-colon,
+.direct-capsule-wrapper .direct-group,
+.direct-capsule-wrapper .direct-group-time,
+.direct-capsule-wrapper .direct-group-sec,
+.direct-capsule-wrapper input,
+.direct-capsule-wrapper .direct-colon,
+.direct-capsule-wrapper .delimiter,
+.unit-capsule-wrapper .time-input-wrapper,
+.unit-capsule-wrapper .direct-group-error-time,
+.unit-capsule-wrapper input,
+.unit-capsule-wrapper select,
+.unit-capsule-wrapper .helper-colon,
+.unit-capsule-wrapper .direct-colon {
+  border: none !important;
+  border-top: none !important;
+  border-bottom: none !important;
+  border-left: none !important;
+  border-right: none !important;
+  box-shadow: none !important;
+  outline: none !important;
+  border-radius: 0 !important;
+  background-color: transparent !important;
+  background: transparent !important;
+}
+
+/* ==========================================================================
+   入力補助ON/OFF ＆ 年月日ON/OFF の完全マトリクス表示制御
+   ========================================================================== */
+
+/* 1. 入力補助 ON 時 (カレンダー・ドラムロール起動) */
+body.input-helper-on-mode #displayDateWrapper,
+body.input-helper-on-mode #standardDateWrapper,
+body.input-helper-on-mode #reverseDisplayDateWrapper {
+  display: inline-flex !important; /* 年月日ONならカレンダーWrapperを表示 */
+}
+body.input-helper-on-mode #displayDateGroup_direct,
+body.input-helper-on-mode #standardDateGroup_direct,
+body.input-helper-on-mode #reverseDisplayDateGroup_direct {
+  display: none !important; /* 直接日付Groupは非表示 */
+}
+
+/* 2. 入力補助 OFF 時 (テンキー直接入力) */
+body.input-helper-off-mode #displayDateWrapper,
+body.input-helper-off-mode #standardDateWrapper,
+body.input-helper-off-mode #reverseDisplayDateWrapper {
+  display: none !important; /* カレンダーWrapperは非表示 */
+}
+body.input-helper-off-mode #displayDateGroup_direct,
+body.input-helper-off-mode #standardDateGroup_direct,
+body.input-helper-off-mode #reverseDisplayDateGroup_direct {
+  display: flex !important; /* 直接日付Groupを表示 */
+}
+
+/* 3. 年月日も計算が OFF のとき (強制両非表示 ＆ overflow:hidden で文字はみ出し完全抹殺) */
+#errorModeDisplayInputGroup.date-omitted #displayDateWrapper,
+#errorModeStandardInputGroup.date-omitted #standardDateWrapper,
+#errorModeDisplayInputGroup.date-omitted #displayDateGroup_direct,
+#errorModeStandardInputGroup.date-omitted #standardDateGroup_direct,
+#reverseTimeBlock .datetime-row.omit-date-active #reverseDisplayDateWrapper,
+#reverseTimeBlock .datetime-direct-row.omit-date-active #reverseDisplayDateWrapper,
+#reverseTimeBlock .datetime-direct-row.omit-date-active #reverseDisplayDateGroup_direct {
+  display: none !important;
+  flex: 0 !important;
+  max-width: 0 !important;
+  width: 0 !important;
+  opacity: 0 !important;
+  overflow: hidden !important;
+  visibility: hidden !important;
+}
+
+/* 4. 時分秒テンキー入力枠の３分割完全均等幅 (1:1:1) 強制化 */
+.direct-capsule-wrapper .direct-group,
+.unit-capsule-wrapper .direct-group-error-time {
+  flex: 1 !important;
+  max-width: none !important;
+  min-width: 0 !important;
+  width: 100% !important;
+}
+
+.direct-capsule-wrapper .direct-group input,
+.unit-capsule-wrapper .direct-group-error-time input {
+  width: 100% !important;
+  flex: 1 !important;
+  text-align: center !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  box-sizing: border-box !important;
+}
+
+/* 5. スワップ時の transition 暴走抑止用クラス */
+.no-transition,
+.no-transition * {
+  transition: none !important;
+  animation: none !important;
+}
+
+/* 年月日も計算トグルがOFFのときに「日」の枠を見えなくする（スペースは維持して時分秒を動かさない） */
+.omit-days-active {
+  visibility: hidden !important;
+  pointer-events: none !important;
+}

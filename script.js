@@ -1,4 +1,4 @@
-const currentVersion = "3.0.2";
+const currentVersion = "3.0.3";
 let lastError = null;
 let hasCalculated = false;
 let reverseMode = "toStandard";
@@ -12,6 +12,7 @@ let includeDateEnabled = false;
 let includeDateEnabledCorrection = false; // 補正画面用の年月日トグル状態
 let autoJumpTimer = null;
 let isPickerClosing = false; // ピッカーを閉じる際の一時的な再起動防止ガード（iOSゴーストタップ対策）
+let _pendingMainInit = null; // 「開く」ボタン押下後に実行するメイン機能初期化関数を保持する変数
 
 // セレクトボックス未選択時の灰色表示同期用ヘルパー
 function updateSelectPlaceholderColor(selectId) {
@@ -179,12 +180,22 @@ function toggleInputHelper(enabled) {
   timeFields.forEach(id => {
     const el = document.getElementById(id);
     if (el) {
+      // どのルート（ON/OFF）でも、初回実行時に元の tabindex を確実に保存する
+      if (!el.hasAttribute('data-orig-tabindex') && el.hasAttribute('tabindex')) {
+        el.setAttribute('data-orig-tabindex', el.getAttribute('tabindex'));
+      }
+
       if (enabled) {
         el.readOnly = true;
         el.tabIndex = -1;
       } else {
         el.readOnly = false;
-        el.tabIndex = 0;
+        // 保存していた元の tabindex に復元するか、なければ 0 に戻す
+        if (el.hasAttribute('data-orig-tabindex')) {
+          el.setAttribute('tabindex', el.getAttribute('data-orig-tabindex'));
+        } else {
+          el.tabIndex = 0;
+        }
       }
     }
   });
@@ -670,6 +681,11 @@ function checkPass() {
     inputField.style.border = "";
     errorMessage.innerText = "";
     gtag('event', 'unlock_success'); // Google Analyticsイベント
+    // ■ フェーズ2実行：認証成功後にメイン機能を初期化（テンキー操作中の割り込みを完全回避）
+    if (typeof _pendingMainInit === 'function') {
+      _pendingMainInit();
+      _pendingMainInit = null; // 二重実行防止
+    }
   } else {
     errorMessage.innerText = "暗証番号が違います";
     inputField.style.border = "2px solid red";
@@ -735,12 +751,18 @@ function generateKeypad() {
 }
 
 document.addEventListener("DOMContentLoaded", function () {
-  // 起動時のポップアップ
+
+  // =====================================================================
+  // ■ フェーズ1：暗証番号画面の即時初期化（最小限の処理のみ実行）
+  // =====================================================================
+
+  // 起動時のバージョンポップアップ
   if (localStorage.getItem("lastVersion") !== currentVersion) {
-    alert("Time RegulusはV3.0.2です！");
+    alert("タイムレグルスはV3.0.3にアップデートされました！");
     localStorage.setItem("lastVersion", currentVersion);
   }
 
+  // 暗証番号入力欄のフォーカス& Enterキー対応
   const passInput = document.getElementById("passcode");
   if (passInput) {
     passInput.focus();
@@ -751,421 +773,428 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   }
 
+  // ロック画面のアニメーション再始動
   restartLockScreenAnimation();
 
-  // 三連カスタム無限ドラムロールピッカーの初期化
-  drumHour = new TimeRegulusDrum("pickerWheelHour", "hour", onDrumValueChange);
-  drumMin = new TimeRegulusDrum("pickerWheelMin", "min", onDrumValueChange);
-  drumSec = new TimeRegulusDrum("pickerWheelSec", "sec", onDrumValueChange);
+  // =====================================================================
+  // ■ フェーズ2：メイン機能の遅延初期化
+  //    (暗証番号入力中に裏で実行。iOSはrequestIdleCallback非対応のためsetTimeoutで代用)
+  // =====================================================================
+  function initMainFeatures() {
 
-  // 「日」の入力枠(errorDays)のフォーカス状態追跡フラグ
-  // iOS テンキーの「∧∨」による隣接time入力への誤フォーカスを「日」選択時のみ防止するため
-  let isDayFieldFocused = false;
-  const errorDaysEl = document.getElementById("errorDays");
-  if (errorDaysEl) {
-    errorDaysEl.addEventListener("focus", () => { isDayFieldFocused = true; });
-    errorDaysEl.addEventListener("blur", () => {
-      // blur → focus の発火順序を考慮し、わずかな遅延後にフラグをリセット
-      setTimeout(() => { isDayFieldFocused = false; }, 100);
-    });
-  }
+    // 三連カスタム無限ドラムロールピッカーの初期化
+    drumHour = new TimeRegulusDrum("pickerWheelHour", "hour", onDrumValueChange);
+    drumMin = new TimeRegulusDrum("pickerWheelMin", "min", onDrumValueChange);
+    drumSec = new TimeRegulusDrum("pickerWheelSec", "sec", onDrumValueChange);
 
-  // 時分秒セレクト・インプットのネイティブ起動を抑止し、カスタム三連無限ドラムピッカーをフック起動
-  const hookTimePicker = (triggerId, group, isDirectField = false) => {
-    const el = document.getElementById(triggerId);
-    if (!el) return;
-    const handler = (e) => {
-      if (isDirectField && !inputHelperEnabled) {
-        // 直接入力枠で、かつ入力補助OFFのときはフックしない（テンキーを出す）
-        return;
-      }
-      e.preventDefault();
-      e.stopPropagation();
-      el.blur();
-      openTimePicker(group);
-    };
-    // mousedownとtouchstartの両方をフックし、ネイティブキーボード/ネイティブピッカーの起動を確実に抑止
-    el.addEventListener("mousedown", handler, { passive: false });
-    el.addEventListener("touchstart", handler, { passive: false });
+    // 「日」の入力枠(errorDays)のフォーカス状態追跡フラグ
+    // iOS テンキーの「∧∨」による隣接time入力への誤フォーカスを「日」選択時のみ防止するため
+    let isDayFieldFocused = false;
+    const errorDaysEl = document.getElementById("errorDays");
+    if (errorDaysEl) {
+      errorDaysEl.addEventListener("focus", () => { isDayFieldFocused = true; });
+      errorDaysEl.addEventListener("blur", () => {
+        // blur → focus の発火順序を考慮し、わずかな遅延後にフラグをリセット
+        setTimeout(() => { isDayFieldFocused = false; }, 100);
+      });
+    }
 
-    // iOS テンキーの「∧∨」ナビゲーションによるフォーカス移動を防止
-    el.addEventListener("focus", function() {
-      if (isDirectField && !inputHelperEnabled) {
-        // 直接入力枠で、かつ入力補助OFFのときはフォーカス移動させる
-        return;
-      }
-      // 入力補助ONのときは、キーボードナビゲーション（∧∨）による意図しないピッカー起動を防ぐため、
-      // focusイベント単体でのピッカー自動起動を完全に廃止し、即座にフォーカスを外す（blur）のみにする。
-      // 【バグ修正】focusイベントの最中に同期的に blur() を呼ぶと、iOS Safariがフォーカスを直前の"日"の枠に差し戻してしまい、
-      // "日"の入力枠が点滅フリーズ（デッドロック）するバグが発生します。
-      // これを防ぐため、setTimeoutで10msのディレイを挟み、非同期に安全に blur() を実行します。
-      setTimeout(() => {
+    // 時分秒セレクト・インプットのネイティブ起動を抑止し、カスタム三連無限ドラムピッカーをフック起動
+    const hookTimePicker = (triggerId, group, isDirectField = false) => {
+      const el = document.getElementById(triggerId);
+      if (!el) return;
+      const handler = (e) => {
+        if (isDirectField && !inputHelperEnabled) {
+          // 直接入力枠で、かつ入力補助OFFのときはフックしない（テンキーを出す）
+          return;
+        }
+        e.preventDefault();
+        e.stopPropagation();
         el.blur();
-      }, 10);
+        openTimePicker(group);
+      };
+      // mousedownとtouchstartの両方をフックし、ネイティブキーボード/ネイティブピッカーの起動を確実に抑止
+      el.addEventListener("mousedown", handler, { passive: false });
+      el.addEventListener("touchstart", handler, { passive: false });
+
+      // iOS テンキーの「∧∨」ナビゲーションによるフォーカス移動を防止
+      el.addEventListener("focus", function() {
+        if (isDirectField && !inputHelperEnabled) {
+          // 直接入力枠で、かつ入力補助OFFのときはフォーカス移動させる
+          return;
+        }
+        // 入力補助ONのときは、キーボードナビゲーション（∧∨）による意図しないピッカー起動を防ぐため、
+        // focusイベント単体でのピッカー自動起動を完全に廃止し、即座にフォーカスを外す（blur）のみにする。
+        // 【バグ修正】focusイベントの最中に同期的に blur() を呼ぶと、iOS Safariがフォーカスを直前の"日"の枠に差し戻してしまい、
+        // "日"の入力枠が点滅フリーズ（デッドロック）するバグが発生します。
+        // これを防ぐため、setTimeoutで少しまとしてから blur() を安全に実行します。
+        setTimeout(() => {
+          el.blur();
+        }, 10);
+      });
+    };
+
+    // 常に表示されるテンキー用入力枠へのピッカーフック起動
+    hookTimePicker("displayHour_direct", "display", true);
+    hookTimePicker("displayMin_direct", "display", true);
+    hookTimePicker("displaySec_direct", "display", true);
+
+    hookTimePicker("standardHour_direct", "standard", true);
+    hookTimePicker("standardMin_direct", "standard", true);
+    hookTimePicker("standardSec_direct", "standard", true);
+
+    hookTimePicker("reverseDisplayHour_direct", "reverseDisplay", true);
+    hookTimePicker("reverseDisplayMin_direct", "reverseDisplay", true);
+    hookTimePicker("reverseDisplaySec_direct", "reverseDisplay", true);
+
+    hookTimePicker("errorHours_direct", "error", true);
+    hookTimePicker("errorMinutes_direct", "error", true);
+    hookTimePicker("errorSeconds_direct", "error", true);
+
+    // セレクトボックスの未選択プレースホルダー色初期同期 ＆ 監視設定
+    const selectIds = ["standardSeconds", "displaySeconds", "errorSeconds", "reverseDisplaySeconds"];
+    selectIds.forEach(id => {
+      updateSelectPlaceholderColor(id);
+      const el = document.getElementById(id);
+      if (el) {
+        el.addEventListener("change", () => updateSelectPlaceholderColor(id));
+        el.addEventListener("input", () => updateSelectPlaceholderColor(id));
+      }
     });
-  };
 
-  // 常に表示されるテンキー用入力枠へのピッカーフック起動
-  hookTimePicker("displayHour_direct", "display", true);
-  hookTimePicker("displayMin_direct", "display", true);
-  hookTimePicker("displaySec_direct", "display", true);
+    // 日付・時刻入力欄のプレースホルダー色初期同期 ＆ 監視設定
+    const dateTimeInputIds = ["displayDate", "displayTime", "standardDate", "standardTime", "errorTime", "reverseDisplayDate", "reverseDisplayTime"];
+    dateTimeInputIds.forEach(id => {
+      updateInputPlaceholderColor(id);
+      const el = document.getElementById(id);
+      if (el) {
+        el.addEventListener("change", () => updateInputPlaceholderColor(id));
+        el.addEventListener("input", () => updateInputPlaceholderColor(id));
+      }
+    });
 
-  hookTimePicker("standardHour_direct", "standard", true);
-  hookTimePicker("standardMin_direct", "standard", true);
-  hookTimePicker("standardSec_direct", "standard", true);
+    // 誤差計算の自動化のためのリスナー設定
+    const errorInputs = [
+      "standardDate", "standardTime", "displayDate", "displayTime", "standardSeconds", "displaySeconds"
+    ];
+    errorInputs.forEach(id => {
+      const el = document.getElementById(id);
+      if (el) {
+        el.addEventListener("input", calculateError);
+        el.addEventListener("change", calculateError);
+      }
+    });
 
-  hookTimePicker("reverseDisplayHour_direct", "reverseDisplay", true);
-  hookTimePicker("reverseDisplayMin_direct", "reverseDisplay", true);
-  hookTimePicker("reverseDisplaySec_direct", "reverseDisplay", true);
+    // 誤差計算の直接入力欄のイベントリスナー設定
+    const directErrorInputs = [
+      "displayYear_direct", "displayMonth_direct", "displayDay_direct", "displayHour_direct", "displayMin_direct", "displaySec_direct",
+      "standardYear_direct", "standardMonth_direct", "standardDay_direct", "standardHour_direct", "standardMin_direct", "standardSec_direct"
+    ];
+    directErrorInputs.forEach(id => {
+      const el = document.getElementById(id);
+      if (el) {
+        el.addEventListener("input", calculateError);
+        el.addEventListener("change", calculateError);
+      }
+    });
 
-  hookTimePicker("errorHours_direct", "error", true);
-  hookTimePicker("errorMinutes_direct", "error", true);
-  hookTimePicker("errorSeconds_direct", "error", true);
-
-  // セレクトボックスの未選択プレースホルダー色初期同期 ＆ 監視設定
-  const selectIds = ["standardSeconds", "displaySeconds", "errorSeconds", "reverseDisplaySeconds"];
-  selectIds.forEach(id => {
-    updateSelectPlaceholderColor(id);
-    const el = document.getElementById(id);
-    if (el) {
-      el.addEventListener("change", () => updateSelectPlaceholderColor(id));
-      el.addEventListener("input", () => updateSelectPlaceholderColor(id));
+    // 結果一覧の復元
+    const savedHistory = localStorage.getItem('resultHistory');
+    if (savedHistory) {
+      const parsedHistory = JSON.parse(savedHistory);
+      resultHistory = parsedHistory.map(group => ({
+        ...group,
+        entries: group.entries.map(entry => ({
+          ...entry,
+          base: new Date(entry.base),
+          result: new Date(entry.result)
+        }))
+      }));
     }
-  });
-
-  // 日付・時刻入力欄のプレースホルダー色初期同期 ＆ 監視設定
-  const dateTimeInputIds = ["displayDate", "displayTime", "standardDate", "standardTime", "errorTime", "reverseDisplayDate", "reverseDisplayTime"];
-  dateTimeInputIds.forEach(id => {
-    updateInputPlaceholderColor(id);
-    const el = document.getElementById(id);
-    if (el) {
-      el.addEventListener("change", () => updateInputPlaceholderColor(id));
-      el.addEventListener("input", () => updateInputPlaceholderColor(id));
+    if (resultHistory.length > 0) {
+      document.getElementById("showListLink").style.display = "block";
     }
-  });
 
-  // 誤差計算の自動化のためのリスナー設定
-  const errorInputs = [
-    "standardDate", "standardTime", "displayDate", "displayTime", "standardSeconds", "displaySeconds"
-  ];
-  errorInputs.forEach(id => {
-    const el = document.getElementById(id);
-    if (el) {
-      el.addEventListener("input", calculateError);
-      el.addEventListener("change", calculateError);
-    }
-  });
+    const reverseInputs = [
+      "errorDays", "errorTime", "errorSeconds",
+      "errorDirection", "reverseDisplayDate", "reverseDisplayTime", "reverseDisplaySeconds"
+    ];
+    reverseInputs.forEach(id => {
+      const el = document.getElementById(id);
+      if (el) {
+        el.addEventListener("input", handleReverseCalculation);
+        el.addEventListener("change", handleReverseCalculation);
+      }
+    });
 
-  // 誤差計算の直接入力欄のイベントリスナー設定
-  const directErrorInputs = [
-    "displayYear_direct", "displayMonth_direct", "displayDay_direct", "displayHour_direct", "displayMin_direct", "displaySec_direct",
-    "standardYear_direct", "standardMonth_direct", "standardDay_direct", "standardHour_direct", "standardMin_direct", "standardSec_direct"
-  ];
-  directErrorInputs.forEach(id => {
-    const el = document.getElementById(id);
-    if (el) {
-      el.addEventListener("input", calculateError);
-      el.addEventListener("change", calculateError);
-    }
-  });
+    // 補正計算の直接入力欄のイベントリスナー設定
+    const directReverseInputs = [
+      "errorDays_direct", "errorHours_direct", "errorMinutes_direct", "errorSeconds_direct",
+      "reverseDisplayYear_direct", "reverseDisplayMonth_direct", "reverseDisplayDay_direct", "reverseDisplayHour_direct", "reverseDisplayMin_direct", "reverseDisplaySec_direct"
+    ];
+    directReverseInputs.forEach(id => {
+      const el = document.getElementById(id);
+      if (el) {
+        el.addEventListener("input", handleReverseCalculation);
+        el.addEventListener("change", handleReverseCalculation);
+      }
+    });
 
-  // 結果一覧の復元
-  const savedHistory = localStorage.getItem('resultHistory');
-  if (savedHistory) {
-    const parsedHistory = JSON.parse(savedHistory);
-    resultHistory = parsedHistory.map(group => ({
-      ...group,
-      entries: group.entries.map(entry => ({
-        ...entry,
-        base: new Date(entry.base),
-        result: new Date(entry.result)
-      }))
-    }));
-  }
-  if (resultHistory.length > 0) {
-    document.getElementById("showListLink").style.display = "block";
-  }
-
-  const reverseInputs = [
-    "errorDays", "errorTime", "errorSeconds",
-    "errorDirection", "reverseDisplayDate", "reverseDisplayTime", "reverseDisplaySeconds"
-  ];
-  reverseInputs.forEach(id => {
-    const el = document.getElementById(id);
-    if (el) {
-      el.addEventListener("input", handleReverseCalculation);
-      el.addEventListener("change", handleReverseCalculation);
-    }
-  });
-
-  // 補正計算の直接入力欄のイベントリスナー設定
-  const directReverseInputs = [
-    "errorDays_direct", "errorHours_direct", "errorMinutes_direct", "errorSeconds_direct",
-    "reverseDisplayYear_direct", "reverseDisplayMonth_direct", "reverseDisplayDay_direct", "reverseDisplayHour_direct", "reverseDisplayMin_direct", "reverseDisplaySec_direct"
-  ];
-  directReverseInputs.forEach(id => {
-    const el = document.getElementById(id);
-    if (el) {
-      el.addEventListener("input", handleReverseCalculation);
-      el.addEventListener("change", handleReverseCalculation);
-    }
-  });
-
-  // iOS Safari等での余白タップ検知（✓ボタン押下と余白タップでのフォーカスアウトを区別するフラグ）
-  let skipJumpOnBlur = false;
-  window.addEventListener("touchstart", function(e) {
-    if (e.target && !e.target.classList.contains("direct-year") && !e.target.classList.contains("direct-two") && !e.target.id.includes("direct") && !e.target.className.includes("direct")) {
-      skipJumpOnBlur = true;
-      setTimeout(() => { skipJumpOnBlur = false; }, 250);
-    }
-    if (autoJumpTimer) {
-      clearTimeout(autoJumpTimer);
-      autoJumpTimer = null;
-    }
-  }, { passive: true });
-  window.addEventListener("mousedown", function(e) {
-    if (e.target && !e.target.classList.contains("direct-year") && !e.target.classList.contains("direct-two") && !e.target.id.includes("direct") && !e.target.className.includes("direct")) {
-      skipJumpOnBlur = true;
-      setTimeout(() => { skipJumpOnBlur = false; }, 250);
-    }
-    if (autoJumpTimer) {
-      clearTimeout(autoJumpTimer);
-      autoJumpTimer = null;
-    }
-  });
-
-  // 自動フォーカスジャンプと入力制御の設定関数
-  function setupDirectInputField({ id, nextId, maxVal, customEnterHandler }) {
-    const el = document.getElementById(id);
-    if (!el) return;
-
-    // ③ タップ時はクリアせず、入力開始時までクリアを待つためのフラグ ＆ 手動選択時の全選択
-    el.addEventListener("focus", function() {
-      el.dataset.freshFocus = "true";
-      el.dataset.keyPressed = "false"; // フォーカス時は未入力にリセット
+    // iOS Safari等での余白タップ検知（✓ボタン押下と余白タップでのフォーカスアウトを区別するフラグ）
+    let skipJumpOnBlur = false;
+    window.addEventListener("touchstart", function(e) {
+      if (e.target && !e.target.classList.contains("direct-year") && !e.target.classList.contains("direct-two") && !e.target.id.includes("direct") && !e.target.className.includes("direct")) {
+        skipJumpOnBlur = true;
+        setTimeout(() => { skipJumpOnBlur = false; }, 250);
+      }
       if (autoJumpTimer) {
         clearTimeout(autoJumpTimer);
         autoJumpTimer = null;
       }
-      // 再選択時に新キー1打で確実に上書きクリアできるよう、50msディレイでテキストを全選択
-      setTimeout(() => {
-        if (el.select) el.select();
-      }, 50);
+    }, { passive: true });
+    window.addEventListener("mousedown", function(e) {
+      if (e.target && !e.target.classList.contains("direct-year") && !e.target.classList.contains("direct-two") && !e.target.id.includes("direct") && !e.target.className.includes("direct")) {
+        skipJumpOnBlur = true;
+        setTimeout(() => { skipJumpOnBlur = false; }, 250);
+      }
+      if (autoJumpTimer) {
+        clearTimeout(autoJumpTimer);
+        autoJumpTimer = null;
+      }
     });
 
-    // ④ 最大値インテリジェント制御 ＆ 入力開始時クリア ＆ 最大桁数自動ジャンプ
-    el.addEventListener("input", function() {
-      let val = el.value.replace(/[^0-9]/g, "");
-      if (val === "") {
-        el.value = "";
-        return;
-      }
+    // 自動フォーカスジャンプと入力制御の設定関数
+    function setupDirectInputField({ id, nextId, maxVal, customEnterHandler }) {
+      const el = document.getElementById(id);
+      if (!el) return;
 
-      // 新しい入力が開始された最初の1文字目に古い値をクリアする
-      if (el.dataset.freshFocus === "true") {
-        el.dataset.freshFocus = "false";
-        const lastChar = val.charAt(val.length - 1);
-        el.value = lastChar;
-        val = lastChar;
-      }
+      // ④ タップ時はクリアせず、入力開始時までクリアを待つためのフラグ ＆ 手動選択時の全選択
+      el.addEventListener("focus", function() {
+        el.dataset.freshFocus = "true";
+        el.dataset.keyPressed = "false"; // フォーカス時は未入力にリセット
+        if (autoJumpTimer) {
+          clearTimeout(autoJumpTimer);
+          autoJumpTimer = null;
+        }
+        // 再選択時に新キー1打で確実に上書きクリアできるよう、50msディレイでテキストを全選択
+        setTimeout(() => {
+          if (el.select) el.select();
+        }, 50);
+      });
 
-      if (maxVal !== undefined) {
-        let num = parseInt(val, 10);
-        if (num > maxVal) {
-          // 最大値を超える場合は最後の1文字（新しく入力した数字）だけにする
+      // ⑤ 最大値インテリジェント制御 ＆ 入力開始時クリア ＆ 最大桁数自動ジャンプ
+      el.addEventListener("input", function() {
+        let val = el.value.replace(/[^0-9]/g, "");
+        if (val === "") {
+          el.value = "";
+          return;
+        }
+
+        // 新しい入力が開始された最初の1文字目に古い値をクリアする
+        if (el.dataset.freshFocus === "true") {
+          el.dataset.freshFocus = "false";
           const lastChar = val.charAt(val.length - 1);
           el.value = lastChar;
           val = lastChar;
-          
-          calculateError();
-          handleReverseCalculation();
+        }
+
+        if (maxVal !== undefined) {
+          let num = parseInt(val, 10);
+          if (num > maxVal) {
+            // 最大値を超える場合は最後の1文字（新しく入力した数字）だけにする
+            const lastChar = val.charAt(val.length - 1);
+            el.value = lastChar;
+            val = lastChar;
+
+            calculateError();
+            handleReverseCalculation();
+          } else {
+            el.value = val;
+          }
         } else {
           el.value = val;
         }
-      } else {
-        el.value = val;
+
+        // 実際のキー入力(keyPressed)があった場合のみ、最大入力桁数で自動フォーカスジャンプ
+        if (el.dataset.keyPressed === "true" && el.maxLength > 0 && val.length >= el.maxLength) {
+          el.dataset.keyPressed = "false"; // 二重ジャンプを防ぐためリセット
+          triggerNextJump();
+        }
+      });
+
+      // ジャンプ処理の共通化
+      function triggerNextJump() {
+        if (customEnterHandler) {
+          customEnterHandler();
+        } else if (nextId) {
+          const nextEl = document.getElementById(nextId);
+          if (nextEl) {
+            if (autoJumpTimer) clearTimeout(autoJumpTimer);
+            autoJumpTimer = setTimeout(() => {
+              nextEl.focus();
+              if (nextEl.select) nextEl.select();
+              autoJumpTimer = null;
+            }, 60); // iOSのキーボード昇降アニメーションに合わせるためのわずかなディレイ
+          }
+        } else {
+          el.blur(); // 最後の要素ならキーボードを閉じる
+        }
       }
 
-      // 実際のキー入力(keyPressed)があった場合のみ、最大入力桁数で自動フォーカスジャンプ
-      if (el.dataset.keyPressed === "true" && el.maxLength > 0 && val.length >= el.maxLength) {
-        el.dataset.keyPressed = "false"; // 二重ジャンプを防ぐためリセット
-        triggerNextJump();
-      }
-    });
+      // キー入力の存在検知（iOSの「∧」「∨」フォーカス移動による自動ジャンプ誤発火・㓼きを防ぐ）
+      el.addEventListener("keydown", function(e) {
+        el.dataset.keyPressed = "true";
+        if (e.key === "Enter") {
+          e.preventDefault();
+          triggerNextJump();
+        }
+      });
+      el.addEventListener("beforeinput", function() {
+        el.dataset.keyPressed = "true";
+      });
 
-    // ジャンプ処理の共通化
-    function triggerNextJump() {
-      if (customEnterHandler) {
-        customEnterHandler();
-      } else if (nextId) {
-        const nextEl = document.getElementById(nextId);
-        if (nextEl) {
-          if (autoJumpTimer) clearTimeout(autoJumpTimer);
-          autoJumpTimer = setTimeout(() => {
+      // フォーカスアウト時、1桁の数字（月・日・時・分・秒）であれば自動で頭に「0」を埋めて2桁化
+      el.addEventListener("blur", function() {
+        let val = el.value.replace(/[^0-9]/g, "");
+        if (val !== "" && el.maxLength === 2 && val.length === 1) {
+          el.value = val.padStart(2, '0');
+          calculateError();
+          handleReverseCalculation();
+        }
+      });
+    }
+
+    // 各入力欄のセットアップ実行
+    // --- 誤差計算: 表示時刻 ---
+    setupDirectInputField({ id: "displayYear_direct", nextId: "displayMonth_direct" });
+    setupDirectInputField({ id: "displayMonth_direct", nextId: "displayDay_direct", maxVal: 12 });
+    setupDirectInputField({ id: "displayDay_direct", nextId: "displayHour_direct", maxVal: 31 });
+    setupDirectInputField({ id: "displayHour_direct", nextId: "displayMin_direct", maxVal: 23 });
+    setupDirectInputField({ id: "displayMin_direct", nextId: "displaySec_direct", maxVal: 59 });
+    setupDirectInputField({
+      id: "displaySec_direct",
+      maxVal: 59,
+      customEnterHandler: function() {
+        if (!isStandardOnTop) {
+          const nextId = !includeDateEnabled ? "standardHour_direct" : "standardYear_direct";
+          const nextEl = document.getElementById(nextId);
+          if (nextEl) {
             nextEl.focus();
             if (nextEl.select) nextEl.select();
-            autoJumpTimer = null;
-          }, 60); // iOSのキーボード昇降アニメーションに合わせるためのわずかなディレイ
+          }
+        } else {
+          document.getElementById("displaySec_direct").blur();
         }
-      } else {
-        el.blur(); // 最後の要素ならキーボードを閉じる
-      }
-    }
-
-    // キー入力の存在検知（iOSの「∧」「∨」フォーカス移動による自動ジャンプ誤発火・蠢きを防ぐ）
-    el.addEventListener("keydown", function(e) {
-      el.dataset.keyPressed = "true";
-      if (e.key === "Enter") {
-        e.preventDefault();
-        triggerNextJump();
       }
     });
-    el.addEventListener("beforeinput", function() {
-      el.dataset.keyPressed = "true";
-    });
 
-    // フォーカスアウト時、1桁の数字（月・日・時・分・秒）であれば自動で頭に「0」を埋めて2桁化
-    el.addEventListener("blur", function() {
-      let val = el.value.replace(/[^0-9]/g, "");
-      if (val !== "" && el.maxLength === 2 && val.length === 1) {
-        el.value = val.padStart(2, '0');
-        calculateError();
-        handleReverseCalculation();
-      }
-    });
-  }
-
-  // 各入力欄のセットアップ実行
-  // --- 誤差計算: 表示時刻 ---
-  setupDirectInputField({ id: "displayYear_direct", nextId: "displayMonth_direct" });
-  setupDirectInputField({ id: "displayMonth_direct", nextId: "displayDay_direct", maxVal: 12 });
-  setupDirectInputField({ id: "displayDay_direct", nextId: "displayHour_direct", maxVal: 31 });
-  setupDirectInputField({ id: "displayHour_direct", nextId: "displayMin_direct", maxVal: 23 });
-  setupDirectInputField({ id: "displayMin_direct", nextId: "displaySec_direct", maxVal: 59 });
-  setupDirectInputField({
-    id: "displaySec_direct",
-    maxVal: 59,
-    customEnterHandler: function() {
-      if (!isStandardOnTop) {
-        // 表示が上の時、次のジャンプ先（標準の年、または年月日も計算トグルがOFFの時は標準の時）を決定
-        const nextId = !includeDateEnabled ? "standardHour_direct" : "standardYear_direct";
-        const nextEl = document.getElementById(nextId);
-        if (nextEl) {
-          nextEl.focus();
-          if (nextEl.select) nextEl.select();
-        }
-      } else {
-        document.getElementById("displaySec_direct").blur();
-      }
-    }
-  });
-
-  // --- 誤差計算: 標準時刻 ---
-  setupDirectInputField({ id: "standardYear_direct", nextId: "standardMonth_direct" });
-  setupDirectInputField({ id: "standardMonth_direct", nextId: "standardDay_direct", maxVal: 12 });
-  setupDirectInputField({ id: "standardDay_direct", nextId: "standardHour_direct", maxVal: 31 });
-  setupDirectInputField({ id: "standardHour_direct", nextId: "standardMin_direct", maxVal: 23 });
-  setupDirectInputField({
-    id: "standardMin_direct",
-    maxVal: 59,
-    customEnterHandler: function() {
-      if (isStandardOnTop) {
-        // 標準が上の時、次のジャンプ先（表示の年、または年月日も計算トグルがOFFの時は表示の時）を決定
-        const nextId = !includeDateEnabled ? "displayHour_direct" : "displayYear_direct";
-        const nextEl = document.getElementById(nextId);
-        if (nextEl) {
-          nextEl.focus();
-          if (nextEl.select) nextEl.select();
-        }
-      } else {
-        const nextEl = document.getElementById("standardSec_direct");
-        if (nextEl) {
-          nextEl.focus();
-          if (nextEl.select) nextEl.select();
-        }
-      }
-    }
-  });
-  setupDirectInputField({
-    id: "standardSec_direct",
-    maxVal: 59,
-    customEnterHandler: function() {
-      if (!isStandardOnTop) {
-        document.getElementById("standardSec_direct").blur();
-      }
-    }
-  });
-
-  // --- 補正誤差 ---
-  // 「日」の入力完了後、入力補助ONのときは時分秒がhookTimePickerでフォーカスを即座にblurするため、
-  // 自動ジャンプ先を時分秒に向けるとiOS Safariがフリーズ（デッドロック）する。
-  // 入力補助ONのときはキーボードを閉じるだけにし、OFFのときのみ次の入力枠にジャンプする。
-  setupDirectInputField({
-    id: "errorDays_direct",
-    customEnterHandler: function() {
-      if (inputHelperEnabled) {
-        // 入力補助ON: 時分秒はドラムピッカーで入力するため、キーボードを閉じる
-        const el = document.getElementById("errorDays_direct");
-        if (el) el.blur();
-      } else {
-        // 入力補助OFF: テンキーで直接入力するため、次の枠にジャンプ
-        const nextEl = document.getElementById("errorHours_direct");
-        if (nextEl) {
-          nextEl.focus();
-          if (nextEl.select) nextEl.select();
-        }
-      }
-    }
-  });
-  setupDirectInputField({ id: "errorHours_direct", nextId: "errorMinutes_direct", maxVal: 23 });
-  setupDirectInputField({ id: "errorMinutes_direct", nextId: "errorSeconds_direct", maxVal: 59 });
-  setupDirectInputField({
-    id: "errorSeconds_direct",
-    maxVal: 59,
-    customEnterHandler: function() {
-      const nextId = !includeDateEnabledCorrection ? "reverseDisplayHour_direct" : "reverseDisplayYear_direct";
-      const nextEl = document.getElementById(nextId);
-      if (nextEl) {
-        nextEl.focus();
-        if (nextEl.select) nextEl.select();
-      }
-    }
-  });
-
-  // --- 補正対象（表示/対象時刻） ---
-  setupDirectInputField({ id: "reverseDisplayYear_direct", nextId: "reverseDisplayMonth_direct" });
-  setupDirectInputField({ id: "reverseDisplayMonth_direct", nextId: "reverseDisplayDay_direct", maxVal: 12 });
-  setupDirectInputField({ id: "reverseDisplayDay_direct", nextId: "reverseDisplayHour_direct", maxVal: 31 });
-  setupDirectInputField({ id: "reverseDisplayHour_direct", nextId: "reverseDisplayMin_direct", maxVal: 23 });
-  setupDirectInputField({ id: "reverseDisplayMin_direct", nextId: "reverseDisplaySec_direct", maxVal: 59 });
-  setupDirectInputField({ id: "reverseDisplaySec_direct", maxVal: 59 });
-
-  // 起動初期状態のトグル同期を明示的に呼び出してUIと同期
-  toggleInputHelper(false);
-  toggleIncludeDate(false);
-  toggleIncludeDateCorrection(false);
-
-  // ==========================================================================
-  // 標準時刻が上のときの秒ロックドラムスワイプ無反応化（裏画面ドラッグすり抜けバグ完全撃破！）
-  // ==========================================================================
-  (function() {
-    const secWheel = document.getElementById("pickerWheelSec");
-    if (!secWheel) return;
-    const secLockedContainer = secWheel.parentElement;
-    
-    if (secLockedContainer) {
-      // touchmove
-      secLockedContainer.addEventListener("touchmove", (e) => {
-        if (secLockedContainer.classList.contains("sec-locked")) {
-          // iOS Safariのメイン画面ドラッグすり抜けをブラウザレベルで完全ブロック！
-          // かつ、00ドラム自体も無反応（スクロールも同化もせず、何も起きない状態）にする
-          if (e.cancelable) {
-            e.preventDefault();
+    // --- 誤差計算: 標準時刻 ---
+    setupDirectInputField({ id: "standardYear_direct", nextId: "standardMonth_direct" });
+    setupDirectInputField({ id: "standardMonth_direct", nextId: "standardDay_direct", maxVal: 12 });
+    setupDirectInputField({ id: "standardDay_direct", nextId: "standardHour_direct", maxVal: 31 });
+    setupDirectInputField({ id: "standardHour_direct", nextId: "standardMin_direct", maxVal: 23 });
+    setupDirectInputField({
+      id: "standardMin_direct",
+      maxVal: 59,
+      customEnterHandler: function() {
+        if (isStandardOnTop) {
+          const nextId = !includeDateEnabled ? "displayHour_direct" : "displayYear_direct";
+          const nextEl = document.getElementById(nextId);
+          if (nextEl) {
+            nextEl.focus();
+            if (nextEl.select) nextEl.select();
+          }
+        } else {
+          const nextEl = document.getElementById("standardSec_direct");
+          if (nextEl) {
+            nextEl.focus();
+            if (nextEl.select) nextEl.select();
           }
         }
-      }, { passive: false }); // preventDefault 実行のため passive: false が必須！
-    }
-  })();
+      }
+    });
+    setupDirectInputField({
+      id: "standardSec_direct",
+      maxVal: 59,
+      customEnterHandler: function() {
+        if (!isStandardOnTop) {
+          document.getElementById("standardSec_direct").blur();
+        }
+      }
+    });
+
+    // --- 補正誤差 ---
+    // 「日」の入力完了後、入力補助ONのときは時分秒がhookTimePickerでフォーカスを即座にblurするため、
+    // 自動ジャンプ先を時分秒に向けるとiOS Safariがフリーズ（デッドロック）する。
+    // 入力補助ONのときはキーボードを閉じるだけにし、OFFのときのみ次の入力枠にジャンプする。
+    setupDirectInputField({
+      id: "errorDays_direct",
+      customEnterHandler: function() {
+        if (inputHelperEnabled) {
+          const el = document.getElementById("errorDays_direct");
+          if (el) el.blur();
+        } else {
+          const nextEl = document.getElementById("errorHours_direct");
+          if (nextEl) {
+            nextEl.focus();
+            if (nextEl.select) nextEl.select();
+          }
+        }
+      }
+    });
+    setupDirectInputField({ id: "errorHours_direct", nextId: "errorMinutes_direct", maxVal: 23 });
+    setupDirectInputField({ id: "errorMinutes_direct", nextId: "errorSeconds_direct", maxVal: 59 });
+    setupDirectInputField({
+      id: "errorSeconds_direct",
+      maxVal: 59,
+      customEnterHandler: function() {
+        const nextId = !includeDateEnabledCorrection ? "reverseDisplayHour_direct" : "reverseDisplayYear_direct";
+        const nextEl = document.getElementById(nextId);
+        if (nextEl) {
+          nextEl.focus();
+          if (nextEl.select) nextEl.select();
+        }
+      }
+    });
+
+    // --- 補正対象（表示/対象時刻） ---
+    setupDirectInputField({ id: "reverseDisplayYear_direct", nextId: "reverseDisplayMonth_direct" });
+    setupDirectInputField({ id: "reverseDisplayMonth_direct", nextId: "reverseDisplayDay_direct", maxVal: 12 });
+    setupDirectInputField({ id: "reverseDisplayDay_direct", nextId: "reverseDisplayHour_direct", maxVal: 31 });
+    setupDirectInputField({ id: "reverseDisplayHour_direct", nextId: "reverseDisplayMin_direct", maxVal: 23 });
+    setupDirectInputField({ id: "reverseDisplayMin_direct", nextId: "reverseDisplaySec_direct", maxVal: 59 });
+    setupDirectInputField({ id: "reverseDisplaySec_direct", maxVal: 59 });
+
+    // 起動初期状態のトグル同期を明示的に呼び出してUIと同期
+    toggleInputHelper(false);
+    toggleIncludeDate(false);
+    toggleIncludeDateCorrection(false);
+
+    // ==========================================================================
+    // 標準時刻が上のときの秒ロックドラムスワイプ無反応化（裏画面ドラッグすり抜けバグ完全撃破！）
+    // ==========================================================================
+    (function() {
+      const secWheel = document.getElementById("pickerWheelSec");
+      if (!secWheel) return;
+      const secLockedContainer = secWheel.parentElement;
+
+      if (secLockedContainer) {
+        secLockedContainer.addEventListener("touchmove", (e) => {
+          if (secLockedContainer.classList.contains("sec-locked")) {
+            if (e.cancelable) {
+              e.preventDefault();
+            }
+          }
+        }, { passive: false });
+      }
+    })();
+
+  } // end initMainFeatures()
+
+  // ■ フェーズ2は「開く」ボタン核心後に checkPass() から呼び出す。
+  // テンキー操作中の割り込みを完全回避するため、関数参照をグローバル変数に保持する。
+  _pendingMainInit = initMainFeatures;
+
 });
 
 /**

@@ -2766,3 +2766,95 @@ body.input-helper-off-mode #reverseDisplayDateGroup_direct {
   transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1) !important;
 }
 
+
+/* ============================================================
+   ダミー画面（デコイ時計）スタイル
+   ============================================================ */
+#decoyScreen {
+  text-align: center;
+  padding-top: 60px;
+  min-height: 100vh;
+  background: var(--bg-dark);
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+#decoyScreen .decoy-title {
+  font-size: 36px;
+  letter-spacing: 4px;
+  margin-top: 40px;
+}
+
+.decoy-subtitle {
+  color: var(--text-sub);
+  font-size: 13px;
+  letter-spacing: 4px;
+  margin-top: -10px;
+  margin-bottom: 60px;
+}
+
+.decoy-clock-wrap {
+  display: inline-block;
+  padding: 30px 20px;
+  border: 1px solid rgba(0, 255, 224, 0.25);
+  border-radius: 20px;
+  background: rgba(0, 255, 224, 0.04);
+  box-shadow: 0 0 40px rgba(0, 255, 224, 0.08), inset 0 0 30px rgba(0, 255, 224, 0.04);
+}
+
+.decoy-date {
+  font-family: 'Courier New', 'Share Tech Mono', monospace;
+  font-size: 28px;
+  color: var(--accent);
+  text-shadow: 0 0 16px var(--accent), 0 0 32px rgba(0, 255, 224, 0.4);
+  letter-spacing: 4px;
+  margin-bottom: 16px;
+}
+
+.decoy-time {
+  font-family: 'Courier New', 'Share Tech Mono', monospace;
+  font-size: 40px;
+  white-space: nowrap;
+  font-weight: bold;
+  color: var(--accent);
+  text-shadow: 0 0 20px var(--accent), 0 0 50px rgba(0, 255, 224, 0.5);
+  letter-spacing: 4px;
+  line-height: 1;
+}
+
+.decoy-hint {
+  margin-top: 60px;
+  font-size: 12px;
+  color: rgba(255,255,255,0.15);
+  letter-spacing: 1px;
+  min-height: 20px;
+  transition: color 0.5s ease;
+}
+
+.decoy-hint.visible {
+  color: rgba(255,255,255,0.4);
+}
+
+/* 長押しプログレスリング */
+#decoyHoldRing {
+  display: none;
+  position: fixed;
+  bottom: 60px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 60px;
+  height: 60px;
+}
+
+#decoyHoldRing circle {
+  fill: none;
+  stroke: var(--accent);
+  stroke-width: 4;
+  stroke-dasharray: 163; /* 2*π*26 ≈ 163 */
+  stroke-dashoffset: 163;
+  stroke-linecap: round;
+  transform: rotate(-90deg);
+  transform-origin: 50% 50%;
+  transition: stroke-dashoffset 3s linear;
+  filter: drop-shadow(0 0 6px var(--accent));
+}

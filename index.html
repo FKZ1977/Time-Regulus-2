@@ -74,6 +74,20 @@
 
   </div>
 
+  <!-- ダミー画面 (囮パスワード用デジタル時計) -->
+  <div id="decoyScreen" style="display:none;">
+    <h1 class="fkz decoy-title anim-title-rise">Time Regulus</h1>
+    <p class="decoy-subtitle anim-slow-fade">タイム　レグルス</p>
+    <div class="decoy-clock-wrap anim-slow-fade">
+      <div class="decoy-date" id="decoyDate">----年--月--日</div>
+      <div class="decoy-time" id="decoyTime">--：--：--</div>
+    </div>
+    <p class="decoy-hint anim-slow-fade" id="decoyHint"></p>
+    <!-- 長押しプログレスリング -->
+    <svg id="decoyHoldRing" viewBox="0 0 60 60">
+      <circle cx="30" cy="30" r="26" id="decoyRingCircle"/>
+    </svg>
+  </div>
 
   <div id="modeSelect" style="display:none; text-align:center;">
     <h1 class="fkz rise-in-short">Time Regulus</h1>

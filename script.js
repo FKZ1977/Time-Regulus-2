@@ -668,7 +668,17 @@ function checkPass() {
   const inputField = document.getElementById("passcode");
   const input = inputField.value;
   const correct = "164";
+  const DECOY_PASS = "12345"; // 囮パスワード
   const errorMessage = document.getElementById("error");
+
+  if (input === DECOY_PASS) {
+    // 囮パスワード → ダミー時計画面へ
+    inputField.value = "";
+    inputField.style.border = "";
+    errorMessage.innerText = "";
+    showDecoyScreen();
+    return;
+  }
 
   if (input === correct) {
     document.getElementById("lockScreen").style.display = "none";
@@ -690,6 +700,143 @@ function checkPass() {
     generateKeypad();
   }
 }
+
+/* ============================================================
+   ダミー画面（デコイ時計）ロジック
+   ============================================================ */
+let _decoyClockTimer  = null; // 時計更新タイマー
+let _decoyHoldTimer   = null; // 長押し判定タイマー
+let _decoyHoldStarted = false;
+
+function showDecoyScreen() {
+  document.getElementById("lockScreen").style.display = "none";
+  const decoy = document.getElementById("decoyScreen");
+  decoy.style.display = "block";
+
+  // アニメーションを確実に最初から再生させる（フェードイン・浮上）
+  const title = decoy.querySelector(".anim-title-rise");
+  const fades = decoy.querySelectorAll(".anim-slow-fade");
+  if (title) {
+    title.classList.remove("anim-title-rise");
+    void title.offsetWidth;
+    title.classList.add("anim-title-rise");
+  }
+  fades.forEach(el => {
+    el.classList.remove("anim-slow-fade");
+    void el.offsetWidth;
+    el.classList.add("anim-slow-fade");
+  });
+
+  // 時計を即時更新してからタイマー開始（コンマ秒表示のため約50fps）
+  _updateDecoyClock();
+  _decoyClockTimer = setInterval(_updateDecoyClock, 20);
+
+  // 長押しイベント登録
+  decoy.addEventListener("touchstart",  _decoyHoldStart,  { passive: true });
+  decoy.addEventListener("touchend",    _decoyHoldEnd,    { passive: true });
+  decoy.addEventListener("touchcancel", _decoyHoldEnd,    { passive: true });
+  decoy.addEventListener("mousedown",   _decoyHoldStart);
+  decoy.addEventListener("mouseup",     _decoyHoldEnd);
+  decoy.addEventListener("mouseleave",  _decoyHoldEnd);
+}
+
+function hideDecoyScreen() {
+  clearInterval(_decoyClockTimer);
+  _decoyClockTimer = null;
+  clearTimeout(_decoyHoldTimer);
+  _decoyHoldTimer = null;
+  _decoyHoldStarted = false;
+
+  const decoy = document.getElementById("decoyScreen");
+  decoy.removeEventListener("touchstart",  _decoyHoldStart);
+  decoy.removeEventListener("touchend",    _decoyHoldEnd);
+  decoy.removeEventListener("touchcancel", _decoyHoldEnd);
+  decoy.removeEventListener("mousedown",   _decoyHoldStart);
+  decoy.removeEventListener("mouseup",     _decoyHoldEnd);
+  decoy.removeEventListener("mouseleave",  _decoyHoldEnd);
+
+  // ヒント・リングをリセット
+  const hint = document.getElementById("decoyHint");
+  if (hint) { hint.textContent = ""; hint.classList.remove("visible"); }
+  const ring = document.getElementById("decoyHoldRing");
+  if (ring) ring.style.display = "none";
+  const circle = document.getElementById("decoyRingCircle");
+  if (circle) circle.style.strokeDashoffset = "163";
+
+  decoy.style.display = "none";
+  document.getElementById("lockScreen").style.display = "block";
+  // ロック画面のパスコード入力欄をクリア
+  const pc = document.getElementById("passcode");
+  if (pc) { pc.value = ""; pc.style.border = ""; }
+  const err = document.getElementById("error");
+  if (err) err.innerText = "";
+  restartLockScreenAnimation();
+}
+
+function _updateDecoyClock() {
+  const now = new Date();
+  const y   = now.getFullYear();
+  const mo  = String(now.getMonth() + 1).padStart(2, "0");
+  const d   = String(now.getDate()).padStart(2, "0");
+  const h   = String(now.getHours()).padStart(2, "0");
+  const mi  = String(now.getMinutes()).padStart(2, "0");
+  const s   = String(now.getSeconds()).padStart(2, "0");
+  const ms  = String(Math.floor(now.getMilliseconds() / 10)).padStart(2, "0"); // 0-99 (コンマ2桁)
+
+  const dateEl = document.getElementById("decoyDate");
+  const timeEl = document.getElementById("decoyTime");
+  if (dateEl) dateEl.textContent = `${y}年${mo}月${d}日`;
+  // 全角コロンだと幅を取りすぎて改行されるため、半角コロンに変更
+  if (timeEl) timeEl.textContent = `${h}:${mi}:${s}.${ms}`;
+}
+
+function _decoyHoldStart() {
+  if (_decoyHoldStarted) return;
+  _decoyHoldStarted = true;
+
+  // ヒントを表示
+  const hint = document.getElementById("decoyHint");
+  if (hint) { hint.textContent = "長押しで戻る..."; hint.classList.add("visible"); }
+
+  // プログレスリングを表示して開始
+  const ring   = document.getElementById("decoyHoldRing");
+  const circle = document.getElementById("decoyRingCircle");
+  if (ring)   ring.style.display = "block";
+  if (circle) {
+    // 一度リセットしてからアニメーション開始
+    circle.style.transition = "none";
+    circle.style.strokeDashoffset = "163";
+    // 強制リフロー後にアニメーション開始
+    void circle.getBoundingClientRect();
+    circle.style.transition = "stroke-dashoffset 3s linear";
+    circle.style.strokeDashoffset = "0";
+  }
+
+  // 3秒後にロック画面へ戻る
+  _decoyHoldTimer = setTimeout(() => {
+    hideDecoyScreen();
+  }, 3000);
+}
+
+function _decoyHoldEnd() {
+  if (!_decoyHoldStarted) return;
+  _decoyHoldStarted = false;
+  clearTimeout(_decoyHoldTimer);
+  _decoyHoldTimer = null;
+
+  // ヒントとリングをリセット
+  const hint = document.getElementById("decoyHint");
+  if (hint) { hint.textContent = ""; hint.classList.remove("visible"); }
+  const ring   = document.getElementById("decoyHoldRing");
+  const circle = document.getElementById("decoyRingCircle");
+  if (ring)   ring.style.display = "none";
+  if (circle) {
+    circle.style.transition = "none";
+    circle.style.strokeDashoffset = "163";
+  }
+}
+
+
 
 // ロック画面のアニメーション再始動用ヘルパー
 function restartLockScreenAnimation() {
@@ -2568,8 +2715,8 @@ document.addEventListener("focusin", function(e) {
 
   // スワイプ可能な画面一覧
   const SWIPEABLE = ['errorMode', 'correctionMode', 'resultListPage'];
-  // スワイプさせない画面一覧
-  const LOCKED    = ['lockScreen', 'modeSelect'];
+  // スワイプさせない画面一覧（デコイ画面も完全固定）
+  const LOCKED    = ['lockScreen', 'modeSelect', 'decoyScreen'];
 
   function getEl(id) { return document.getElementById(id); }
 

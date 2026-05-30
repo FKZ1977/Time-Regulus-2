@@ -2867,6 +2867,7 @@ document.addEventListener("focusin", function(e) {
     } else {
       if (srcId === 'resultListPage') return 'correctionMode';
       if (srcId === 'correctionMode') return 'modeSelect';
+      if (srcId === 'errorMode')      return 'modeSelect';
     }
     return null;
   }

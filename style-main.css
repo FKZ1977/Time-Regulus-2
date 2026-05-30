@@ -2759,3 +2759,10 @@ body.input-helper-off-mode #reverseDisplayDateGroup_direct {
   visibility: hidden !important;
   pointer-events: none !important;
 }
+/* ==========================================================================
+   スワイプアニメーション用クラス
+   ========================================================================== */
+.swipe-transition {
+  transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1) !important;
+}
+

@@ -441,7 +441,7 @@ input, select {
 }
 
 #errorMode, #correctionMode {
-  padding-top: 60px;
+  padding-top: 30px;
 }
 
 .keypad-grid {
@@ -2772,7 +2772,7 @@ body.input-helper-off-mode #reverseDisplayDateGroup_direct {
    ============================================================ */
 #decoyScreen {
   text-align: center;
-  padding-top: 60px;
+  padding-top: 30px;
   min-height: 100vh;
   background: var(--bg-dark);
   user-select: none;
@@ -2782,7 +2782,7 @@ body.input-helper-off-mode #reverseDisplayDateGroup_direct {
 #decoyScreen .decoy-title {
   font-size: 36px;
   letter-spacing: 4px;
-  margin-top: 40px;
+  margin-top: 10px;
 }
 
 .decoy-subtitle {
@@ -2790,7 +2790,7 @@ body.input-helper-off-mode #reverseDisplayDateGroup_direct {
   font-size: 13px;
   letter-spacing: 4px;
   margin-top: -10px;
-  margin-bottom: 60px;
+  margin-bottom: 40px;
 }
 
 .decoy-clock-wrap {
@@ -2858,3 +2858,103 @@ body.input-helper-off-mode #reverseDisplayDateGroup_direct {
   transition: stroke-dashoffset 3s linear;
   filter: drop-shadow(0 0 6px var(--accent));
 }
+
+/* ============================================================
+   ダミー画面用タイマー・アラーム
+   ============================================================ */
+.decoy-timer-container {
+  margin-top: 30px;
+}
+.decoy-timer-top {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+.decoy-pause-btn {
+  background: transparent;
+  border: 1px solid rgba(0, 255, 224, 0.4);
+  color: var(--accent);
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  font-size: 14px;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  transition: all 0.3s ease;
+  line-height: 1;
+}
+.decoy-pause-btn:active {
+  background: rgba(0, 255, 224, 0.2);
+}
+.decoy-timer-cancel {
+  margin-top: 16px;
+}
+.decoy-timer-cancel button {
+  background: transparent;
+  border: 1px solid rgba(255, 0, 170, 0.4);
+  color: var(--text-sub);
+  padding: 6px 20px;
+  border-radius: 6px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+.decoy-countdown {
+  font-family: 'Courier New', 'Share Tech Mono', monospace;
+  font-size: 28px;
+  color: var(--accent);
+  text-shadow: 0 0 10px var(--accent);
+  margin-bottom: 0;
+  letter-spacing: 2px;
+}
+.decoy-timer-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+}
+.decoy-timer-buttons button {
+  background: transparent;
+  border: 1px solid rgba(0, 255, 224, 0.4);
+  color: var(--accent);
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+.decoy-timer-buttons button:active {
+  background: rgba(0, 255, 224, 0.2);
+}
+
+/* アラーム発動時 (水色→ピンク) */
+#decoyScreen.decoy-alarm .decoy-title,
+#decoyScreen.decoy-alarm .decoy-date,
+#decoyScreen.decoy-alarm .decoy-time,
+#decoyScreen.decoy-alarm .decoy-countdown,
+#decoyScreen.decoy-alarm .decoy-pause-btn,
+#decoyScreen.decoy-alarm .decoy-timer-buttons button,
+#decoyScreen.decoy-alarm .decoy-timer-cancel button {
+  color: var(--toggle-bg) !important;
+  text-shadow: 0 0 16px var(--toggle-bg), 0 0 32px rgba(255, 0, 170, 0.5) !important;
+  border-color: rgba(255, 0, 170, 0.4) !important;
+}
+#decoyScreen.decoy-alarm .decoy-timer-buttons button:active,
+#decoyScreen.decoy-alarm .decoy-pause-btn:active,
+#decoyScreen.decoy-alarm .decoy-timer-cancel button:active {
+  background: rgba(255, 0, 170, 0.2) !important;
+}
+#decoyScreen.decoy-alarm .decoy-clock-wrap {
+  border-color: rgba(255, 0, 170, 0.4) !important;
+  box-shadow: 0 0 40px rgba(255, 0, 170, 0.15), inset 0 0 30px rgba(255, 0, 170, 0.1) !important;
+}
+#decoyHoldRing.decoy-alarm circle {
+  stroke: var(--toggle-bg) !important;
+  filter: drop-shadow(0 0 6px var(--toggle-bg)) !important;
+}
+
+
+

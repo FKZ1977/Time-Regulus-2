@@ -748,6 +748,7 @@ function hideDecoyScreen() {
   _decoyHoldStarted = false;
 
   const decoy = document.getElementById("decoyScreen");
+  cancelDecoyTimer(); // タイマーも解除
   decoy.removeEventListener("touchstart",  _decoyHoldStart);
   decoy.removeEventListener("touchend",    _decoyHoldEnd);
   decoy.removeEventListener("touchcancel", _decoyHoldEnd);
@@ -836,7 +837,132 @@ function _decoyHoldEnd() {
   }
 }
 
+let _decoyTimerInterval = null;
+let _decoyAlarmInterval = null;
+let _decoyTargetTime = 0;
+let _decoyTimerPaused = false;
+let _decoyRemainTimeOnPause = 0;
 
+function toggleDecoyTimer() {
+  if (!_decoyTimerInterval && !_decoyTimerPaused) return; // 起動していない
+
+  const btn = document.getElementById("decoyPauseBtn");
+  if (_decoyTimerPaused) {
+    // 再生（再開）
+    _decoyTimerPaused = false;
+    _decoyTargetTime = Date.now() + _decoyRemainTimeOnPause;
+    _decoyTimerInterval = setInterval(_updateDecoyCountdown, 100);
+    if (btn) btn.textContent = "❚❚";
+  } else {
+    // 一時停止
+    _decoyTimerPaused = true;
+    _decoyRemainTimeOnPause = _decoyTargetTime - Date.now();
+    clearInterval(_decoyTimerInterval);
+    _decoyTimerInterval = null;
+    if (btn) btn.textContent = "►";
+  }
+}
+
+function startDecoyTimer(minutes) {
+  const decoyScreen = document.getElementById("decoyScreen");
+  const ring = document.getElementById("decoyHoldRing");
+  const pauseBtn = document.getElementById("decoyPauseBtn");
+
+  // もしアラーム発動中なら、アラームだけ止めて現在時刻から時間を上書き設定（ここは新規と同じ扱い）
+  if (decoyScreen && decoyScreen.classList.contains("decoy-alarm")) {
+    clearInterval(_decoyAlarmInterval);
+    _decoyAlarmInterval = null;
+    decoyScreen.classList.remove("decoy-alarm");
+    if (ring) ring.classList.remove("decoy-alarm");
+    _decoyTargetTime = Date.now() + minutes * 60 * 1000;
+    _decoyTimerPaused = false;
+    if (pauseBtn) pauseBtn.textContent = "❚❚";
+  } 
+  // 一時停止中ならそこに時間を加算して再開
+  else if (_decoyTimerPaused) {
+    _decoyRemainTimeOnPause += minutes * 60 * 1000;
+    _decoyTargetTime = Date.now() + _decoyRemainTimeOnPause;
+    _decoyTimerPaused = false;
+    if (pauseBtn) pauseBtn.textContent = "❚❚";
+  }
+  // 既にタイマー稼働中なら、目標時間を延長（加算）
+  else if (_decoyTimerInterval) {
+    _decoyTargetTime += minutes * 60 * 1000;
+  } 
+  // 新規スタート
+  else {
+    _decoyTargetTime = Date.now() + minutes * 60 * 1000;
+    _decoyTimerPaused = false;
+    if (pauseBtn) pauseBtn.textContent = "❚❚";
+  }
+  
+  const display = document.getElementById("decoyCountdown");
+  if (display) display.style.visibility = "visible";
+  if (pauseBtn) pauseBtn.style.visibility = "visible";
+  
+  if (!_decoyTimerInterval) {
+    _decoyTimerInterval = setInterval(_updateDecoyCountdown, 100);
+  }
+  _updateDecoyCountdown();
+}
+
+function cancelDecoyTimer() {
+  clearInterval(_decoyTimerInterval);
+  _decoyTimerInterval = null;
+  clearInterval(_decoyAlarmInterval);
+  _decoyAlarmInterval = null;
+  _decoyTimerPaused = false;
+  
+  const display = document.getElementById("decoyCountdown");
+  if (display) {
+    display.style.visibility = "hidden";
+    display.textContent = "00:00.0";
+  }
+  const pauseBtn = document.getElementById("decoyPauseBtn");
+  if (pauseBtn) {
+    pauseBtn.style.visibility = "hidden";
+    pauseBtn.textContent = "❚❚";
+  }
+  
+  const decoyScreen = document.getElementById("decoyScreen");
+  if (decoyScreen) decoyScreen.classList.remove("decoy-alarm");
+  const ring = document.getElementById("decoyHoldRing");
+  if (ring) ring.classList.remove("decoy-alarm");
+}
+
+function _updateDecoyCountdown() {
+  const remain = _decoyTargetTime - Date.now();
+  const display = document.getElementById("decoyCountdown");
+  
+  if (remain <= 0) {
+    // 時間切れ
+    clearInterval(_decoyTimerInterval);
+    _decoyTimerInterval = null;
+    if (display) display.textContent = "00:00.0";
+    
+    // アラーム発動（ピンク色にしてバイブレーション）
+    const decoyScreen = document.getElementById("decoyScreen");
+    const ring = document.getElementById("decoyHoldRing");
+    if (decoyScreen && !decoyScreen.classList.contains("decoy-alarm")) {
+      decoyScreen.classList.add("decoy-alarm");
+      if (ring) ring.classList.add("decoy-alarm");
+      
+      // バイブレーション（Android用・iOSは制約あり）
+      if (navigator.vibrate) {
+        navigator.vibrate([500, 200, 500, 200]);
+        _decoyAlarmInterval = setInterval(() => {
+          if (navigator.vibrate) navigator.vibrate([500, 200, 500, 200]);
+        }, 2000);
+      }
+    }
+  } else {
+    // 残り時間描画
+    const m = String(Math.floor(remain / 60000)).padStart(2, "0");
+    const s = String(Math.floor((remain % 60000) / 1000)).padStart(2, "0");
+    const ms = String(Math.floor((remain % 1000) / 100)); // 1桁 (0.1秒)
+    if (display) display.textContent = `${m}:${s}.${ms}`;
+  }
+}
 
 // ロック画面のアニメーション再始動用ヘルパー
 function restartLockScreenAnimation() {

@@ -80,8 +80,25 @@
     <p class="decoy-subtitle anim-slow-fade">タイム　レグルス</p>
     <div class="decoy-clock-wrap anim-slow-fade">
       <div class="decoy-date" id="decoyDate">----年--月--日</div>
-      <div class="decoy-time" id="decoyTime">--：--：--</div>
+      <div class="decoy-time" id="decoyTime">--:--:--.--</div>
     </div>
+    
+    <!-- カウントダウンタイマー -->
+    <div class="decoy-timer-container anim-slow-fade">
+      <div class="decoy-timer-top">
+        <div id="decoyCountdown" class="decoy-countdown" style="visibility: hidden;">00:00.0</div>
+        <button id="decoyPauseBtn" class="decoy-pause-btn" style="visibility: hidden;" onclick="toggleDecoyTimer()">❚❚</button>
+      </div>
+      <div class="decoy-timer-buttons">
+        <button onclick="startDecoyTimer(1)">1分</button>
+        <button onclick="startDecoyTimer(3)">3分</button>
+        <button onclick="startDecoyTimer(5)">5分</button>
+      </div>
+      <div class="decoy-timer-cancel">
+        <button onclick="cancelDecoyTimer()">解除</button>
+      </div>
+    </div>
+
     <p class="decoy-hint anim-slow-fade" id="decoyHint"></p>
     <!-- 長押しプログレスリング -->
     <svg id="decoyHoldRing" viewBox="0 0 60 60">

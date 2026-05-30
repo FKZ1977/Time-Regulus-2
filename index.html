@@ -56,6 +56,8 @@
   </style>
 </head>
 <body class="fade-in">
+  <!-- iOS Safari テンキー∧∨ナビゲーション時のデッドロック（フリーズ）回避用ダミー入力枠 -->
+  <input type="text" id="iosKeyboardCloser" readonly tabindex="-1" style="position: absolute; top: -9999px; left: -9999px; opacity: 0; pointer-events: none;">
   <div id="lockScreen">
     <h1 class="fkz anim-title-rise">Time Regulus</h1>
     <p class="subtitle anim-slow-fade">タイム　レグルス　v3.0.3</p>

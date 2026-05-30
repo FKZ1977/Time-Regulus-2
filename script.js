@@ -707,6 +707,7 @@ function checkPass() {
 let _decoyClockTimer  = null; // 時計更新タイマー
 let _decoyHoldTimer   = null; // 長押し判定タイマー
 let _decoyHoldStarted = false;
+let _decoyDisplayMode = 0; // 0: 通常, 1: 24時間残り, 2: 日の出/日没
 
 function showDecoyScreen() {
   // Google Analytics: ダミー画面への遷移をカウント（国別データなどもAnalytics上で確認可能）
@@ -720,6 +721,14 @@ function showDecoyScreen() {
   document.getElementById("lockScreen").style.display = "none";
   const decoy = document.getElementById("decoyScreen");
   decoy.style.display = "block";
+
+  const clockWrap = decoy.querySelector(".decoy-clock-wrap");
+  if (clockWrap) {
+    clockWrap.onclick = () => {
+      _decoyDisplayMode = (_decoyDisplayMode + 1) % 3;
+      _updateDecoyClock(); // 即時反映
+    };
+  }
 
   // アニメーションを確実に最初から再生させる（フェードイン・浮上）
   const title = decoy.querySelector(".anim-title-rise");
@@ -754,6 +763,7 @@ function hideDecoyScreen() {
   clearTimeout(_decoyHoldTimer);
   _decoyHoldTimer = null;
   _decoyHoldStarted = false;
+  _decoyDisplayMode = 0;
 
   const decoy = document.getElementById("decoyScreen");
   cancelDecoyTimer(); // タイマーも解除
@@ -782,21 +792,140 @@ function hideDecoyScreen() {
   restartLockScreenAnimation();
 }
 
+// 日の出・日の入りの近似計算（東京の緯度経度をデフォルトとする）
+function getSunriseSunset(date, lat = 35.6895, lng = 139.6917) {
+  const rad = Math.PI / 180;
+  const noonLocal = new Date(date.getFullYear(), date.getMonth(), date.getDate(), 12, 0, 0);
+  const start = new Date(noonLocal.getFullYear(), 0, 0);
+  const diff = (noonLocal - start) + ((start.getTimezoneOffset() - noonLocal.getTimezoneOffset()) * 60 * 1000);
+  const oneDay = 1000 * 60 * 60 * 24;
+  const dayOfYear = Math.floor(diff / oneDay);
+  
+  const gamma = (2 * Math.PI / 365) * (dayOfYear - 1 + (12 - 12) / 24);
+  const eqTime = 229.18 * (
+    0.000075 +
+    0.001868 * Math.cos(gamma) -
+    0.032077 * Math.sin(gamma) -
+    0.014615 * Math.cos(2 * gamma) -
+    0.040849 * Math.sin(2 * gamma)
+  );
+  
+  const decl = 0.006918 -
+    0.399912 * Math.cos(gamma) +
+    0.070257 * Math.sin(gamma) -
+    0.006758 * Math.cos(2 * gamma) +
+    0.000907 * Math.sin(2 * gamma) -
+    0.002697 * Math.cos(3 * gamma) +
+    0.00148 * Math.sin(3 * gamma);
+    
+  const zenith = 90.833 * rad;
+  const haRad = Math.acos(
+    Math.cos(zenith) / (Math.cos(lat * rad) * Math.cos(decl)) - Math.tan(lat * rad) * Math.tan(decl)
+  );
+  const haDeg = haRad / rad;
+  
+  const sunriseUTCMinutes = 720 - 4 * (lng + haDeg) - eqTime;
+  const sunsetUTCMinutes  = 720 - 4 * (lng - haDeg) - eqTime;
+  
+  const sunrise = new Date(noonLocal.getTime());
+  sunrise.setUTCHours(0, 0, 0, 0);
+  sunrise.setUTCMinutes(Math.round(sunriseUTCMinutes));
+  
+  const sunset = new Date(noonLocal.getTime());
+  sunset.setUTCHours(0, 0, 0, 0);
+  sunset.setUTCMinutes(Math.round(sunsetUTCMinutes));
+  
+  return { sunrise, sunset };
+}
+
 function _updateDecoyClock() {
   const now = new Date();
-  const y   = now.getFullYear();
-  const mo  = String(now.getMonth() + 1).padStart(2, "0");
-  const d   = String(now.getDate()).padStart(2, "0");
-  const h   = String(now.getHours()).padStart(2, "0");
-  const mi  = String(now.getMinutes()).padStart(2, "0");
-  const s   = String(now.getSeconds()).padStart(2, "0");
-  const ms  = String(Math.floor(now.getMilliseconds() / 10)).padStart(2, "0"); // 0-99 (コンマ2桁)
-
   const dateEl = document.getElementById("decoyDate");
   const timeEl = document.getElementById("decoyTime");
-  if (dateEl) dateEl.textContent = `${y}年${mo}月${d}日`;
-  // 全角コロンだと幅を取りすぎて改行されるため、半角コロンに変更
-  if (timeEl) timeEl.textContent = `${h}:${mi}:${s}.${ms}`;
+
+  if (_decoyDisplayMode === 1) {
+    // Mode 1: 24時間の残り時間
+    const tomorrow = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
+    const diff = Math.max(0, tomorrow - now);
+    
+    const h = String(Math.floor(diff / (1000 * 60 * 60))).padStart(2, "0");
+    const mi = String(Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60))).padStart(2, "0");
+    const s = String(Math.floor((diff % (1000 * 60)) / 1000)).padStart(2, "0");
+    const ms = String(Math.floor((diff % 1000) / 10)).padStart(2, "0");
+
+    if (dateEl) {
+      dateEl.style.visibility = "visible";
+      dateEl.style.fontSize = ""; // Reset inline font-size
+      if (now.getMonth() === 11 && now.getDate() === 31) {
+        dateEl.textContent = "年明けまで";
+      } else {
+        dateEl.textContent = "一日の終わりまで";
+      }
+    }
+    if (timeEl) {
+      timeEl.style.fontSize = ""; // Reset inline font-size
+      timeEl.textContent = `${h}:${mi}:${s}.${ms}`;
+    }
+  } else if (_decoyDisplayMode === 2) {
+    // Mode 2: 日の出・日没
+    const todaySun = getSunriseSunset(now);
+    let targetEvent = "";
+    let targetTime = null;
+
+    if (now < todaySun.sunrise) {
+      targetEvent = "日の出";
+      targetTime = todaySun.sunrise;
+    } else if (now < todaySun.sunset) {
+      targetEvent = "日没";
+      targetTime = todaySun.sunset;
+    } else {
+      const tomorrow = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
+      const tomorrowSun = getSunriseSunset(tomorrow);
+      targetEvent = "日の出";
+      targetTime = tomorrowSun.sunrise;
+    }
+
+    const nextH = String(targetTime.getHours()).padStart(2, "0");
+    const nextM = String(targetTime.getMinutes()).padStart(2, "0");
+    const nextS = String(targetTime.getSeconds()).padStart(2, "0");
+    const nextTimeString = `${nextH}:${nextM}:${nextS}`;
+
+    const diff = Math.max(0, targetTime - now);
+    const h = String(Math.floor(diff / (1000 * 60 * 60))).padStart(2, "0");
+    const mi = String(Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60))).padStart(2, "0");
+    const s = String(Math.floor((diff % (1000 * 60)) / 1000)).padStart(2, "0");
+    const ms = String(Math.floor((diff % 1000) / 10)).padStart(2, "0");
+
+    if (dateEl) {
+      dateEl.style.visibility = "visible";
+      dateEl.style.fontSize = ""; // 固定サイズを維持
+      dateEl.textContent = `${targetEvent}　${nextTimeString}`;
+    }
+    if (timeEl) {
+      timeEl.style.fontSize = ""; // 固定サイズを維持
+      timeEl.textContent = `${h}:${mi}:${s}.${ms}`;
+    }
+  } else {
+    // Mode 0: 通常
+    const y   = now.getFullYear();
+    const mo  = String(now.getMonth() + 1).padStart(2, "0");
+    const d   = String(now.getDate()).padStart(2, "0");
+    const h   = String(now.getHours()).padStart(2, "0");
+    const mi  = String(now.getMinutes()).padStart(2, "0");
+    const s   = String(now.getSeconds()).padStart(2, "0");
+    const ms  = String(Math.floor(now.getMilliseconds() / 10)).padStart(2, "0"); // 0-99 (コンマ2桁)
+
+    if (dateEl) {
+      dateEl.style.visibility = "visible";
+      dateEl.style.fontSize = ""; // Reset inline font-size
+      dateEl.textContent = `${y}年${mo}月${d}日`;
+    }
+    // 全角コロンだと幅を取りすぎて改行されるため、半角コロンに変更
+    if (timeEl) {
+      timeEl.style.fontSize = ""; // Reset inline font-size
+      timeEl.textContent = `${h}:${mi}:${s}.${ms}`;
+    }
+  }
 }
 
 function _decoyHoldStart() {
@@ -867,7 +996,7 @@ function toggleDecoyTimer() {
     _decoyRemainTimeOnPause = _decoyTargetTime - Date.now();
     clearInterval(_decoyTimerInterval);
     _decoyTimerInterval = null;
-    if (btn) btn.textContent = "►";
+    if (btn) btn.innerHTML = '<span style="display:inline-block; transform:scale(0.85, 1.35);">►</span>';
   }
 }
 
@@ -924,7 +1053,7 @@ function cancelDecoyTimer() {
   const display = document.getElementById("decoyCountdown");
   if (display) {
     display.style.visibility = "hidden";
-    display.textContent = "00:00.0";
+    display.textContent = "00:00.00";
   }
   const pauseBtn = document.getElementById("decoyPauseBtn");
   if (pauseBtn) {
@@ -946,7 +1075,7 @@ function _updateDecoyCountdown() {
     // 時間切れ
     clearInterval(_decoyTimerInterval);
     _decoyTimerInterval = null;
-    if (display) display.textContent = "00:00.0";
+    if (display) display.textContent = "00:00.00";
     
     // アラーム発動（ピンク色にしてバイブレーション）
     const decoyScreen = document.getElementById("decoyScreen");
@@ -967,7 +1096,7 @@ function _updateDecoyCountdown() {
     // 残り時間描画
     const m = String(Math.floor(remain / 60000)).padStart(2, "0");
     const s = String(Math.floor((remain % 60000) / 1000)).padStart(2, "0");
-    const ms = String(Math.floor((remain % 1000) / 100)); // 1桁 (0.1秒)
+    const ms = String(Math.floor((remain % 1000) / 10)).padStart(2, "0"); // 2桁 (0.01秒)
     if (display) display.textContent = `${m}:${s}.${ms}`;
   }
 }

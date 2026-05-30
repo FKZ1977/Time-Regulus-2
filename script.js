@@ -2526,7 +2526,7 @@ function renderResultList() {
       if (!modeEntries || modeEntries.length === 0) return;
 
       const isToStandard = mode === 'toStandard';
-      const baseLabel = isToStandard ? "表示時刻" : "探している時刻";
+      const baseLabel = isToStandard ? "表示時刻" : "探索時刻";
       const resultLabel = isToStandard ? "補正時刻" : "表示時刻";
       const resultColor = isToStandard ? "var(--accent)" : "var(--toggle-text)"; 
       const borderColor = isToStandard ? "var(--accent)" : "var(--toggle-bg)"; 
@@ -2588,19 +2588,12 @@ function renderResultList() {
         textSpan.style.flex = "1";
         textSpan.style.marginRight = "8px";
 
-        if (entry.includeDateCorrection === undefined || entry.includeDateCorrection) {
-          textSpan.innerHTML = `
-            <span style="font-size: 13px; color: var(--text-sub); display: block;">${baseStr} →</span>
-            <span style="font-size: 14px; font-weight: bold; color: ${resultColor}; display: block; margin-top: 1px; padding-left: 8px;">${resultStr}</span>
-          `;
-        } else {
-          textSpan.innerHTML = `
-            <span style="font-size: 13px; color: var(--text-main); line-height: 1.45; display: block;">
-              ${baseLabel}が <strong style="color: ${resultColor};">${baseStr}</strong> のとき<br>
-              ${resultLabel}は <strong style="color: ${resultColor};">${resultStr}</strong> である
-            </span>
-          `;
-        }
+        // 日付あり・なしに関わらず、同じHTML構造で表示する
+        // 画面幅が狭いときに改行されないよう、固定幅での縦揃えをやめてシンプルな左詰めにしています
+        textSpan.innerHTML = `
+          <span style="font-size: 13px; color: var(--text-sub); display: block;">${baseLabel}が ${baseStr} のとき</span>
+          <span style="font-size: 14px; font-weight: bold; color: ${resultColor}; display: block; margin-top: 1px;">${resultLabel}は ${resultStr} である</span>
+        `;
         line.appendChild(textSpan);
         
         const deleteBtn = document.createElement("button");

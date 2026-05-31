@@ -2094,7 +2094,7 @@ function calculateError() {
         messageContent = `
             ${firstLine}<br>
             <span style="font-size: 14px; color: var(--text-sub); font-weight: normal; line-height: 1.5;">
-                時分、秒を入力してください
+                時:分:秒を入力してください
             </span>
         `;
         messageStyle = `font-size: 16px; color: var(--accent); font-weight: bold; line-height: 1.5; text-decoration: none;`; 

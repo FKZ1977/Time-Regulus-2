@@ -1043,7 +1043,6 @@ function _updateViewLockClock() {
   }
 }
 
-}
 
 function initViewLockHold() {
   const viewLock = document.getElementById("viewLockScreen");

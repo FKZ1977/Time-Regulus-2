@@ -943,7 +943,6 @@ function showViewLockScreen() {
   // クリーンアップ用にリスナーを保存
   viewLock._visibilityHandler = _viewLockVisibilityHandler;
   
-  initViewLockBattery();
   initViewLockHold();
 }
 
@@ -1044,22 +1043,6 @@ function _updateViewLockClock() {
   }
 }
 
-function initViewLockBattery() {
-  const batEl = document.getElementById("viewLockBattery");
-  if (navigator.getBattery) {
-    navigator.getBattery().then(function(battery) {
-      function updateBatteryInfo() {
-        batEl.innerText = (battery.level * 100).toFixed(0) + "% " + (battery.charging ? "⚡" : "");
-      }
-      updateBatteryInfo();
-      battery.addEventListener('levelchange', updateBatteryInfo);
-      battery.addEventListener('chargingchange', updateBatteryInfo);
-    }).catch(function(e) {
-      batEl.innerText = "";
-    });
-  } else {
-    batEl.innerText = "";
-  }
 }
 
 function initViewLockHold() {
@@ -1099,7 +1082,6 @@ function initViewLockHold() {
   };
 
   const startHold = (e) => {
-    if (e.target.id === 'viewLockBattery') return; 
     if (e.cancelable) e.preventDefault();
     isLongPressSuccess = false;
     pressStartTime = Date.now();

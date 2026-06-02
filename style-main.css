@@ -3037,17 +3037,6 @@ body.input-helper-off-mode #reverseDisplayDateGroup_direct {
   -webkit-user-select: none;
 }
 
-/* 電池残量表示 */
-.view-lock-battery {
-  position: absolute;
-  top: 20px;
-  right: 24px;
-  font-size: 14px;
-  color: var(--text-sub);
-  opacity: 0.8;
-  font-family: 'Orbitron', 'SF Pro Text', sans-serif;
-  letter-spacing: 1px;
-}
 
 /* ネオン時計 */
 .view-lock-clock-wrap {

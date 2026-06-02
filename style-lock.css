@@ -247,13 +247,16 @@ input::placeholder {
 
 /* ─── 暗証番号入力行（ラベル＋入力を横並び） ─── */
 .passcode-row {
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 10px;
   margin: 10px auto 10px;
+  width: 100%;
 }
 .passcode-label {
+  position: absolute;
+  right: calc(50% + 70px);
   font-size: 15px;
   color: var(--text-sub);
   white-space: nowrap;

@@ -15,6 +15,29 @@ let isPickerClosing = false; // ピッカーを閉じる際の一時的な再起
 let _pendingMainInit = null; // 「開く」ボタン押下後に実行するメイン機能初期化関数を保持する変数
 let realTimeInterval = null; // Real Timeチェック時の毎秒更新インターバル
 
+// ==========================================================================
+// Wake Lock API 管理（ダミー画面・置時計画面の消灯防止）
+// 輝度は変更せず、画面のスリープ・消灯だけを防ぎます。
+// iOS Safari 16.4以降 / Android Chrome 84以降 対応。
+// ==========================================================================
+let _wakeLock = null;
+
+async function _acquireWakeLock() {
+  if (!('wakeLock' in navigator)) return; // 非対応ブラウザは何もしない
+  try {
+    _wakeLock = await navigator.wakeLock.request('screen');
+  } catch (e) {
+    // 取得失敗（バッテリー低下などOS側の拒否）は無視して続行
+  }
+}
+
+function _releaseWakeLock() {
+  if (_wakeLock) {
+    _wakeLock.release();
+    _wakeLock = null;
+  }
+}
+
 // セレクトボックス未選択時の灰色表示同期用ヘルパー
 function updateSelectPlaceholderColor(selectId) {
   const selectEl = document.getElementById(selectId);
@@ -733,6 +756,11 @@ let _viewLockHoldTimer = null;
 let _viewLockStyleInterval = null;
 let _viewLockCurrentFormat = 'standard';
 let _viewLockScaleFactor = 1.0;
+// viewLockScreen 長押しジェスチャー用モジュールレベル状態
+// クロージャの代わりに名前付き関数を使うことで removeEventListener が確実に機能する
+let _vlPressStartTime = 0;
+let _vlIsLongPressSuccess = false;
+let _vlBlockingClick = false;
 
 const VIEW_LOCK_FONTS = [
   // ── デジタル・SF系 ──────────────────────────────────────
@@ -926,17 +954,22 @@ function showViewLockScreen() {
   // スタイル変更は _updateViewLockClock 内の分切り替わり検知で処理します。
   _viewLockClockTimer = setInterval(_updateViewLockClock, 1000);
   
+  // ★【消灯防止】Wake Lock を取得する（輝度は変えず消灯だけを防ぐ）
+  _acquireWakeLock();
+  
   window.addEventListener('resize', _handleViewLockResize);
   
   // ★【省電力】画面が非表示（スリープ・タブ切替）になったらタイマーを停止し、戻ったら再開する
+  // Wake Lock は visibilitychange で復帰時に再取得が必要（仕様上の制約）
   function _viewLockVisibilityHandler() {
     if (document.hidden) {
       // 画面が隠れた → タイマーを一時停止
       if (_viewLockClockTimer) { clearInterval(_viewLockClockTimer); _viewLockClockTimer = null; }
     } else {
-      // 画面が戻った → タイマーを再開し、時刻を即時更新
+      // 画面が戻った → タイマーを再開し、時刻を即時更新＆Wake Lock を再取得
       _updateViewLockClock();
       _viewLockClockTimer = setInterval(_updateViewLockClock, 1000);
+      _acquireWakeLock();
     }
   }
   document.addEventListener('visibilitychange', _viewLockVisibilityHandler);
@@ -1044,92 +1077,129 @@ function _updateViewLockClock() {
 }
 
 
-function initViewLockHold() {
-  const viewLock = document.getElementById("viewLockScreen");
+/* ============================================================
+   ロック画面のアニメーションを強制再起動する
+   decoyScreen / viewLockScreen から戻ったときに呼び出す。
+   CSS animation のクラスを一度外して強制リフローをかけ、再連結して再生させる。
+   ============================================================ */
+function restartLockScreenAnimation() {
+  const lockScreen = document.getElementById('lockScreen');
+  if (!lockScreen) return;
+  const animEls = lockScreen.querySelectorAll('.anim-title-rise, .anim-slow-fade');
+  animEls.forEach(el => {
+    const hasTitleRise = el.classList.contains('anim-title-rise');
+    const hasSlowFade  = el.classList.contains('anim-slow-fade');
+    if (hasTitleRise) el.classList.remove('anim-title-rise');
+    if (hasSlowFade)  el.classList.remove('anim-slow-fade');
+    void el.offsetWidth; // 強制リフロー（animationのリセットに必要）
+    if (hasTitleRise) el.classList.add('anim-title-rise');
+    if (hasSlowFade)  el.classList.add('anim-slow-fade');
+  });
+}
+
+// ──────────────────────────────────────────────────────────────
+// viewLockScreen 長押しジェスチャー ハンドラ群（モジュールレベル名前付き関数）
+// クロージャではなく名前付き関数にすることで、removeEventListener による
+// 完全なリスナー削除が可能になり、孤児タイマー問題を根本解決する。
+// ──────────────────────────────────────────────────────────────
+
+// iPhoneのghost click（幽霊クリック）をブロックするハンドラ
+function _vlClickBlocker(e) {
+  if (_vlBlockingClick) {
+    e.stopPropagation();
+    e.preventDefault();
+  }
+}
+
+// 指離し（touchend / mouseup）ハンドラ
+function _vlEndHold(e) {
+  if (_vlIsLongPressSuccess) return;
+  clearTimeout(_viewLockHoldTimer);
+  _viewLockHoldTimer = null;
   const ring = document.getElementById("viewLockHoldRing");
   const circle = document.getElementById("viewLockRingCircle");
-  let pressStartTime = 0;
-  let isLongPressSuccess = false;
-  let _blockingClick = false; // iPhoneのghost click（幽霊クリック）ブロック用フラグ
-  
-  // iPhoneはtouchend後に自動的にclickを発火する（ghost click）ため、それを捕捉して破棄する
-  viewLock.addEventListener('click', (e) => {
-    if (_blockingClick) {
-      e.stopPropagation();
-      e.preventDefault();
-    }
-  }, true); // キャプチャフェーズで処理することで確実にブロック
-  
-  const endHold = (e) => {
-    if (isLongPressSuccess) return;
-    
-    clearTimeout(_viewLockHoldTimer);
-    _viewLockHoldTimer = null;
-    ring.style.opacity = "0";
+  if (ring) ring.style.opacity = "0";
+  if (circle) {
     circle.style.transition = "stroke-dashoffset 0.1s linear";
     circle.style.strokeDashoffset = "164";
-    
-    // シングルタップ（400ms未満）でスタイル変更
-    if (pressStartTime > 0 && (Date.now() - pressStartTime < 400)) {
-      changeViewLockStyle();
-    }
-    pressStartTime = 0;
-    
-    // ghost clickを300msだけブロックする
-    _blockingClick = true;
-    setTimeout(() => { _blockingClick = false; }, 300);
-  };
+  }
+  // シングルタップ（400ms未満）でスタイル変更
+  if (_vlPressStartTime > 0 && (Date.now() - _vlPressStartTime < 400)) {
+    changeViewLockStyle();
+  }
+  _vlPressStartTime = 0;
+  // ghost clickを300msだけブロック
+  _vlBlockingClick = true;
+  setTimeout(() => { _vlBlockingClick = false; }, 300);
+}
 
-  const startHold = (e) => {
-    if (e.cancelable) e.preventDefault();
-    isLongPressSuccess = false;
-    pressStartTime = Date.now();
-    
-    const touch = e.touches ? e.touches[0] : e;
+// 指触れ（touchstart / mousedown）ハンドラ
+function _vlStartHold(e) {
+  if (e.cancelable) e.preventDefault();
+  _vlIsLongPressSuccess = false;
+  _vlPressStartTime = Date.now();
+  const ring = document.getElementById("viewLockHoldRing");
+  const circle = document.getElementById("viewLockRingCircle");
+  const touch = e.touches ? e.touches[0] : e;
+  if (ring) {
     ring.style.left = touch.clientX + "px";
     ring.style.top = touch.clientY + "px";
     ring.style.opacity = "1";
-
+  }
+  if (circle) {
     circle.style.transition = "stroke-dashoffset 1s linear";
-    requestAnimationFrame(() => {
-      circle.style.strokeDashoffset = "0";
-    });
-
-    _viewLockHoldTimer = setTimeout(() => {
-      isLongPressSuccess = true;
-      if (_viewLockClockTimer) {
-        clearInterval(_viewLockClockTimer);
-        _viewLockClockTimer = null;
-      }
-      if (_viewLockStyleInterval) {
-        clearInterval(_viewLockStyleInterval);
-        _viewLockStyleInterval = null;
-      }
-      window.removeEventListener('resize', _handleViewLockResize);
-      // ★【省電力】visibilitychangeリスナーもクリーンアップ
-      if (viewLock._visibilityHandler) {
-        document.removeEventListener('visibilitychange', viewLock._visibilityHandler);
-        viewLock._visibilityHandler = null;
-      }
-      
-      viewLock.style.display = "none";
-      document.getElementById("lockScreen").style.display = "block";
-      
-      ring.style.opacity = "0";
+    requestAnimationFrame(() => { circle.style.strokeDashoffset = "0"; });
+  }
+  // 1秒長押しで初期画面へ戻るタイマー
+  _viewLockHoldTimer = setTimeout(() => {
+    _vlIsLongPressSuccess = true;
+    if (_viewLockClockTimer)   { clearInterval(_viewLockClockTimer);   _viewLockClockTimer   = null; }
+    if (_viewLockStyleInterval) { clearInterval(_viewLockStyleInterval); _viewLockStyleInterval = null; }
+    window.removeEventListener('resize', _handleViewLockResize);
+    const viewLock = document.getElementById("viewLockScreen");
+    if (viewLock && viewLock._visibilityHandler) {
+      document.removeEventListener('visibilitychange', viewLock._visibilityHandler);
+      viewLock._visibilityHandler = null;
+    }
+    _releaseWakeLock();
+    if (viewLock) viewLock.style.display = "none";
+    document.getElementById("lockScreen").style.display = "block";
+    restartLockScreenAnimation();
+    if (ring)   { ring.style.opacity = "0"; }
+    if (circle) {
       circle.style.transition = "stroke-dashoffset 0.1s linear";
       circle.style.strokeDashoffset = "164";
-    }, 1000);
-  };
+    }
+  }, 1000);
+}
 
-  viewLock.addEventListener('mousedown', startHold);
-  viewLock.addEventListener('touchstart', startHold, { passive: false });
-  
-  viewLock.addEventListener('mouseup', endHold);
-  viewLock.addEventListener('mouseleave', endHold);
-  viewLock.addEventListener('touchend', endHold);
-  viewLock.addEventListener('touchcancel', endHold);
+function initViewLockHold() {
+  const viewLock = document.getElementById("viewLockScreen");
+  if (!viewLock) return;
+  // ★先に既存リスナーを必ず削除する（重複登録の完全防止）
+  // 同一関数参照を渡すことで removeEventListener が正確に機能する
+  viewLock.removeEventListener('click',       _vlClickBlocker, true);
+  viewLock.removeEventListener('mousedown',   _vlStartHold);
+  viewLock.removeEventListener('touchstart',  _vlStartHold);
+  viewLock.removeEventListener('mouseup',     _vlEndHold);
+  viewLock.removeEventListener('mouseleave',  _vlEndHold);
+  viewLock.removeEventListener('touchend',    _vlEndHold);
+  viewLock.removeEventListener('touchcancel', _vlEndHold);
+  // 状態をリセット
+  _vlPressStartTime = 0;
+  _vlIsLongPressSuccess = false;
+  _vlBlockingClick = false;
+  // リスナーを登録
+  viewLock.addEventListener('click',       _vlClickBlocker, true);
+  viewLock.addEventListener('mousedown',   _vlStartHold);
+  viewLock.addEventListener('touchstart',  _vlStartHold, { passive: false });
+  viewLock.addEventListener('mouseup',     _vlEndHold);
+  viewLock.addEventListener('mouseleave',  _vlEndHold);
+  viewLock.addEventListener('touchend',    _vlEndHold);
+  viewLock.addEventListener('touchcancel', _vlEndHold);
   viewLock.addEventListener('contextmenu', (e) => e.preventDefault());
 }
+
 
 /* ============================================================
    ダミー画面（デコイ時計）ロジック
@@ -1179,13 +1249,18 @@ function showDecoyScreen() {
   _updateDecoyClock();
   _decoyClockTimer = setInterval(_updateDecoyClock, 20);
 
+  // ★【消灯防止】Wake Lock を取得する（輝度は変えず消灯だけを防ぐ）
+  _acquireWakeLock();
+
   // ★【省電力】画面が非表示になったらタイマーを停止し、戻ったら再開する
+  // Wake Lock は visibilitychange で復帰時に再取得が必要（仕様上の制約）
   function _decoyVisibilityHandler() {
     if (document.hidden) {
       if (_decoyClockTimer) { clearInterval(_decoyClockTimer); _decoyClockTimer = null; }
     } else {
       _updateDecoyClock();
       _decoyClockTimer = setInterval(_updateDecoyClock, 20);
+      _acquireWakeLock();
     }
   }
   document.addEventListener('visibilitychange', _decoyVisibilityHandler);
@@ -1208,6 +1283,9 @@ function hideDecoyScreen() {
   _decoyHoldTimer = null;
   _decoyHoldStarted = false;
   _decoyDisplayMode = 0;
+
+  // ★【消灯防止】Wake Lock を解放する
+  _releaseWakeLock();
 
   const decoy = document.getElementById("decoyScreen");
   cancelDecoyTimer(); // タイマーも解除

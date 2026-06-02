@@ -938,7 +938,7 @@ function _handleViewLockResize() {
 
 function showViewLockScreen() {
   if (typeof gtag === 'function') {
-    gtag('event', 'view_lock_screen_triggered', {
+    gtag('event', 'view_clock_screen_triggered', {
       'event_category': 'Security',
       'event_label': 'View Lock Screen Triggered'
     });

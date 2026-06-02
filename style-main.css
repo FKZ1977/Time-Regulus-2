@@ -68,6 +68,15 @@
 * {
   box-sizing: border-box;
   touch-action: manipulation;
+  -webkit-user-select: none; /* テキスト選択禁止（Safari/Chrome） */
+  user-select: none;         /* テキスト選択禁止（標準） */
+  -webkit-touch-callout: none; /* 長押し時のポップアップメニュー禁止（iOS） */
+}
+
+/* 入力欄のみテキスト選択を許可（カーソル移動やコピペ用） */
+input, textarea {
+  -webkit-user-select: auto;
+  user-select: auto;
 }
 
 :root {

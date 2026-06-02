@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <title>Time Regulus v3.0.3</title>
+  <title>Time Regulus v3.10</title>
 
 <!-- Google tag (gtag.js) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-R7PW7DY4GF"></script>
@@ -18,12 +18,21 @@
   <link rel="manifest" href="manifest.json">
   <meta name="apple-mobile-web-app-title" content="TaimuRegurus✨">
   <link rel="apple-touch-icon" href="icon-192.png">
-  <!-- ★【起動高速化】ロック画面用CSS（小・ブロッキング）→ 先に読み込んで即表示 -->
-  <link rel="stylesheet" href="style-lock.css?v=3.0.3">
-  <!-- ★【起動高速化】メインCSS（大・非ブロッキング）→ ロック画面表示後に裏で読み込む -->
-  <link rel="stylesheet" href="style-main.css?v=3.0.3"
+  <!-- 置時計用 Google Fonts（非ブロッキング非同期読み込み） -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700&family=VT323&family=Share+Tech+Mono&family=Sixtyfour&family=Rubik+Dirt&family=Moirai+One&family=Bungee+Shade&family=Diplomata+SC&family=Bellefair&display=swap"
         media="print" onload="this.media='all'">
-  <noscript><link rel="stylesheet" href="style-main.css?v=3.0.3"></noscript>
+  <noscript>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700&family=VT323&family=Share+Tech+Mono&family=Sixtyfour&family=Rubik+Dirt&family=Moirai+One&family=Bungee+Shade&family=Diplomata+SC&family=Bellefair&display=swap">
+  </noscript>
+  <!-- ★【起動高速化】ロック画面用CSS（小・ブロッキング）→ 先に読み込んで即表示 -->
+  <link rel="stylesheet" href="style-lock.css?c=1">
+  <!-- ★【起動高速化】メインCSS（大・非ブロッキング）→ ロック画面表示後に裏で読み込む -->
+  <link rel="stylesheet" href="style-main.css?c=1"
+        media="print" onload="this.media='all'">
+  <noscript><link rel="stylesheet" href="style-main.css?c=1"></noscript>
 
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -60,10 +69,12 @@
   <!-- iOS Safari テンキー∧∨ナビゲーション時のデッドロック（フリーズ）回避用ダミー入力枠 -->
   <input type="text" id="iosKeyboardCloser" readonly tabindex="-1" style="position: absolute; top: -9999px; left: -9999px; opacity: 0; pointer-events: none;">
   <div id="lockScreen">
-    <h1 class="fkz anim-title-rise">Time Regulus</h1>
-    <p class="subtitle anim-slow-fade">タイム　レグルス　v3.0.3</p>
-    <label for="passcode" class="anim-slow-fade">暗証番号を入力：</label><br>
-    <input type="password" id="passcode" placeholder="例：12345" tabindex="1" readonly class="anim-slow-fade">
+    <h1 class="fkz anim-title-rise" id="lockTitle">Regulus</h1>
+    <p class="subtitle anim-slow-fade" id="lockSubtitle">レグルス　v3.10</p>
+    <div class="passcode-row anim-slow-fade">
+      <label for="passcode" class="passcode-label">暗証番号：</label>
+      <input type="password" id="passcode" placeholder="例：12345" tabindex="1" readonly class="passcode-input">
+    </div>
     <button class="action-btn anim-slow-fade" onclick="checkPass()" tabindex="2">開く</button>
 
     <div id="keypad" class="keypad-grid"></div>
@@ -104,6 +115,22 @@
     <!-- 長押しプログレスリング -->
     <svg id="decoyHoldRing" viewBox="0 0 60 60">
       <circle cx="30" cy="30" r="26" id="decoyRingCircle"/>
+    </svg>
+  </div>
+
+  <!-- 第2のおとり画面 (view_lock_screen) -->
+  <div id="viewLockScreen" style="display:none;">
+    <!-- 電池残量表示 -->
+    <div id="viewLockBattery" class="view-lock-battery"></div>
+    
+    <!-- ネオン時計 -->
+    <div class="view-lock-clock-wrap">
+      <div id="viewLockClock" class="view-lock-clock">--:--</div>
+    </div>
+    
+    <!-- 長押しプログレスリング -->
+    <svg id="viewLockHoldRing" class="hold-ring" viewBox="0 0 60 60">
+      <circle cx="30" cy="30" r="26" id="viewLockRingCircle"/>
     </svg>
   </div>
 
@@ -183,6 +210,7 @@
           </div>
         </div>
       </div>
+      <div id="displayWarning" style="color: #FFFF00; font-size: 14px; font-weight: bold; position: absolute; bottom: -22px; left: 0; width: 100%; text-align: center; visibility: hidden; pointer-events: none;"></div>
     </div>
 
     <div id="swap-button-wrapper" style="text-align: center; margin: 10px 0; position: relative;">
@@ -190,6 +218,13 @@
     </div>
 
     <div id="errorModeStandardInputGroup" class="input-group date-omitted">
+      <div id="realTimeCheckboxRow" style="display: none; position: absolute; top: -6px; left: 0; width: 100%; z-index: 5; align-items: center; justify-content: center; padding-right: 32px;">
+        <span class="helper-toggle-label" style="font-size: 13px; margin-right: 6px; color: var(--accent); letter-spacing: 0.5px;">Real Time</span>
+        <label class="switch-container" style="position: relative !important; top: auto !important; left: auto !important; width: 50px !important; height: 28px !important; line-height: normal !important; transform: none !important; pointer-events: auto !important; margin: 0 !important;">
+          <input type="checkbox" id="realTimeCheckbox" onchange="toggleRealTime(this.checked)">
+          <span class="switch-slider"></span>
+        </label>
+      </div>
       <label>標準時刻：</label>
       <button class="action-btn" id="standardNowButton" onclick="setNowToStandard()" style="margin-left: 8px;">NOW🔄</button>
 
@@ -224,6 +259,7 @@
           </div>
         </div>
       </div>
+      <div id="standardWarning" style="color: #FFFF00; font-size: 14px; font-weight: bold; position: absolute; bottom: -22px; left: 0; width: 100%; text-align: center; visibility: hidden; pointer-events: none;"></div>
     </div>
 
     <div class="result-box" id="result"></div>
@@ -349,6 +385,7 @@
           </div>
         </div>
       </div>
+      <div id="correctionWarning" style="color: #e6c300; font-size: 13px; font-weight: bold; position: absolute; bottom: -22px; left: 0; width: 100%; text-align: center; visibility: hidden; pointer-events: none;"></div>
     </div>
 
     <div id="reverseResult" class="result-box"></div>
@@ -372,7 +409,7 @@
     <h1 class="fkz" style="margin-top: 40px;">Information</h1>
     <div id="informationContent" style="margin-top: 30px; text-align: left; max-width: 500px; margin-left: auto; margin-right: auto;">
       <p style="margin-bottom: 8px;">このアプリは <strong>H.Fukazu</strong> によって制作されました。</p>
-      <p style="margin-bottom: 24px;">バージョン: <strong>v3.0.3</strong></p>
+      <p style="margin-bottom: 24px;">バージョン: <strong>v3.10</strong></p>
 
       <h3 style="margin-top:24px;">## 著作権および利用規約 (Copyright and Usage Policy)</h3>
       <p>本作品（ソフトウェア、コード、ドキュメント、および関連する全ての内容を含む）の著作権は、© 2025 H.Fukazu に帰属します。<br>**© 2025 H.Fukazu. All Rights Reserved.**</p><br>
@@ -439,12 +476,12 @@
     </div>
   </div>
 
-  <script src="script.js?v=3.0.3" defer></script>
+  <script src="script.js?c=1" defer></script>
   <script>
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
         // Service Worker自体にもキャッシュバスティングを適用し、更新を強制
-        navigator.serviceWorker.register('./service-worker.js?v=3.0.3')
+        navigator.serviceWorker.register('./service-worker.js?v=3.10')
           .then(registration => {
             console.log('Service Worker 登録成功:', registration.scope);
             // 起動時に明示的にアップデートを確認

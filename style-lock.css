@@ -244,3 +244,64 @@ input::placeholder {
   animation-delay: 0.8s !important;
   opacity: 0;
 }
+
+/* ─── 暗証番号入力行（ラベル＋入力を横並び） ─── */
+.passcode-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin: 10px auto 10px;
+}
+.passcode-label {
+  font-size: 15px;
+  color: var(--text-sub);
+  white-space: nowrap;
+}
+.passcode-input {
+  width: 120px;
+  text-align: center;
+  padding: 10px;
+  font-size: 18px;
+  border-radius: 8px;
+  border: none;
+  color: var(--text-main);
+  background-color: #1f1f2f;
+}
+
+/* ─── 横向き（landscape）対応 ─── */
+@media screen and (orientation: landscape) {
+  /* タイトル・サブタイトル・バージョンを非表示 */
+  #lockTitle,
+  #lockSubtitle {
+    display: none !important;
+  }
+
+  /* ロック画面全体を中央寄せ・コンパクトに */
+  #lockScreen {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 0;
+    margin-top: 0;
+  }
+
+  /* 「開く」ボタンの余白を縮小 */
+  .action-btn {
+    margin-top: 8px;
+  }
+
+  /* テンキーの余白を縮小 */
+  .keypad-grid {
+    margin: 8px auto;
+  }
+
+  /* エラー・プロデューサー文字の余白を縮小 */
+  #lockScreen #error,
+  #lockScreen .subtitle {
+    margin-bottom: 2px;
+    font-size: 13px;
+  }
+}

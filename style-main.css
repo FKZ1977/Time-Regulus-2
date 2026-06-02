@@ -1,3 +1,70 @@
+/* ============================================================
+   オフライン対応フォント定義（置時計用 9種 - アプリ同梱フォント）
+   ============================================================ */
+@font-face {
+  font-family: 'Orbitron';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('./fonts/Orbitron-Bold.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'VT323';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('./fonts/VT323.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Share Tech Mono';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('./fonts/ShareTechMono.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Sixtyfour';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('./fonts/Sixtyfour.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Rubik Dirt';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('./fonts/RubikDirt.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Moirai One';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('./fonts/MoiraiOne.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Bungee Shade';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('./fonts/BungeeShade.ttf') format('truetype');
+}
+@font-face {
+  font-family: 'Diplomata SC';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('./fonts/DiplomataSC.ttf') format('truetype');
+}
+@font-face {
+  font-family: 'Bellefair';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('./fonts/Bellefair.ttf') format('truetype');
+}
+
 * {
   box-sizing: border-box;
   touch-action: manipulation;
@@ -148,6 +215,7 @@ h1.fkz {
 }
 
 .input-group {
+  position: relative;
   margin-top: 12px;
   margin-bottom: 20px;
 }
@@ -2954,6 +3022,82 @@ body.input-helper-off-mode #reverseDisplayDateGroup_direct {
 #decoyHoldRing.decoy-alarm circle {
   stroke: var(--toggle-bg) !important;
   filter: drop-shadow(0 0 6px var(--toggle-bg)) !important;
+}
+
+/* ============================================================
+   第2のおとり画面 (view_lock_screen)
+   ============================================================ */
+#viewLockScreen {
+  background: var(--bg-color);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* 電池残量表示 */
+.view-lock-battery {
+  position: absolute;
+  top: 20px;
+  right: 24px;
+  font-size: 14px;
+  color: var(--text-sub);
+  opacity: 0.8;
+  font-family: 'Orbitron', 'SF Pro Text', sans-serif;
+  letter-spacing: 1px;
+}
+
+/* ネオン時計 */
+.view-lock-clock-wrap {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  width: 100%;
+  overflow: visible; /* hiddenにすると文字が左右でスッパリ切れてしまうため visible に変更 */
+}
+.view-lock-clock {
+  font-family: 'Orbitron', 'Courier New', monospace;
+  /* フォントサイズはJSで動的に上書きされます */
+  font-size: 30px;
+  font-weight: 700;
+  color: #fff;
+  white-space: nowrap;
+  flex-shrink: 0; /* Flexbox内で要素が勝手に縮み、はみ出した文字が描画レイヤーの端で切れるのを防ぐ */
+  padding: 0 10px;
+  box-sizing: border-box;
+  text-shadow: 
+    0 0 10px rgba(0, 255, 240, 0.8),
+    0 0 20px rgba(0, 255, 240, 0.6),
+    0 0 40px rgba(0, 255, 240, 0.4),
+    0 0 80px rgba(0, 255, 240, 0.2);
+  letter-spacing: 2px;
+  transition: transform 1s ease-in-out, color 0.3s, text-shadow 0.3s, font-size 0.3s;
+}
+
+/* 長押しプログレスリング */
+#viewLockHoldRing {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) rotate(-90deg);
+  width: 120px;
+  height: 120px;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.3s;
+  z-index: 9999;
+}
+#viewLockHoldRing circle {
+  fill: none;
+  stroke: var(--accent);
+  stroke-width: 4;
+  stroke-dasharray: 164;
+  stroke-dashoffset: 164;
+  filter: drop-shadow(0 0 8px var(--accent));
+  transition: stroke-dashoffset 0.1s linear;
 }
 
 

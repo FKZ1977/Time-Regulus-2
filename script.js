@@ -922,8 +922,9 @@ function showViewLockScreen() {
 
   changeViewLockStyle();
   
+  // setInterval(changeViewLockStyle, 60000) は削除。
+  // スタイル変更は _updateViewLockClock 内の分切り替わり検知で処理します。
   _viewLockClockTimer = setInterval(_updateViewLockClock, 1000);
-  _viewLockStyleInterval = setInterval(changeViewLockStyle, 60000);
   
   window.addEventListener('resize', _handleViewLockResize);
   
@@ -932,12 +933,10 @@ function showViewLockScreen() {
     if (document.hidden) {
       // 画面が隠れた → タイマーを一時停止
       if (_viewLockClockTimer) { clearInterval(_viewLockClockTimer); _viewLockClockTimer = null; }
-      if (_viewLockStyleInterval) { clearInterval(_viewLockStyleInterval); _viewLockStyleInterval = null; }
     } else {
       // 画面が戻った → タイマーを再開し、時刻を即時更新
       _updateViewLockClock();
       _viewLockClockTimer = setInterval(_updateViewLockClock, 1000);
-      _viewLockStyleInterval = setInterval(changeViewLockStyle, 60000);
     }
   }
   document.addEventListener('visibilitychange', _viewLockVisibilityHandler);
@@ -948,10 +947,22 @@ function showViewLockScreen() {
   initViewLockHold();
 }
 
+let _lastViewLockMinute = -1; // 分の切り替わり検知用
+
 function _updateViewLockClock() {
   const now = new Date();
   const h = now.getHours();
   const m = now.getMinutes();
+  
+  // ★「分」の切り替わり時にスタイルを自動ランダム変更
+  if (_lastViewLockMinute !== -1 && _lastViewLockMinute !== m) {
+    // 【バグ修正】ここで先に_lastViewLockMinuteを更新しないと、changeViewLockStyle内で
+    // 再度_updateViewLockClockが呼ばれた際に無限ループに陥ってしまう
+    _lastViewLockMinute = m;
+    changeViewLockStyle();
+    return;
+  }
+  _lastViewLockMinute = m;
   
   let timeStr = "";
   
@@ -988,21 +999,18 @@ function _updateViewLockClock() {
     // 表示される文字列の長さに応じて、画面幅（vw）に対する最大フォントサイズを動的に計算する
     let emWidth = 0;
     for (let i = 0; i < timeStr.length; i++) {
-      // 全角文字や漢字、環境依存のローマ数字（Ⅰ〜Ⅹなど）は幅が広いため多めに見積もる
       if (timeStr.charCodeAt(i) > 255) {
         emWidth += 1.05;
       } else {
-        emWidth += 0.65; // 半角の算用数字やコロン
+        emWidth += 0.65;
       }
     }
     
-    // 画面幅の約95%を占める最大サイズを計算し、そこにランダムな倍率を掛ける
     let maxVw = 95 / emWidth;
     let calculatedVw = maxVw * _viewLockScaleFactor;
     
-    // JSで安全にピクセル値を計算して直接指定する（古いSafariでのclamp/min構文エラーを完全回避）
-    // vh上限も95%まで拡大（縦長にも対応）
-    const vhLimit = 90 * _viewLockScaleFactor;
+    // vh上限も95%まで拡大
+    const vhLimit = 95 * _viewLockScaleFactor;
     const winW = window.innerWidth;
     const winH = window.innerHeight;
     
@@ -1010,10 +1018,29 @@ function _updateViewLockClock() {
     let maxFontSizePxByVh = (vhLimit / 100) * winH;
     
     let finalPx = Math.min(fontSizePx, maxFontSizePxByVh);
-    if (finalPx < 60) finalPx = 60; // 下限 60px（以前の30pxより大きく）
-    // 上限はピクセル固定ではなく画面サイズに依存するため固定上限なし
+    if (finalPx < 60) finalPx = 60; // 下限 60px
+    
+    // ★【バグ修正】CSSアニメーション（transition）が設定されていると、
+    // offsetWidthの測定値がアニメーション途中の値になってしまい、サイズが振動するバグを防ぐ
+    const originalTransition = clockEl.style.transition;
+    clockEl.style.transition = 'none';
     
     clockEl.style.fontSize = finalPx + 'px';
+    
+    // ★【はみ出し完全防止】フォントごとの文字幅の違い（特殊フォント対策）
+    // 実際にブラウザが計算した文字幅を取得し、画面幅（95%）を超えていたら縮小する
+    const actualWidth = clockEl.offsetWidth;
+    const targetMaxWidth = winW * 0.95;
+    if (actualWidth > targetMaxWidth) {
+      // はみ出している割合に応じてフォントサイズを正確に縮小する
+      const scaleDownRatio = targetMaxWidth / actualWidth;
+      finalPx = finalPx * scaleDownRatio;
+      clockEl.style.fontSize = finalPx + 'px';
+    }
+    
+    // 変更をブラウザに反映（強制リフロー）させた後、アニメーション設定を元に戻す
+    void clockEl.offsetWidth;
+    clockEl.style.transition = originalTransition;
   }
 }
 
@@ -1051,8 +1078,6 @@ function initViewLockHold() {
     }
   }, true); // キャプチャフェーズで処理することで確実にブロック
   
-  let _lastTapTime = 0; // ダブルタップ検出用
-  
   const endHold = (e) => {
     if (isLongPressSuccess) return;
     
@@ -1062,17 +1087,9 @@ function initViewLockHold() {
     circle.style.transition = "stroke-dashoffset 0.1s linear";
     circle.style.strokeDashoffset = "164";
     
-    // ダブルタップ（400ms以内に2回タップ）でスタイル変更
-    // シングルタップ・ダブルタップともに初期画面へは戻らない
+    // シングルタップ（400ms未満）でスタイル変更
     if (pressStartTime > 0 && (Date.now() - pressStartTime < 400)) {
-      const now = Date.now();
-      if (now - _lastTapTime < 400) {
-        // ダブルタップ検出 → スタイルをランダム変更
-        changeViewLockStyle();
-        _lastTapTime = 0;
-      } else {
-        _lastTapTime = now;
-      }
+      changeViewLockStyle();
     }
     pressStartTime = 0;
     

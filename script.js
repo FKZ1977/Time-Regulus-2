@@ -2921,7 +2921,10 @@ function handleReverseCalculation() {
   if (correctionWarningEl) correctionWarningEl.style.visibility = "hidden";
 
   if (!hasError && !hasTime) {
-    resultElement.innerText = "時刻と誤差を入力してください";
+    resultElement.innerText = "誤差と時刻を入力してください";
+    resultElement.style.color = "#e6c300"; // ★文字色を黄色に
+    resultElement.style.border = '';
+    resultElement.style.backgroundColor = '';
     return;
   }
 
@@ -2951,11 +2954,16 @@ function handleReverseCalculation() {
         correctionWarningEl.style.visibility = "visible";
     }
     resultElement.innerHTML = '';
+    resultElement.style.border = '';
+    resultElement.style.backgroundColor = '';
     return;
   }
 
   if (hasTime && !hasError) {
     resultElement.innerText = "補正に使う誤差を入力してください";
+    resultElement.style.color = "#e6c300"; // ★文字色を黄色に
+    resultElement.style.border = '';
+    resultElement.style.backgroundColor = '';
     return;
   }
 

@@ -146,24 +146,31 @@ input, textarea {
   from { transform: translateY(-100%); opacity: 0; }
   to { transform: translateY(0); opacity: 1; }
 }
-.animate-up-out { animation: slideUpOut 0.15s ease-in forwards; }
-.animate-down-out { animation: slideDownOut 0.15s ease-in forwards; }
-.animate-up-in { animation: slideUpIn 0.15s ease-out forwards; }
-.animate-down-in { animation: slideDownIn 0.15s ease-out forwards; }
+.animate-up-out  { animation: slideUpOut   0.15s ease-in  forwards; }
+.animate-down-out{ animation: slideDownOut  0.15s ease-in  forwards; }
+.animate-up-in   { animation: slideUpIn     0.15s ease-out forwards; }
+.animate-down-in { animation: slideDownIn   0.15s ease-out forwards; }
 
 /* 記録成功メッセージのアニメーション */
 @keyframes fadeOut {
-    0% { opacity: 1; }
+    0%   { opacity: 1; }
     100% { opacity: 0; }
 }
-
 .fade-in-out {
-    animation: fadeIn 0.1s ease-in forwards; /* 即座にフェードイン */
+    animation: fadeIn 0.1s ease-in forwards;
 }
 .fade-out {
-    animation: fadeOut 0.5s ease-out forwards; /* 0.5秒でフェードアウト */
+    animation: fadeOut 0.5s ease-out forwards;
 }
 
+/* --- 置時計 RANDOM START/STOP フラッシュメッセージアニメーション --- */
+@keyframes vlFlashAnim {
+  0%   { opacity: 0; transform: translate(-50%, -50%) scale(0.5); }
+  20%  { opacity: 1; transform: translate(-50%, -50%) scale(1.08); }
+  35%  { opacity: 1; transform: translate(-50%, -50%) scale(1.0); }
+  75%  { opacity: 1; transform: translate(-50%, -50%) scale(1.0); }
+  100% { opacity: 0; transform: translate(-50%, -50%) scale(0.9); }
+}
 
 html, body {
   width: 100%;
@@ -3033,6 +3040,42 @@ body.input-helper-off-mode #reverseDisplayDateGroup_direct {
   filter: drop-shadow(0 0 6px var(--toggle-bg)) !important;
 }
 
+/* ダミー画面の横向き（landscape）用スタイル */
+@media screen and (orientation: landscape) {
+  #decoyScreen .decoy-title,
+  #decoyScreen .decoy-subtitle,
+  #decoyScreen .decoy-timer-container,
+  #decoyScreen .decoy-hint {
+    display: none !important;
+  }
+  
+  #decoyScreen:not([style*="none"]) {
+    padding-top: 0;
+    display: flex !important;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+  }
+
+  #decoyScreen .decoy-clock-wrap {
+    padding: 0;
+    width: 100%;
+    border: none;
+    background: transparent;
+    box-shadow: none;
+  }
+
+  #decoyScreen .decoy-date {
+    font-size: 6vw;
+    margin-bottom: 2vh;
+  }
+
+  #decoyScreen .decoy-time {
+    font-size: 13vw;
+    white-space: nowrap;
+  }
+}
+
 /* ============================================================
    第2のおとり画面 (view_lock_screen)
    ============================================================ */
@@ -3073,6 +3116,21 @@ body.input-helper-off-mode #reverseDisplayDateGroup_direct {
     0 0 80px rgba(0, 255, 240, 0.2);
   letter-spacing: 2px;
   transition: transform 1s ease-in-out, color 0.3s, text-shadow 0.3s, font-size 0.3s;
+}
+.view-lock-date {
+  font-family: 'Orbitron', 'Courier New', monospace;
+  font-size: 20px;
+  font-weight: 700;
+  color: #fff;
+  white-space: nowrap;
+  margin-bottom: 2vh;
+  text-shadow: 
+    0 0 10px rgba(0, 255, 240, 0.8),
+    0 0 20px rgba(0, 255, 240, 0.6),
+    0 0 40px rgba(0, 255, 240, 0.4),
+    0 0 80px rgba(0, 255, 240, 0.2);
+  letter-spacing: 2px;
+  transition: color 0.3s, text-shadow 0.3s, font-size 0.3s;
 }
 
 /* 長押しプログレスリング */

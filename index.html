@@ -70,7 +70,7 @@
   <input type="text" id="iosKeyboardCloser" readonly tabindex="-1" style="position: absolute; top: -9999px; left: -9999px; opacity: 0; pointer-events: none;">
   <div id="lockScreen">
     <h1 class="fkz anim-title-rise" id="lockTitle">Regulus</h1>
-    <p class="subtitle anim-slow-fade" id="lockSubtitle">レグルス　v3.10</p>
+    <p class="subtitle anim-slow-fade" id="lockSubtitle">レグルス　v3.1.1</p>
     <div class="passcode-row anim-slow-fade">
       <label for="passcode" class="passcode-label">暗証番号：</label>
       <input type="password" id="passcode" placeholder="例：12345" tabindex="1" readonly class="passcode-input">
@@ -121,8 +121,9 @@
   <!-- 第2のおとり画面 (view_lock_screen) -->
   <div id="viewLockScreen" style="display:none;">
     <!-- ネオン時計 -->
-    <div class="view-lock-clock-wrap">
-      <div id="viewLockClock" class="view-lock-clock">--:--</div>
+    <div class="view-lock-clock-wrap" style="flex-direction: column;">
+      <div id="viewLockDate" class="view-lock-date" style="display:none;"></div>
+      <div id="viewLockClock" class="view-lock-clock">--:--:--</div>
     </div>
     
     <!-- 長押しプログレスリング -->

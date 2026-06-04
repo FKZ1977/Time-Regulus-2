@@ -14,6 +14,7 @@ let autoJumpTimer = null;
 let isPickerClosing = false; // ピッカーを閉じる際の一時的な再起動防止ガード（iOSゴーストタップ対策）
 let _pendingMainInit = null; // 「開く」ボタン押下後に実行するメイン機能初期化関数を保持する変数
 let realTimeInterval = null; // Real Timeチェック時の毎秒更新インターバル
+let _standardSecUnlocked = false; // RealTime ONで一度解除したらOFF後も秒を自由入力可能にするフラグ
 
 // ==========================================================================
 // Wake Lock API 管理（ダミー画面・置時計画面の消灯防止）
@@ -511,8 +512,8 @@ function onDrumValueChange() {
     directH = document.getElementById("standardHour_direct");
     directMin = document.getElementById("standardMin_direct");
     directSec = document.getElementById("standardSec_direct");
-    if (isStandardOnTop) {
-      sVal = "0"; // 標準時刻が上の場合は 00秒 に完全固定
+    if (isStandardOnTop && !_standardSecUnlocked) {
+      sVal = "0"; // 標準時刻が上 かつ 秒が未解除の場合は 00秒 に完全固定
     }
   } else if (activeTimePickerGroup === "reverseDisplay") {
     timeEl = document.getElementById("reverseDisplayTime");
@@ -605,7 +606,7 @@ function openTimePicker(group) {
 
   // 標準時刻が上の場合の秒ホイールロック制御
   const secContainer = document.getElementById("pickerWheelSec").parentElement;
-  if (group === "standard" && isStandardOnTop) {
+  if (group === "standard" && isStandardOnTop && !_standardSecUnlocked) {
     if (secContainer) secContainer.classList.add("sec-locked");
   } else {
     if (secContainer) secContainer.classList.remove("sec-locked");
@@ -665,7 +666,7 @@ function openTimePicker(group) {
   if (directMin && directMin.value !== "") mNum = parseInt(directMin.value, 10);
   if (directSec && directSec.value !== "") sVal = parseInt(directSec.value, 10);
 
-  if (group === "standard" && isStandardOnTop) {
+  if (group === "standard" && isStandardOnTop && !_standardSecUnlocked) {
     sVal = "0"; // ロック時は00固定
   }
 
@@ -761,6 +762,14 @@ let _viewLockScaleFactor = 1.0;
 let _vlPressStartTime = 0;
 let _vlIsLongPressSuccess = false;
 let _vlBlockingClick = false;
+// スワイプ・ダブルタップ・フォント切り替え管理
+let _viewLockCurrentFontIndex = 0;   // 現在のフォントインデックス
+let _vlRandomFontMode = false;        // ランダムフォントモードのON/OFF
+let _vlLastTapTime = 0;              // ダブルタップ検出用：前回タップ時刻
+let _vlSwipeStartY = 0;              // スワイプ開始Y座標
+let _vlSwipeStartX = 0;              // スワイプ開始X座標
+let _viewLockShowDate = false;       // シングルタップでの日付表示切り替え
+let _vlSingleTapTimer = null;        // シングルタップとダブルタップの判別用タイマー
 
 const VIEW_LOCK_FONTS = [
   // ── デジタル・SF系 ──────────────────────────────────────
@@ -848,48 +857,56 @@ const VIEW_LOCK_COLORS = [
   '255, 255, 255' // 白色
 ];
 
-function changeViewLockStyle() {
-  const randomFont = VIEW_LOCK_FONTS[Math.floor(Math.random() * VIEW_LOCK_FONTS.length)];
-  const randomFormat = VIEW_LOCK_FORMATS[Math.floor(Math.random() * VIEW_LOCK_FORMATS.length)];
-  const randomColor = VIEW_LOCK_COLORS[Math.floor(Math.random() * VIEW_LOCK_COLORS.length)];
+function changeViewLockStyle(reason = "tick") {
+  // フォント：ランダムモードON時の自動更新、またはモード切り替え時にランダム選択
+  if ((reason === "tick" || reason === "toggle") && _vlRandomFontMode) {
+    _viewLockCurrentFontIndex = Math.floor(Math.random() * VIEW_LOCK_FONTS.length);
+  }
   
-  // 文字の大きさをランダム化（最大サイズの50%〜100%の範囲）
-  _viewLockScaleFactor = 0.75 + Math.random() * 0.25; // 75%〜100%のランダムサイズ（最小値を引き上げ）
-  
+  const randomFont = VIEW_LOCK_FONTS[_viewLockCurrentFontIndex];
   const clockEl = document.getElementById("viewLockClock");
   if (clockEl) {
     clockEl.style.fontFamily = randomFont;
-    clockEl.style.textShadow = `
-      0 0 10px rgba(${randomColor}, 0.8),
-      0 0 20px rgba(${randomColor}, 0.6),
-      0 0 40px rgba(${randomColor}, 0.4),
-      0 0 80px rgba(${randomColor}, 0.2)
-    `;
   }
-  _viewLockCurrentFormat = randomFormat;
+  
+  // 色・フォーマット・スケールの変更は、初期化時、またはランダムモードON時の自動更新/切り替え時のみ行う
+  if (reason === "init" || ((reason === "tick" || reason === "toggle") && _vlRandomFontMode)) {
+    const randomFormat = VIEW_LOCK_FORMATS[Math.floor(Math.random() * VIEW_LOCK_FORMATS.length)];
+    const randomColor = VIEW_LOCK_COLORS[Math.floor(Math.random() * VIEW_LOCK_COLORS.length)];
+    _viewLockScaleFactor = 0.75 + Math.random() * 0.25; 
+    
+    if (clockEl) {
+      clockEl.style.textShadow = `
+        0 0 10px rgba(${randomColor}, 0.8),
+        0 0 20px rgba(${randomColor}, 0.6),
+        0 0 40px rgba(${randomColor}, 0.4),
+        0 0 80px rgba(${randomColor}, 0.2)
+      `;
+    }
+    _viewLockCurrentFormat = randomFormat;
+  }
+  
   _updateViewLockClock();
   
-  // 文字やフォントの変更アニメーション（0.3秒）が終わった頃に、正確なサイズを取得してランダム座標へ移動
-  setTimeout(() => {
-    if (!clockEl) return;
-    const winW = window.innerWidth;
-    const winH = window.innerHeight;
-    
-    // paddingを含んだ幅と高さ
-    const w = clockEl.offsetWidth;
-    const h = clockEl.offsetHeight;
-    
-    // 中央(translate(0, 0))を基準に、はみ出さない範囲での最大移動量(X, Y)を計算する
-    const maxX = Math.max(0, (winW - w) / 2);
-    const maxY = Math.max(0, (winH - h) / 2);
-    
-    // -maxX から +maxX までの範囲でランダムな移動量を決定
-    const randomX = (Math.random() * 2 - 1) * maxX;
-    const randomY = (Math.random() * 2 - 1) * maxY;
-    
-    // 安全に相対移動（transform）だけで配置する（古いブラウザでの絶対座標破綻を防止）
-    clockEl.style.transform = `translate(${randomX}px, ${randomY}px)`;
-  }, 350);
+  // 位置のランダム移動：スワイプ時（フォント確認中）は動かさない。それ以外（1分ごとの更新など）はバーンイン防止のため動かす。
+  if (reason !== "swipe") {
+    setTimeout(() => {
+      if (!clockEl) return;
+      const winW = window.innerWidth;
+      const winH = window.innerHeight;
+      
+      const w = clockEl.offsetWidth;
+      const h = clockEl.offsetHeight;
+      
+      const maxX = Math.max(0, (winW - w) / 2);
+      const maxY = Math.max(0, (winH - h) / 2);
+      
+      const randomX = (Math.random() * 2 - 1) * maxX;
+      const randomY = (Math.random() * 2 - 1) * maxY;
+      
+      clockEl.style.transform = `translate(${randomX}px, ${randomY}px)`;
+    }, 350);
+  }
 }
 
 let _viewLockResizeTimer = null;
@@ -948,7 +965,11 @@ function showViewLockScreen() {
   const viewLock = document.getElementById("viewLockScreen");
   viewLock.style.display = "block";
 
-  changeViewLockStyle();
+  // 入室時：ランダムフォントを1つ選択し、モードをOFF（手動スワイプ切替）でスタート
+  _viewLockCurrentFontIndex = Math.floor(Math.random() * VIEW_LOCK_FONTS.length);
+  _vlRandomFontMode = false;
+  _vlLastTapTime = 0;
+  changeViewLockStyle("init");
   
   // setInterval(changeViewLockStyle, 60000) は削除。
   // スタイル変更は _updateViewLockClock 内の分切り替わり検知で処理します。
@@ -986,47 +1007,76 @@ function _updateViewLockClock() {
   const h = now.getHours();
   const m = now.getMinutes();
   
+  const s = now.getSeconds();
+  
   // ★「分」の切り替わり時にスタイルを自動ランダム変更
   if (_lastViewLockMinute !== -1 && _lastViewLockMinute !== m) {
     // 【バグ修正】ここで先に_lastViewLockMinuteを更新しないと、changeViewLockStyle内で
     // 再度_updateViewLockClockが呼ばれた際に無限ループに陥ってしまう
     _lastViewLockMinute = m;
-    changeViewLockStyle();
+    changeViewLockStyle("tick");
     return;
   }
   _lastViewLockMinute = m;
   
   let timeStr = "";
+  let dateStr = "";
+  const year = now.getFullYear();
+  const month = now.getMonth() + 1;
+  const date = now.getDate();
+  const reiwaYear = year >= 2019 ? year - 2018 : 1;
   
   switch (_viewLockCurrentFormat) {
     case 'fullwidth':
-      const fw_h = String(h).padStart(2, '0').replace(/[0-9]/g, s => String.fromCharCode(s.charCodeAt(0) + 0xFEE0));
-      const fw_m = String(m).padStart(2, '0').replace(/[0-9]/g, s => String.fromCharCode(s.charCodeAt(0) + 0xFEE0));
+      const fw_h = String(h).padStart(2, '0').replace(/[0-9]/g, str => String.fromCharCode(str.charCodeAt(0) + 0xFEE0));
+      const fw_m = String(m).padStart(2, '0').replace(/[0-9]/g, str => String.fromCharCode(str.charCodeAt(0) + 0xFEE0));
       timeStr = `${fw_h}：${fw_m}`;
+      const fw_y = String(year).replace(/[0-9]/g, str => String.fromCharCode(str.charCodeAt(0) + 0xFEE0));
+      const fw_mo = String(month).padStart(2, '0').replace(/[0-9]/g, str => String.fromCharCode(str.charCodeAt(0) + 0xFEE0));
+      const fw_d = String(date).padStart(2, '0').replace(/[0-9]/g, str => String.fromCharCode(str.charCodeAt(0) + 0xFEE0));
+      dateStr = `${fw_y}年${fw_mo}月${fw_d}日`;
       break;
     case 'kanji':
       timeStr = `${_toKanji(h)}時${_toKanji(m)}分`;
+      dateStr = `令和${reiwaYear === 1 ? '元' : _toKanji(reiwaYear)}年${_toKanji(month)}月${_toKanji(date)}日`;
       break;
     case 'old_kanji':
       timeStr = `${_toOldKanji(h)}時${_toOldKanji(m)}分`;
+      dateStr = `令和${reiwaYear === 1 ? '元' : _toOldKanji(reiwaYear)}年${_toOldKanji(month)}月${_toOldKanji(date)}日`;
       break;
     case 'kanji_digit':
       timeStr = `${_toKanjiDigit(h)}：${_toKanjiDigit(m)}`;
+      dateStr = `令和${reiwaYear === 1 ? '元' : _toKanjiDigit(reiwaYear)}年${_toKanjiDigit(month)}月${_toKanjiDigit(date)}日`;
       break;
     case 'old_kanji_digit':
       timeStr = `${_toOldKanjiDigit(h)}：${_toOldKanjiDigit(m)}`;
+      dateStr = `令和${reiwaYear === 1 ? '元' : _toOldKanjiDigit(reiwaYear)}年${_toOldKanjiDigit(month)}月${_toOldKanjiDigit(date)}日`;
       break;
     case 'roman':
       timeStr = `${_toRoman(h)} : ${_toRoman(m)}`;
+      dateStr = `${_toRoman(year)} . ${_toRoman(month)} . ${_toRoman(date)}`;
       break;
     case 'standard':
     default:
       timeStr = `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+      dateStr = `${year}/${String(month).padStart(2, '0')}/${String(date).padStart(2, '0')}`;
       break;
   }
   const clockEl = document.getElementById("viewLockClock");
+  const dateEl = document.getElementById("viewLockDate");
+  
+  // 独立した日付枠は使用しないため常に非表示
+  if (dateEl) {
+    dateEl.style.display = "none";
+  }
+
   if (clockEl) {
-    clockEl.innerText = timeStr;
+    if (_viewLockShowDate) {
+      clockEl.innerHTML = `<div style="font-size: 0.6em; line-height: 1.2; margin-bottom: 0.1em; text-align: center;">${dateStr}</div><div style="text-align: center;">${timeStr}</div>`;
+    } else {
+      clockEl.innerText = timeStr;
+    }
+
     
     // 表示される文字列の長さに応じて、画面幅（vw）に対する最大フォントサイズを動的に計算する
     let emWidth = 0;
@@ -1059,13 +1109,22 @@ function _updateViewLockClock() {
     
     clockEl.style.fontSize = finalPx + 'px';
     
-    // ★【はみ出し完全防止】フォントごとの文字幅の違い（特殊フォント対策）
-    // 実際にブラウザが計算した文字幅を取得し、画面幅（95%）を超えていたら縮小する
+    // ★【はみ出し完全防止】フォントごとの文字幅・高さの違い（複数行や特殊フォント対策）
+    // 実際にブラウザが計算した文字幅と高さを取得し、画面サイズを超えていたら縮小する
     const actualWidth = clockEl.offsetWidth;
+    const actualHeight = clockEl.offsetHeight;
     const targetMaxWidth = winW * 0.95;
+    const targetMaxHeight = winH * 0.95;
+    
+    let scaleDownRatio = 1;
     if (actualWidth > targetMaxWidth) {
-      // はみ出している割合に応じてフォントサイズを正確に縮小する
-      const scaleDownRatio = targetMaxWidth / actualWidth;
+      scaleDownRatio = Math.min(scaleDownRatio, targetMaxWidth / actualWidth);
+    }
+    if (actualHeight > targetMaxHeight) {
+      scaleDownRatio = Math.min(scaleDownRatio, targetMaxHeight / actualHeight);
+    }
+    
+    if (scaleDownRatio < 1) {
       finalPx = finalPx * scaleDownRatio;
       clockEl.style.fontSize = finalPx + 'px';
     }
@@ -1085,6 +1144,12 @@ function _updateViewLockClock() {
 function restartLockScreenAnimation() {
   const lockScreen = document.getElementById('lockScreen');
   if (!lockScreen) return;
+  
+  // キーパッドのシャッフル・再生成を統合
+  if (typeof generateKeypad === 'function') {
+    generateKeypad();
+  }
+
   const animEls = lockScreen.querySelectorAll('.anim-title-rise, .anim-slow-fade');
   animEls.forEach(el => {
     const hasTitleRise = el.classList.contains('anim-title-rise');
@@ -1095,6 +1160,54 @@ function restartLockScreenAnimation() {
     if (hasTitleRise) el.classList.add('anim-title-rise');
     if (hasSlowFade)  el.classList.add('anim-slow-fade');
   });
+}
+
+/* ============================================================
+   viewLockScreen フラッシュメッセージ表示（RANDOM START/STOP）
+   ============================================================ */
+function _vlShowFlash(text, colorRGB = "0,255,224") {
+  const viewLock = document.getElementById("viewLockScreen");
+  if (!viewLock) return;
+  // 既存フラッシュがあれば削除
+  const existing = viewLock.querySelector('.vl-flash-msg');
+  if (existing) existing.remove();
+
+  const flash = document.createElement("div");
+  flash.className = "vl-flash-msg";
+  flash.textContent = text;
+  flash.style.cssText = [
+    "position:fixed",
+    "top:50%",
+    "left:50%",
+    "transform:translate(-50%,-50%) scale(0.5)",
+    "font-size:min(6.5vw,42px)",
+    `color:rgba(${colorRGB},1)`,
+    `text-shadow:0 0 20px rgba(${colorRGB},0.9),0 0 40px rgba(${colorRGB},0.6)`,
+    "font-family:'Orbitron',sans-serif",
+    "font-weight:bold",
+    "text-align:center",
+    "z-index:9999",
+    "pointer-events:none",
+    "letter-spacing:0.05em",
+    "white-space:nowrap",
+    "animation:vlFlashAnim 1.5s ease-out forwards"
+  ].join(";");
+  viewLock.appendChild(flash);
+  setTimeout(() => { if (flash.parentNode) flash.parentNode.removeChild(flash); }, 1600);
+}
+
+/* ============================================================
+   viewLockScreen ランダムフォントモード切り替え
+   ============================================================ */
+function _vlToggleRandomFont() {
+  _vlRandomFontMode = !_vlRandomFontMode;
+  if (_vlRandomFontMode) {
+    _vlShowFlash("ＲＡＮＤＯＭ　ＳＴＡＲＴ");
+    changeViewLockStyle("toggle"); // 即ランダムフォントを適用
+  } else {
+    _vlShowFlash("ＲＡＮＤＯＭ　ＳＴＯＰ", "255,0,170");
+    // フォントを現在インデックスに固定。色・位置の変更はしない
+  }
 }
 
 // ──────────────────────────────────────────────────────────────
@@ -1123,24 +1236,102 @@ function _vlEndHold(e) {
     circle.style.transition = "stroke-dashoffset 0.1s linear";
     circle.style.strokeDashoffset = "164";
   }
-  // シングルタップ（400ms未満）でスタイル変更
-  if (_vlPressStartTime > 0 && (Date.now() - _vlPressStartTime < 400)) {
-    changeViewLockStyle();
+
+  if (_vlPressStartTime === 0) return;
+  const elapsed = Date.now() - _vlPressStartTime;
+  _vlPressStartTime = 0; // 必ずリセット
+
+  const touch = e.changedTouches ? e.changedTouches[0] : e;
+  const endY = touch ? touch.clientY : _vlSwipeStartY;
+  const endX = touch ? touch.clientX : _vlSwipeStartX;
+  const deltaY = _vlSwipeStartY - endY;      // 正: 上スワイプ（指が上）/ 負: 下スワイプ（指が下）
+  const absDeltaY = Math.abs(deltaY);
+  const absDeltaX = Math.abs(endX - _vlSwipeStartX);
+
+  if (absDeltaY > 40 && absDeltaY > absDeltaX && elapsed < 700) {
+    // ─── 縦スワイプ検出 ───
+    if (_vlRandomFontMode) {
+      // RANDOM START中：スワイプでフォントをランダムに変化
+      _viewLockCurrentFontIndex = Math.floor(Math.random() * VIEW_LOCK_FONTS.length);
+    } else {
+      // RANDOM STOP中：現在のフォントから順序良く変化
+      if (deltaY > 0) {
+        // 上スワイプ（指が上方向）→ 前のフォント
+        _viewLockCurrentFontIndex = (_viewLockCurrentFontIndex - 1 + VIEW_LOCK_FONTS.length) % VIEW_LOCK_FONTS.length;
+      } else {
+        // 下スワイプ（指が下方向）→ 次のフォント
+        _viewLockCurrentFontIndex = (_viewLockCurrentFontIndex + 1) % VIEW_LOCK_FONTS.length;
+      }
+    }
+    changeViewLockStyle("swipe");
+  } else if (elapsed < 400 && absDeltaY <= 20 && absDeltaX <= 20) {
+    // ─── タップ検出（スワイプでない） ───
+    const now = Date.now();
+    if (_vlLastTapTime > 0 && now - _vlLastTapTime < 400) {
+      // ダブルタップ → RANDOM START/STOP
+      _vlToggleRandomFont();
+      _vlLastTapTime = 0;
+      if (_vlSingleTapTimer) {
+        clearTimeout(_vlSingleTapTimer);
+        _vlSingleTapTimer = null;
+      }
+    } else {
+      // シングルタップ → タイマーをセットし、ダブルタップが来なければ実行
+      _vlLastTapTime = now;
+      if (_vlSingleTapTimer) clearTimeout(_vlSingleTapTimer);
+      _vlSingleTapTimer = setTimeout(() => {
+        _vlLastTapTime = 0;
+        _vlSingleTapTimer = null;
+        _viewLockShowDate = !_viewLockShowDate;
+        _updateViewLockClock();
+      }, 400);
+    }
+    // iOSのghost clickをブロック
+    _vlBlockingClick = true;
+    setTimeout(() => { _vlBlockingClick = false; }, 300);
   }
-  _vlPressStartTime = 0;
-  // ghost clickを300msだけブロック
-  _vlBlockingClick = true;
-  setTimeout(() => { _vlBlockingClick = false; }, 300);
+}
+
+// スワイプ中の指移動（touchmove / mousemove）ハンドラ：長押しをキャンセル
+function _vlMoveHold(e) {
+  if (!_vlPressStartTime) return;
+  const touch = e.touches ? e.touches[0] : e;
+  const moveY = touch.clientY;
+  const moveX = touch.clientX;
+  
+  // 開始位置から20px以上動いたら長押しをキャンセル（リングも消す）
+  if (Math.abs(moveY - _vlSwipeStartY) > 20 || Math.abs(moveX - _vlSwipeStartX) > 20) {
+    if (_viewLockHoldTimer) {
+      clearTimeout(_viewLockHoldTimer);
+      _viewLockHoldTimer = null;
+      const ring = document.getElementById("viewLockHoldRing");
+      const circle = document.getElementById("viewLockRingCircle");
+      if (ring) ring.style.opacity = "0";
+      if (circle) {
+        circle.style.transition = "stroke-dashoffset 0.1s linear";
+        circle.style.strokeDashoffset = "164";
+      }
+    }
+  }
 }
 
 // 指触れ（touchstart / mousedown）ハンドラ
 function _vlStartHold(e) {
   if (e.cancelable) e.preventDefault();
+  
+  // 連続スワイプ・マルチタッチ等によるタイマーの重複（孤児化）を防止
+  if (_viewLockHoldTimer) {
+    clearTimeout(_viewLockHoldTimer);
+    _viewLockHoldTimer = null;
+  }
+
   _vlIsLongPressSuccess = false;
   _vlPressStartTime = Date.now();
   const ring = document.getElementById("viewLockHoldRing");
   const circle = document.getElementById("viewLockRingCircle");
   const touch = e.touches ? e.touches[0] : e;
+  _vlSwipeStartY = touch.clientY; // スワイプ開始Y座標を記録
+  _vlSwipeStartX = touch.clientX; // スワイプ開始X座標を記録
   if (ring) {
     ring.style.left = touch.clientX + "px";
     ring.style.top = touch.clientY + "px";
@@ -1164,7 +1355,8 @@ function _vlStartHold(e) {
     _releaseWakeLock();
     if (viewLock) viewLock.style.display = "none";
     document.getElementById("lockScreen").style.display = "block";
-    restartLockScreenAnimation();
+    // Bug①修正: 2フレーム待機してアニメーション確実再起動（display:blockの描画完了を待つ）
+    requestAnimationFrame(() => requestAnimationFrame(() => restartLockScreenAnimation()));
     if (ring)   { ring.style.opacity = "0"; }
     if (circle) {
       circle.style.transition = "stroke-dashoffset 0.1s linear";
@@ -1180,7 +1372,9 @@ function initViewLockHold() {
   // 同一関数参照を渡すことで removeEventListener が正確に機能する
   viewLock.removeEventListener('click',       _vlClickBlocker, true);
   viewLock.removeEventListener('mousedown',   _vlStartHold);
+  viewLock.removeEventListener('mousemove',   _vlMoveHold);
   viewLock.removeEventListener('touchstart',  _vlStartHold);
+  viewLock.removeEventListener('touchmove',   _vlMoveHold);
   viewLock.removeEventListener('mouseup',     _vlEndHold);
   viewLock.removeEventListener('mouseleave',  _vlEndHold);
   viewLock.removeEventListener('touchend',    _vlEndHold);
@@ -1189,10 +1383,15 @@ function initViewLockHold() {
   _vlPressStartTime = 0;
   _vlIsLongPressSuccess = false;
   _vlBlockingClick = false;
+  _vlLastTapTime = 0;
+  _vlSwipeStartY = 0;
+  _vlSwipeStartX = 0;
   // リスナーを登録
   viewLock.addEventListener('click',       _vlClickBlocker, true);
   viewLock.addEventListener('mousedown',   _vlStartHold);
+  viewLock.addEventListener('mousemove',   _vlMoveHold);
   viewLock.addEventListener('touchstart',  _vlStartHold, { passive: false });
+  viewLock.addEventListener('touchmove',   _vlMoveHold, { passive: true });
   viewLock.addEventListener('mouseup',     _vlEndHold);
   viewLock.addEventListener('mouseleave',  _vlEndHold);
   viewLock.addEventListener('touchend',    _vlEndHold);
@@ -1207,7 +1406,12 @@ function initViewLockHold() {
 let _decoyClockTimer  = null; // 時計更新タイマー
 let _decoyHoldTimer   = null; // 長押し判定タイマー
 let _decoyHoldStarted = false;
+let _decoyClockPaused = false;
+let _decoyLastTapTime = 0;
 let _decoyDisplayMode = 0; // 0: 通常, 1: 24時間残り, 2: 日の出/日没
+let _decoySingleTapTimer = null;
+let _decoyTapCount = 0;
+let _decoyHideSubSeconds = false;
 
 function showDecoyScreen() {
   // Google Analytics: ダミー画面への遷移をカウント（国別データなどもAnalytics上で確認可能）
@@ -1223,12 +1427,7 @@ function showDecoyScreen() {
   decoy.style.display = "block";
 
   const clockWrap = decoy.querySelector(".decoy-clock-wrap");
-  if (clockWrap) {
-    clockWrap.onclick = () => {
-      _decoyDisplayMode = (_decoyDisplayMode + 1) % 3;
-      _updateDecoyClock(); // 即時反映
-    };
-  }
+  // onclickハンドラは不要になりました（_decoyHoldEndで処理します）
 
   // アニメーションを確実に最初から再生させる（フェードイン・浮上）
   const title = decoy.querySelector(".anim-title-rise");
@@ -1268,7 +1467,7 @@ function showDecoyScreen() {
   if (decoyEl) decoyEl._visibilityHandler = _decoyVisibilityHandler;
 
   // 長押しイベント登録
-  decoy.addEventListener("touchstart",  _decoyHoldStart,  { passive: true });
+  decoy.addEventListener("touchstart",  _decoyHoldStart,  { passive: false });
   decoy.addEventListener("touchend",    _decoyHoldEnd,    { passive: true });
   decoy.addEventListener("touchcancel", _decoyHoldEnd,    { passive: true });
   decoy.addEventListener("mousedown",   _decoyHoldStart);
@@ -1283,6 +1482,9 @@ function hideDecoyScreen() {
   _decoyHoldTimer = null;
   _decoyHoldStarted = false;
   _decoyDisplayMode = 0;
+  _decoyClockPaused = false;
+  _decoyLastTapTime = 0;
+  _decoyTapCount = 0;
 
   // ★【消灯防止】Wake Lock を解放する
   _releaseWakeLock();
@@ -1316,7 +1518,9 @@ function hideDecoyScreen() {
   if (pc) { pc.value = ""; pc.style.border = ""; }
   const err = document.getElementById("error");
   if (err) err.innerText = "";
-  restartLockScreenAnimation();
+  
+  // Bug修正: 2フレーム遅延呼び出し（display:blockの描画完了待ちによるアニメーション不発防止）
+  requestAnimationFrame(() => requestAnimationFrame(() => restartLockScreenAnimation()));
 }
 
 // 日の出・日の入りの近似計算（東京の緯度経度をデフォルトとする）
@@ -1366,6 +1570,7 @@ function getSunriseSunset(date, lat = 35.6895, lng = 139.6917) {
 }
 
 function _updateDecoyClock() {
+  if (_decoyClockPaused) return; // ダブルタップ停止中は更新しない
   const now = new Date();
   const dateEl = document.getElementById("decoyDate");
   const timeEl = document.getElementById("decoyTime");
@@ -1391,7 +1596,7 @@ function _updateDecoyClock() {
     }
     if (timeEl) {
       timeEl.style.fontSize = ""; // Reset inline font-size
-      timeEl.textContent = `${h}:${mi}:${s}.${ms}`;
+      timeEl.textContent = _decoyHideSubSeconds ? `${h}:${mi}:${s}` : `${h}:${mi}:${s}.${ms}`;
     }
   } else if (_decoyDisplayMode === 2) {
     // Mode 2: 日の出・日没
@@ -1430,7 +1635,7 @@ function _updateDecoyClock() {
     }
     if (timeEl) {
       timeEl.style.fontSize = ""; // 固定サイズを維持
-      timeEl.textContent = `${h}:${mi}:${s}.${ms}`;
+      timeEl.textContent = _decoyHideSubSeconds ? `${h}:${mi}:${s}` : `${h}:${mi}:${s}.${ms}`;
     }
   } else {
     // Mode 0: 通常
@@ -1450,12 +1655,16 @@ function _updateDecoyClock() {
     // 全角コロンだと幅を取りすぎて改行されるため、半角コロンに変更
     if (timeEl) {
       timeEl.style.fontSize = ""; // Reset inline font-size
-      timeEl.textContent = `${h}:${mi}:${s}.${ms}`;
+      timeEl.textContent = _decoyHideSubSeconds ? `${h}:${mi}:${s}` : `${h}:${mi}:${s}.${ms}`;
     }
   }
 }
 
-function _decoyHoldStart() {
+function _decoyHoldStart(e) {
+  // ボタン類がタップされた場合は長押し判定やpreventDefaultを除外し、本来のclickを発火させる
+  if (e && e.target && (e.target.tagName === 'BUTTON' || e.target.closest('button'))) return;
+
+  if (e && e.cancelable) e.preventDefault(); // ghost click防止
   if (_decoyHoldStarted) return;
   _decoyHoldStarted = true;
 
@@ -1483,7 +1692,9 @@ function _decoyHoldStart() {
   }, 3000);
 }
 
-function _decoyHoldEnd() {
+function _decoyHoldEnd(e) {
+  if (e && e.target && (e.target.tagName === 'BUTTON' || e.target.closest('button'))) return;
+
   if (!_decoyHoldStarted) return;
   _decoyHoldStarted = false;
   clearTimeout(_decoyHoldTimer);
@@ -1498,6 +1709,44 @@ function _decoyHoldEnd() {
   if (circle) {
     circle.style.transition = "none";
     circle.style.strokeDashoffset = "163";
+  }
+
+  // タップ判定（長押しで戻る前に離した場合）
+  const now = Date.now();
+  if (_decoyLastTapTime > 0 && now - _decoyLastTapTime > 400) {
+    _decoyTapCount = 0; // 400ms以上空いたらリセット
+  }
+  _decoyLastTapTime = now;
+  _decoyTapCount++;
+  
+  if (_decoySingleTapTimer) clearTimeout(_decoySingleTapTimer);
+  
+  if (_decoyTapCount === 3) {
+    // トリプルタップ (元々はダブルタップの機能)
+    _decoyTapCount = 0;
+    _decoyClockPaused = !_decoyClockPaused; // 停止/再開をトグル
+    if (!_decoyClockPaused) {
+      _updateDecoyClock(); // 即時反映
+    }
+  } else {
+    // 400ms待って次のタップが来なければ確定させる
+    _decoySingleTapTimer = setTimeout(() => {
+      const count = _decoyTapCount;
+      _decoyTapCount = 0;
+      if (count === 1) {
+        // シングルタップ
+        _decoyDisplayMode = (_decoyDisplayMode + 1) % 3;
+      } else if (count === 2) {
+        // ダブルタップ (元々はトリプルタップの機能)
+        _decoyHideSubSeconds = !_decoyHideSubSeconds;
+        if (_decoyHideSubSeconds) {
+          _decoyClockPaused = false; // コンマ秒をなくした時計が起動したときは静止を解除
+        }
+      }
+      if (!_decoyClockPaused || count === 2) {
+        _updateDecoyClock(); // 即時反映
+      }
+    }, 400);
   }
 }
 
@@ -1628,25 +1877,7 @@ function _updateDecoyCountdown() {
   }
 }
 
-// ロック画面のアニメーション再始動用ヘルパー
-function restartLockScreenAnimation() {
-  const title = document.querySelector("#lockScreen h1.fkz");
-  const subtitle = document.querySelector("#lockScreen .subtitle");
-  const labels = document.querySelectorAll("#lockScreen label, #lockScreen input, #lockScreen button.action-btn, #lockScreen p:not(.fkz)");
-  
-  if (title) title.classList.remove("anim-title-rise");
-  if (subtitle) subtitle.classList.remove("anim-slow-fade");
-  labels.forEach(el => el.classList.remove("anim-slow-fade"));
-  
-  generateKeypad(); // 瞬きアニメーションをトリガー
-  
-  // DOMリフロー後にアニメーションを最初から実行
-  setTimeout(() => {
-    if (title) title.classList.add("anim-title-rise");
-    if (subtitle) subtitle.classList.add("anim-slow-fade");
-    labels.forEach(el => el.classList.add("anim-slow-fade"));
-  }, 10);
-}
+// （以前ここにあった重複・古い仕様の restartLockScreenAnimation は削除・統合されました）
 
 function generateKeypad() {
   const keypad = document.getElementById("keypad");
@@ -2267,11 +2498,22 @@ function toggleRealTime(checked) {
         el.style.opacity = '0.7';
       }
     });
-    // 秒固定を解除してすぐ現在時刻を設定
+    // RealTime ON で秒の00固定を解除。以降はOFFにしても秒を自由入力可能にする（フラグを立てる）
+    _standardSecUnlocked = true;
     const sS = document.getElementById('standardSec_direct');
     if (sS) {
       sS.disabled = false;
+      sS.readOnly = false;
+      sS.style.opacity = '';
+      sS.style.pointerEvents = 'auto';
       sS.classList.remove('seconds-fixed-00');
+    }
+    // ドラム（standardSeconds）も解除
+    const sSel = document.getElementById('standardSeconds');
+    if (sSel) {
+      sSel.disabled = false;
+      sSel.style.pointerEvents = 'auto';
+      sSel.classList.remove('seconds-fixed-00');
     }
     // 即時反映
     _applyRealTimeToStandard();
@@ -2289,13 +2531,34 @@ function toggleRealTime(checked) {
         el.style.opacity = '';
       }
     });
-    // 秒を再度00固定に戻す
+    // _standardSecUnlocked が true（RealTime ONになったことがある）なら秒の00固定に戻さず、自由入力状態を維持
     const sS = document.getElementById('standardSec_direct');
     if (sS) {
-      sS.value = '00';
-      sS.disabled = true;
-      sS.style.pointerEvents = 'none';
-      sS.classList.add('seconds-fixed-00');
+      if (_standardSecUnlocked) {
+        // 自由入力状態を維持（readOnly・ disabled を解除）
+        sS.readOnly = false;
+        sS.disabled = false;
+        sS.style.pointerEvents = 'auto';
+        sS.style.opacity = '';
+      } else {
+        // まだRealTimeが一度もONになっていない → 00固定に戻す
+        sS.value = '00';
+        sS.disabled = true;
+        sS.style.pointerEvents = 'none';
+        sS.classList.add('seconds-fixed-00');
+      }
+    }
+    // ドラム（standardSeconds）も同様に制御
+    const sSel = document.getElementById('standardSeconds');
+    if (sSel) {
+      if (_standardSecUnlocked) {
+        sSel.disabled = false;
+        sSel.style.pointerEvents = 'auto';
+      } else {
+        sSel.disabled = true;
+        sSel.style.pointerEvents = 'none';
+        sSel.classList.add('seconds-fixed-00');
+      }
     }
     calculateError();
   }
@@ -2334,6 +2597,14 @@ function _applyRealTimeToStandard() {
 function showErrorMode() {
   document.getElementById("modeSelect").style.display = "none";
   document.getElementById("errorMode").style.display = "block";
+
+  // モード選択から遷移するたびに RealTime を必ず OFF にリセット
+  const realTimeCb = document.getElementById('realTimeCheckbox');
+  if (realTimeCb && realTimeCb.checked) {
+    realTimeCb.checked = false;
+    toggleRealTime(false);
+  }
+
   
   // 初期状態でテンキーを起動する自動フォーカス処理
   if (!inputHelperEnabled) {
@@ -2551,6 +2822,8 @@ function swapErrorModeInputs() {
       modeCard.insertBefore(standardGroup, displayGroup); 
       modeCard.insertBefore(swapButtonWrapper, displayGroup);
       
+      // ♻で標準を上に移動するたびに秒の固定解除フラグをリセットし　00固定状態に戻す（要件②）
+      _standardSecUnlocked = false;
       nowButton.style.display = "none";
       const realTimeRow = document.getElementById('realTimeCheckboxRow');
       if (realTimeRow) realTimeRow.style.display = 'flex';
@@ -2559,6 +2832,14 @@ function swapErrorModeInputs() {
         standardSecDirect.disabled = true;
         standardSecDirect.style.pointerEvents = 'none';
         standardSecDirect.classList.add('seconds-fixed-00');
+      }
+      // ドラム（standardSeconds）も同時に00固定にロック
+      const standardSecsDrum = document.getElementById('standardSeconds');
+      if (standardSecsDrum) {
+        standardSecsDrum.value = "0";
+        standardSecsDrum.disabled = true;
+        standardSecsDrum.style.pointerEvents = 'none';
+        standardSecsDrum.classList.add('seconds-fixed-00');
       }
     } else {
       modeCard.insertBefore(displayGroup, standardGroup);
@@ -2585,14 +2866,18 @@ function swapErrorModeInputs() {
     calculateError();
 
     // 3. スライドイン＆フェードイン出現アニメーションの適用
+    // 各要素が「元いた位置（内側）」から最終位置へ移動することで、
+    // 消えるときと同じ「内側」の動きに見える
     if (isMovingStandardUp) {
-      // 上に来た標準Groupは上から降りて出現し、下に来た表示Groupは下から昇って出現する
-      standardGroup.className = `input-group ${omitClass} animate-down-in`.trim();
-      displayGroup.className = `input-group ${omitClass} animate-up-in`.trim();
-    } else {
-      // 上に来た表示Groupは上から降りて出現し、下に来た標準Groupは下から昇って出現する
-      displayGroup.className = `input-group ${omitClass} animate-down-in`.trim();
+      // 標準は元いた下から上へスライドして出現（内側から）
       standardGroup.className = `input-group ${omitClass} animate-up-in`.trim();
+      // 表示は元いた上から下へスライドして出現（内側から）
+      displayGroup.className = `input-group ${omitClass} animate-down-in`.trim();
+    } else {
+      // 表示は元いた下から上へスライドして出現（内側から）
+      displayGroup.className = `input-group ${omitClass} animate-up-in`.trim();
+      // 標準は元いた上から下へスライドして出現（内側から）
+      standardGroup.className = `input-group ${omitClass} animate-down-in`.trim();
     }
 
     // 4. アニメーション終了（さらに150ms後）に元の静止クラス状態（date-omittedの有無など）に完全復元
@@ -2634,7 +2919,8 @@ function calculateError() {
   const realTimeCheckbox = document.getElementById('realTimeCheckbox');
   const isRealTimeOn = realTimeCheckbox && realTimeCheckbox.checked;
   
-  if (isStandardOnTop && !isRealTimeOn) {
+  if (isStandardOnTop && !isRealTimeOn && !_standardSecUnlocked) {
+    // 00固定状態（RealTimeが一度もONになっていない）→ 0秒を使用
     standardSecValue = "0";
   } else {
     standardSecValue = document.getElementById("standardSec_direct").value;

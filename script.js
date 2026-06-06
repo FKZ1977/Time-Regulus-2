@@ -1839,9 +1839,10 @@ function startDecoyTimer(minutes) {
     
     // MP3音源の先読み（Audio要素を使うことでローカル環境 file:// でのCORSエラーを回避）
     if (!_bikeAudioElement) {
-      _bikeAudioElement = new Audio('./bike.mp3');
+      _bikeAudioElement = new Audio();
+      _bikeAudioElement.preload = 'auto'; // autoplay誘発を防ぎ、先読みだけする
       _bikeAudioElement.loop = true;
-      _bikeAudioElement.load();
+      _bikeAudioElement.src = './bike.mp3'; // srcを後設定することで自動再生を防ぐ
     }
   } catch (e) {}
 
@@ -1932,6 +1933,11 @@ function cancelDecoyTimer() {
 }
 
 function _updateDecoyCountdown() {
+  // タイマーが起動していない場合は何もしない（誤発動防止）
+  if (!_decoyTimerInterval && !_decoyTimerPaused) return;
+  // _decoyTargetTimeの初期値(0)のまま呼ばれた場合も無視
+  if (_decoyTargetTime <= 0) return;
+
   const remain = _decoyTargetTime - Date.now();
   const display = document.getElementById("decoyCountdown");
   
@@ -4098,10 +4104,10 @@ document.addEventListener("focusin", function(e) {
   let toEl   = null;
   let toId   = null;
 
-  // スワイプ可能な画面一覧
-  const SWIPEABLE = ['errorMode', 'correctionMode', 'resultListPage'];
+  // スワイプ可能な画面一覧（modeSelectを先頭に追加）
+  const SWIPEABLE = ['modeSelect', 'errorMode', 'correctionMode', 'resultListPage'];
   // スワイプさせない画面一覧（デコイ画面も完全固定）
-  const LOCKED    = ['lockScreen', 'modeSelect', 'decoyScreen'];
+  const LOCKED    = ['lockScreen', 'decoyScreen'];
 
   function getEl(id) { return document.getElementById(id); }
 
@@ -4121,9 +4127,12 @@ document.addEventListener("focusin", function(e) {
   // 左スワイプ(dX<0)=進む, 右スワイプ(dX>0)=戻る
   function getDestId(srcId, dX) {
     if (dX < 0) {
+      // 左スワイプ → 次の画面へ
+      if (srcId === 'modeSelect')     return 'errorMode';
       if (srcId === 'errorMode')      return 'correctionMode';
       if (srcId === 'correctionMode') return 'resultListPage';
     } else {
+      // 右スワイプ → 前の画面へ
       if (srcId === 'resultListPage') return 'correctionMode';
       if (srcId === 'correctionMode') return 'modeSelect';
       if (srcId === 'errorMode')      return 'modeSelect';
@@ -4171,7 +4180,7 @@ document.addEventListener("focusin", function(e) {
 
     if (!currentId) return;
 
-    // ロック画面・モード選択はスワイプ開始しない
+    // ロック画面はスワイプ開始しない
     if (isLockedScreen) {
       isSwiping = false;
       fromEl = null;
@@ -4272,9 +4281,13 @@ document.addEventListener("focusin", function(e) {
       const initW = window.innerWidth;
       const initBase = dX > 0 ? -initW : initW;
       toEl.style.transition = 'none';
-      toEl.style.position   = 'fixed';
+      // スワイプ中は absolute にすることでドキュメントの元の高さ(margin-top等)を維持する
+      toEl.style.position   = 'absolute';
       toEl.style.top        = '0';
       toEl.style.left       = '0';
+      toEl.style.right      = '0';
+      toEl.style.marginLeft = 'auto';
+      toEl.style.marginRight= 'auto';
       if (toId === 'resultListPage') {
         toEl.style.width      = '100%';
         toEl.style.minHeight  = '100vh';
@@ -4301,7 +4314,10 @@ document.addEventListener("focusin", function(e) {
     isSwiping = false;
 
     if (axisLocked !== 'horizontal') {
-      if (fromEl) { fromEl.style.transition = ''; fromEl.style.transform = ''; }
+      if (fromEl) {
+        fromEl.style.transition = '';
+        fromEl.style.transform  = '';
+      }
       fromEl = null; toEl = null; toId = null; currentId = null;
       return;
     }
@@ -4316,7 +4332,10 @@ document.addEventListener("focusin", function(e) {
         fromEl.style.transition = 'transform 0.3s ease';
         fromEl.style.transform  = 'translateX(0)';
         const f = fromEl;
-        setTimeout(() => { f.style.transition = ''; f.style.transform = ''; }, 300);
+        setTimeout(() => {
+          f.style.transition = '';
+          f.style.transform  = '';
+        }, 300);
       }
       fromEl = null; toEl = null; toId = null; currentId = null;
       axisLocked = null;
@@ -4340,7 +4359,7 @@ document.addEventListener("focusin", function(e) {
       fromEl = null; toEl = null; toId = null; currentId = null;
 
       setTimeout(() => {
-        // from 画面を完全に非表示
+        // from 画面を完全に非表示＆リセット
         cFrom.style.display    = 'none';
         cFrom.style.transform  = '';
         cFrom.style.transition = '';
@@ -4349,7 +4368,9 @@ document.addEventListener("focusin", function(e) {
         cTo.style.position   = '';
         cTo.style.top        = '';
         cTo.style.left       = '';
-        // mode-cardはwidth/minHeight/backgroundを変更していないのでリセット不要
+        cTo.style.right      = '';
+        cTo.style.marginLeft = '';
+        cTo.style.marginRight= '';
         // resultListPageのみリセット
         if (cTo.id === 'resultListPage') {
           cTo.style.width      = '';
@@ -4387,6 +4408,9 @@ document.addEventListener("focusin", function(e) {
         cTo.style.position   = '';
         cTo.style.top        = '';
         cTo.style.left       = '';
+        cTo.style.right      = '';
+        cTo.style.marginLeft = '';
+        cTo.style.marginRight= '';
         if (cTo.id === 'resultListPage') {
           cTo.style.width      = '';
           cTo.style.minHeight  = '';

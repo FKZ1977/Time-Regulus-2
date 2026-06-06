@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <title>Time Regulus v3.1.1</title>
+  <title>Time Regulus v3.1.2</title>
 
 <!-- Google tag (gtag.js) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-R7PW7DY4GF"></script>
@@ -70,7 +70,7 @@
   <input type="text" id="iosKeyboardCloser" readonly tabindex="-1" style="position: absolute; top: -9999px; left: -9999px; opacity: 0; pointer-events: none;">
   <div id="lockScreen">
     <h1 class="fkz anim-title-rise" id="lockTitle">Regulus</h1>
-    <p class="subtitle anim-slow-fade" id="lockSubtitle">レグルス　v3.1.1</p>
+    <p class="subtitle anim-slow-fade" id="lockSubtitle">レグルス　v3.1.2</p>
     <div class="passcode-row anim-slow-fade">
       <label for="passcode" class="passcode-label">暗証番号：</label>
       <input type="password" id="passcode" placeholder="例：12345" tabindex="1" readonly class="passcode-input">
@@ -406,7 +406,7 @@
     <h1 class="fkz" style="margin-top: 40px;">Information</h1>
     <div id="informationContent" style="margin-top: 30px; text-align: left; max-width: 500px; margin-left: auto; margin-right: auto;">
       <p style="margin-bottom: 8px;">このアプリは <strong>H.Fukazu</strong> によって制作されました。</p>
-      <p style="margin-bottom: 24px;">バージョン: <strong>v3.1.1</strong></p>
+      <p style="margin-bottom: 24px;">バージョン: <strong>v3.1.2</strong></p>
 
       <h3 style="margin-top:24px;">## 著作権および利用規約 (Copyright and Usage Policy)</h3>
       <p>本作品（ソフトウェア、コード、ドキュメント、および関連する全ての内容を含む）の著作権は、© 2025 H.Fukazu に帰属します。<br>**© 2025 H.Fukazu. All Rights Reserved.**</p><br>
@@ -478,7 +478,7 @@
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
         // Service Worker自体にもキャッシュバスティングを適用し、更新を強制
-        navigator.serviceWorker.register('./service-worker.js?v=3.1.1')
+        navigator.serviceWorker.register('./service-worker.js?v=3.1.2')
           .then(registration => {
             console.log('Service Worker 登録成功:', registration.scope);
             // 起動時に明示的にアップデートを確認

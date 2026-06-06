@@ -1,4 +1,4 @@
-const CACHE_NAME = "time-regulus-v3.1.1-c2"; // フォントオフライン対応・省電力化
+const CACHE_NAME = "time-regulus-v3.1.2-c2"; // フォントオフライン対応・省電力化
 const urlsToCache = [
   "./",
   "./index.html",

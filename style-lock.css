@@ -18,6 +18,14 @@ input, textarea {
   user-select: auto;
 }
 
+/* QRコード画像は長押し時のiOSポップアップ（共有・URLジャンプなど）を許可 */
+#qrCodeImage {
+  -webkit-touch-callout: default;
+  -webkit-user-select: auto;
+  user-select: auto;
+  pointer-events: auto;
+}
+
 
 :root {
   --bg-dark: #0e0f11;

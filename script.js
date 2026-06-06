@@ -771,6 +771,8 @@ let _vlSwipeStartY = 0;              // スワイプ開始Y座標
 let _vlSwipeStartX = 0;              // スワイプ開始X座標
 let _viewLockShowDate = false;       // シングルタップでの日付表示切り替え
 let _vlSingleTapTimer = null;        // シングルタップとダブルタップの判別用タイマー
+let _vlGlowIntensity = 1.0;          // ネオンの輝き強度（0.1〜2.0）
+let _vlCurrentGlowColor = '0, 255, 240'; // 現在のネオンカラー（RGB文字列）
 
 const VIEW_LOCK_FONTS = [
   // ── デジタル・SF系 ──────────────────────────────────────

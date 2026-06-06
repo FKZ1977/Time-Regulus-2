@@ -764,6 +764,7 @@ let _vlIsLongPressSuccess = false;
 let _vlBlockingClick = false;
 // スワイプ・ダブルタップ・フォント切り替え管理
 let _viewLockCurrentFontIndex = 0;   // 現在のフォントインデックス
+let _viewLockCurrentFormatIndex = 0; // 現在のフォーマットインデックス
 let _vlRandomFontMode = false;        // ランダムフォントモードのON/OFF
 let _vlLastTapTime = 0;              // ダブルタップ検出用：前回タップ時刻
 let _vlSwipeStartY = 0;              // スワイプ開始Y座標
@@ -785,27 +786,17 @@ const VIEW_LOCK_FONTS = [
   // ── 個性的・エレガント系 ─────────────────────────────────
   'Diplomata SC',      // 古典的・彫刻のような重厚感のある文字
   'Bellefair',         // 繊細でエレガントな細身の文字
-  // ── システム内蔵フォント（フォールバック） ─────────────────
-  'Courier New', 'Helvetica Neue', 'Times New Roman', 'Georgia',
-  'Impact', 'Arial', 'Verdana', 'Trebuchet MS',
-  'Baskerville', 'Futura', 'Gill Sans', 'Optima',
-  'Papyrus', 'Monaco', 'Consolas', 'Roboto',
-  'Arial Black', 'Lucida Console', 'Tahoma', 'Garamond',
-  'Cambria', 'Calibri', 'Segoe UI', 'Menlo', 'PT Sans',
-  'Oswald', 'Open Sans', 'Lato', 'Montserrat', 'Raleway',
-  'Ubuntu', 'Playfair Display', 'Nunito', 'Rubik',
-  'Quicksand', 'Inconsolata', 'Josefin Sans', 'Anton', 'Dancing Script'
 ];
 
-// 標準や全角の確率を上げ、時計としての読みやすさを確保（標準:8, 全角:4, 漢字系:6, ローマ:1）
+// 合計20パターン：標準:8, 全角:4, 漢字系各1（計4）, ローマ:3　※漢字系は出現頻度を絞る
 const VIEW_LOCK_FORMATS = [
   'standard', 'standard', 'standard', 'standard', 'standard', 'standard', 'standard', 'standard',
   'fullwidth', 'fullwidth', 'fullwidth', 'fullwidth',
-  'kanji', 'kanji',
+  'kanji',
   'old_kanji',
-  'kanji_digit', 'kanji_digit',
+  'kanji_digit',
   'old_kanji_digit',
-  'roman'
+  'roman', 'roman', 'roman'
 ];
 
 function _toKanji(num) {
@@ -871,20 +862,22 @@ function changeViewLockStyle(reason = "tick") {
   
   // 色・フォーマット・スケールの変更は、初期化時、またはランダムモードON時の自動更新/切り替え時のみ行う
   if (reason === "init" || ((reason === "tick" || reason === "toggle") && _vlRandomFontMode)) {
-    const randomFormat = VIEW_LOCK_FORMATS[Math.floor(Math.random() * VIEW_LOCK_FORMATS.length)];
-    const randomColor = VIEW_LOCK_COLORS[Math.floor(Math.random() * VIEW_LOCK_COLORS.length)];
-    _viewLockScaleFactor = 0.75 + Math.random() * 0.25; 
-    
-    if (clockEl) {
-      clockEl.style.textShadow = `
-        0 0 10px rgba(${randomColor}, 0.8),
-        0 0 20px rgba(${randomColor}, 0.6),
-        0 0 40px rgba(${randomColor}, 0.4),
-        0 0 80px rgba(${randomColor}, 0.2)
-      `;
-    }
-    _viewLockCurrentFormat = randomFormat;
+    // ランダムモード時はサイコロタイムにランダムインデックスで選抟
+    _viewLockCurrentFormatIndex = Math.floor(Math.random() * VIEW_LOCK_FORMATS.length);
+    _vlCurrentGlowColor = VIEW_LOCK_COLORS[Math.floor(Math.random() * VIEW_LOCK_COLORS.length)];
+    _viewLockScaleFactor = 0.75 + Math.random() * 0.25;
   }
+  // ネオン輝きを現在のカラーと強度で適用（初期・ティック・スワイプ全て共通）
+  if (clockEl) {
+    const g = _vlGlowIntensity;
+    clockEl.style.textShadow = `
+      0 0 10px rgba(${_vlCurrentGlowColor}, ${Math.min(1, 0.8 * g)}),
+      0 0 20px rgba(${_vlCurrentGlowColor}, ${Math.min(1, 0.6 * g)}),
+      0 0 40px rgba(${_vlCurrentGlowColor}, ${Math.min(1, 0.4 * g)}),
+      0 0 80px rgba(${_vlCurrentGlowColor}, ${Math.min(1, 0.2 * g)})
+    `;
+  }
+  _viewLockCurrentFormat = VIEW_LOCK_FORMATS[_viewLockCurrentFormatIndex];
   
   _updateViewLockClock();
   
@@ -915,6 +908,9 @@ function _handleViewLockResize() {
   _viewLockResizeTimer = setTimeout(() => {
     const clockEl = document.getElementById("viewLockClock");
     if (!clockEl || clockEl.style.display === "none") return;
+    
+    // ★【バグ修正】画面の回転・リサイズに合わせてフォントサイズを再計算させる
+    _updateViewLockClock();
     
     const winW = window.innerWidth;
     const winH = window.innerHeight;
@@ -1079,14 +1075,20 @@ function _updateViewLockClock() {
 
     
     // 表示される文字列の長さに応じて、画面幅（vw）に対する最大フォントサイズを動的に計算する
+    // 日付表示時は日付文字列の幅も比較に含め、はみ出しを防ぐ
+    const refStr = (_viewLockShowDate && dateStr && dateStr.length > timeStr.length)
+      ? dateStr
+      : timeStr;
     let emWidth = 0;
-    for (let i = 0; i < timeStr.length; i++) {
-      if (timeStr.charCodeAt(i) > 255) {
+    for (let i = 0; i < refStr.length; i++) {
+      if (refStr.charCodeAt(i) > 255) {
         emWidth += 1.05;
       } else {
         emWidth += 0.65;
       }
     }
+    // 日付が0.6emで表示される場合、時刻より幅が広くなる影響も考慮する
+    // → dateStrが refStrに選ばれた場合は、実際に0.6倍の大きさなので逆算する必要はない（すでに小さい内側に嵌まるため）
     
     let maxVw = 95 / emWidth;
     let calculatedVw = maxVw * _viewLockScaleFactor;
@@ -1245,23 +1247,36 @@ function _vlEndHold(e) {
   const endY = touch ? touch.clientY : _vlSwipeStartY;
   const endX = touch ? touch.clientX : _vlSwipeStartX;
   const deltaY = _vlSwipeStartY - endY;      // 正: 上スワイプ（指が上）/ 負: 下スワイプ（指が下）
+  const deltaX = _vlSwipeStartX - endX;       // 正: 左スワイプ（指が左）/ 負: 右スワイプ（指が右）
   const absDeltaY = Math.abs(deltaY);
-  const absDeltaX = Math.abs(endX - _vlSwipeStartX);
+  const absDeltaX = Math.abs(deltaX);
 
-  if (absDeltaY > 40 && absDeltaY > absDeltaX && elapsed < 700) {
-    // ─── 縦スワイプ検出 ───
+  if (absDeltaX > 25 && absDeltaX > absDeltaY && elapsed < 700) {
+    // ─── 横スワイプ検出 — フォント＋フォーマット切替 ───
     if (_vlRandomFontMode) {
-      // RANDOM START中：スワイプでフォントをランダムに変化
       _viewLockCurrentFontIndex = Math.floor(Math.random() * VIEW_LOCK_FONTS.length);
+      _viewLockCurrentFormatIndex = Math.floor(Math.random() * VIEW_LOCK_FORMATS.length);
     } else {
-      // RANDOM STOP中：現在のフォントから順序良く変化
-      if (deltaY > 0) {
-        // 上スワイプ（指が上方向）→ 前のフォント
+      if (deltaX > 0) {
+        // 左スワイプ → 前のフォント＋フォーマット
         _viewLockCurrentFontIndex = (_viewLockCurrentFontIndex - 1 + VIEW_LOCK_FONTS.length) % VIEW_LOCK_FONTS.length;
+        _viewLockCurrentFormatIndex = (_viewLockCurrentFormatIndex - 1 + VIEW_LOCK_FORMATS.length) % VIEW_LOCK_FORMATS.length;
       } else {
-        // 下スワイプ（指が下方向）→ 次のフォント
+        // 右スワイプ → 次のフォント＋フォーマット
         _viewLockCurrentFontIndex = (_viewLockCurrentFontIndex + 1) % VIEW_LOCK_FONTS.length;
+        _viewLockCurrentFormatIndex = (_viewLockCurrentFormatIndex + 1) % VIEW_LOCK_FORMATS.length;
       }
+    }
+    changeViewLockStyle("swipe");
+  } else if (absDeltaY > 25 && absDeltaY > absDeltaX && elapsed < 700) {
+    // ─── 縦スワイプ検出 — ネオン輝き強度の増減 ───
+    const step = 0.2;
+    if (deltaY > 0) {
+      // 上スワイプ → 輝き強く
+      _vlGlowIntensity = Math.min(2.0, _vlGlowIntensity + step);
+    } else {
+      // 下スワイプ → 輝き弱く
+      _vlGlowIntensity = Math.max(0.1, _vlGlowIntensity - step);
     }
     changeViewLockStyle("swipe");
   } else if (elapsed < 400 && absDeltaY <= 20 && absDeltaX <= 20) {
@@ -1284,6 +1299,29 @@ function _vlEndHold(e) {
         _vlSingleTapTimer = null;
         _viewLockShowDate = !_viewLockShowDate;
         _updateViewLockClock();
+        // 日付追加で要素が上に拡大しても画面外にはみ出さないよう位置を再クランプ
+        setTimeout(() => {
+          const clockEl = document.getElementById("viewLockClock");
+          if (!clockEl) return;
+          const winW = window.innerWidth;
+          const winH = window.innerHeight;
+          const transformStr = clockEl.style.transform;
+          let currentX = 0, currentY = 0;
+          if (transformStr) {
+            const match = transformStr.match(/translate\(([^p]+)px,\s*([^p]+)px\)/);
+            if (match) { currentX = parseFloat(match[1]); currentY = parseFloat(match[2]); }
+          }
+          if (isNaN(currentX) || isNaN(currentY)) return;
+          const w = clockEl.offsetWidth;
+          const h = clockEl.offsetHeight;
+          const maxX = Math.max(0, (winW - w) / 2);
+          const maxY = Math.max(0, (winH - h) / 2);
+          let cx = Math.max(-maxX, Math.min(maxX, currentX));
+          let cy = Math.max(-maxY, Math.min(maxY, currentY));
+          if (cx !== currentX || cy !== currentY) {
+            clockEl.style.transform = `translate(${cx}px, ${cy}px)`;
+          }
+        }, 50);
       }, 400);
     }
     // iOSのghost clickをブロック

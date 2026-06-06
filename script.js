@@ -4206,6 +4206,8 @@ document.addEventListener("focusin", function(e) {
     toEl = null;
     toId = null;
 
+    fromEl.style.transition = 'none';
+
   }, { passive: true });
 
   // ----------------------------------------------------------------
@@ -4236,11 +4238,10 @@ document.addEventListener("focusin", function(e) {
       axisLocked = Math.abs(dX) >= Math.abs(dY) ? 'horizontal' : 'vertical';
       if (axisLocked === 'vertical') {
         isSwiping = false;
+        fromEl.style.transition = '';
+        fromEl.style.transform  = '';
         fromEl = null;
         return;
-      } else {
-        // 水平スワイプ確定時のみtransitionを解除（タップ時のDOM操作によるフォーカス消失バグ回避）
-        fromEl.style.transition = 'none';
       }
     }
 
@@ -4313,6 +4314,10 @@ document.addEventListener("focusin", function(e) {
     isSwiping = false;
 
     if (axisLocked !== 'horizontal') {
+      if (fromEl) {
+        fromEl.style.transition = '';
+        fromEl.style.transform  = '';
+      }
       fromEl = null; toEl = null; toId = null; currentId = null;
       return;
     }

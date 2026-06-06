@@ -1795,6 +1795,9 @@ let _decoyAlarmInterval = null;
 let _decoyTargetTime = 0;
 let _decoyTimerPaused = false;
 let _decoyRemainTimeOnPause = 0;
+let _decoyAudioCtx = null; // iOS用オーディオコンテキスト
+let _decoyEngineSource = null; // アイドリング音のループソース
+let _bikeAudioElement = null; // MP3再生用Audio要素
 
 function toggleDecoyTimer() {
   if (!_decoyTimerInterval && !_decoyTimerPaused) return; // 起動していない
@@ -1817,6 +1820,31 @@ function toggleDecoyTimer() {
 }
 
 function startDecoyTimer(minutes) {
+  // ── iOS Safariオーディオロック解除（初回のみ） ──
+  try {
+    if (!_decoyAudioCtx) {
+      _decoyAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    }
+    if (_decoyAudioCtx.state === 'suspended') {
+      _decoyAudioCtx.resume();
+    }
+    // 無音のオシレーターを再生してブラウザにオーディオ利用を許可させる
+    const osc = _decoyAudioCtx.createOscillator();
+    const gain = _decoyAudioCtx.createGain();
+    gain.gain.value = 0;
+    osc.connect(gain);
+    gain.connect(_decoyAudioCtx.destination);
+    osc.start();
+    osc.stop(_decoyAudioCtx.currentTime + 0.01);
+    
+    // MP3音源の先読み（Audio要素を使うことでローカル環境 file:// でのCORSエラーを回避）
+    if (!_bikeAudioElement) {
+      _bikeAudioElement = new Audio('./bike.mp3');
+      _bikeAudioElement.loop = true;
+      _bikeAudioElement.load();
+    }
+  } catch (e) {}
+
   const decoyScreen = document.getElementById("decoyScreen");
   const ring = document.getElementById("decoyHoldRing");
   const pauseBtn = document.getElementById("decoyPauseBtn");
@@ -1825,6 +1853,16 @@ function startDecoyTimer(minutes) {
   if (decoyScreen && decoyScreen.classList.contains("decoy-alarm")) {
     clearInterval(_decoyAlarmInterval);
     _decoyAlarmInterval = null;
+    if (_decoyEngineSource) {
+      try { 
+        if (_decoyEngineSource.stop) _decoyEngineSource.stop(); 
+        else if (_decoyEngineSource.pause) {
+          _decoyEngineSource.pause();
+          _decoyEngineSource.currentTime = 0;
+        }
+      } catch(e){}
+      _decoyEngineSource = null;
+    }
     decoyScreen.classList.remove("decoy-alarm");
     if (ring) ring.classList.remove("decoy-alarm");
     _decoyTargetTime = Date.now() + minutes * 60 * 1000;
@@ -1864,6 +1902,16 @@ function cancelDecoyTimer() {
   _decoyTimerInterval = null;
   clearInterval(_decoyAlarmInterval);
   _decoyAlarmInterval = null;
+  if (_decoyEngineSource) {
+    try { 
+      if (_decoyEngineSource.stop) _decoyEngineSource.stop(); 
+      else if (_decoyEngineSource.pause) {
+        _decoyEngineSource.pause();
+        _decoyEngineSource.currentTime = 0;
+      }
+    } catch(e){}
+    _decoyEngineSource = null;
+  }
   _decoyTimerPaused = false;
   
   const display = document.getElementById("decoyCountdown");
@@ -1893,20 +1941,140 @@ function _updateDecoyCountdown() {
     _decoyTimerInterval = null;
     if (display) display.textContent = "00:00.0";
     
-    // アラーム発動（ピンク色にしてバイブレーション）
+    // アラーム発動（ピンク色 + エンジン音 + バイブレーション）
     const decoyScreen = document.getElementById("decoyScreen");
     const ring = document.getElementById("decoyHoldRing");
     if (decoyScreen && !decoyScreen.classList.contains("decoy-alarm")) {
       decoyScreen.classList.add("decoy-alarm");
       if (ring) ring.classList.add("decoy-alarm");
       
-      // バイブレーション（Android用・iOSは制約あり）
-      if (navigator.vibrate) {
-        navigator.vibrate([500, 200, 500, 200]);
-        _decoyAlarmInterval = setInterval(() => {
-          if (navigator.vibrate) navigator.vibrate([500, 200, 500, 200]);
-        }, 2000);
+      // ── アメ車のアイドリング音（アメリカンVツイン）合成 ──
+      function _startAmericanIdle() {
+        if (!_decoyAudioCtx) return;
+        try {
+          if (_decoyAudioCtx.state === 'suspended') {
+            _decoyAudioCtx.resume();
+          }
+          
+          if (_decoyEngineSource) {
+            try { 
+              if (_decoyEngineSource.stop) _decoyEngineSource.stop(); 
+              else if (_decoyEngineSource.pause) {
+                _decoyEngineSource.pause();
+                _decoyEngineSource.currentTime = 0;
+              }
+            } catch(e){}
+          }
+          
+          function _playSyntheticAmericanIdle() {
+            // ── MP3がない場合は従来の合成音（一番最初の仕様＋三拍子リズム）にフォールバック ──
+            const ctx = _decoyAudioCtx;
+            const sampleRate = ctx.sampleRate;
+          // 400 RPM = 150ms per rev = 300ms per 720-degree cycle
+          const cycleMs = 300; 
+          
+          // 2サイクル分の長さ
+          const totalMs = cycleMs * 2; 
+          const bufferLen = Math.floor(sampleRate * (totalMs / 1000));
+          const buffer = ctx.createBuffer(1, bufferLen, sampleRate);
+          const data = buffer.getChannelData(0);
+          
+          // 一番最初の「音質」を再現する爆発生成関数（ピッチダウン＋ノイズ＋WaveShaper歪み）
+          function addSpike(timeMs, amp) {
+            const startSample = Math.floor((timeMs / 1000) * sampleRate);
+            const durSec = 0.08; // 初回と同じ短い爆発時間
+            
+            for (let i = 0; i < sampleRate * durSec; i++) {
+              let idx = startSample + i;
+              if (idx >= bufferLen) break;
+              
+              // 減衰エンベロープ
+              const env = Math.exp(-i / (sampleRate * durSec) * 5);
+              const t = i / sampleRate;
+              
+              // 初回のピッチダウン (140Hz -> 40Hz)
+              const freqStart = 140;
+              const freqDrop = 100 / durSec;
+              const phase = 2 * Math.PI * (freqStart * t - 0.5 * freqDrop * t * t);
+              const thud = Math.sin(phase);
+              
+              // 排気ノイズ
+              const noise = (Math.random() * 2 - 1);
+              
+              // 初回と同じミックスバランス
+              data[idx] += (thud * 0.7 + noise * 0.3) * env * amp;
+            }
+          }
+          
+          // ── 三拍子リズム (420RPM) は維持 ──
+          addSpike(0, 1.2); 
+          addSpike(131, 0.85); 
+          
+          addSpike(300 + 15, 1.1);
+          addSpike(300 + 15 + 131 + 8, 0.8);
+          
+          const src = ctx.createBufferSource();
+          src.buffer = buffer;
+          src.loop = true;
+          
+          // マフラーのくぐもった音をシミュレート（初回の設定を完全復元）
+          const filter = ctx.createBiquadFilter();
+          filter.type = 'lowpass';
+          filter.frequency.value = 300; 
+          filter.Q.value = 1.5;
+          
+          // 歪み（初回のオーバードライブ設定）
+          const dist = ctx.createWaveShaper();
+          const curve = new Float32Array(400);
+          for (let i = 0; i < 400; i++) {
+            let x = (i * 2 / 400) - 1;
+            curve[i] = Math.tanh(x * 5); // 初回と同じ強さの歪み
+          }
+          dist.curve = curve;
+          
+          const gain = ctx.createGain();
+          gain.gain.value = 2.0; // 音量
+          
+          // 初回と同じ結線順序 (src -> dist -> filter -> gain)
+          src.connect(dist);
+          dist.connect(filter);
+          filter.connect(gain);
+          gain.connect(ctx.destination);
+          
+          src.start();
+          _decoyEngineSource = src;
+          } // _playSyntheticAmericanIdle 終了
+          
+          // ── MP3音源があればそれを優先してループ再生 ──
+          if (_bikeAudioElement) {
+            _bikeAudioElement.currentTime = 0;
+            const playPromise = _bikeAudioElement.play();
+            if (playPromise !== undefined) {
+              playPromise.then(() => {
+                _decoyEngineSource = _bikeAudioElement;
+              }).catch(e => {
+                console.warn("bike.mp3の再生に失敗しました。合成音に切り替えます。", e);
+                _playSyntheticAmericanIdle();
+              });
+            } else {
+              _decoyEngineSource = _bikeAudioElement;
+            }
+          } else {
+            _playSyntheticAmericanIdle();
+          }
+          
+        } catch (e) {
+        }
       }
+      
+      // アイドリング音スタート
+      _startAmericanIdle();
+      
+      // バイブレーションはアイドリングの「三拍子」に合わせてリピート
+      // ループ全体の長さは約610ms
+      _decoyAlarmInterval = setInterval(() => {
+        if (navigator.vibrate) navigator.vibrate([50, 74, 40, 151, 50, 74, 40, 131]); 
+      }, 610);
     }
   } else {
     // 残り時間描画

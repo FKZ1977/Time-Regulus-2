@@ -765,7 +765,7 @@ let _vlBlockingClick = false;
 // スワイプ・ダブルタップ・フォント切り替え管理
 let _viewLockCurrentFontIndex = 0;   // 現在のフォントインデックス
 let _viewLockCurrentFormatIndex = 0; // 現在のフォーマットインデックス
-let _vlRandomFontMode = false;        // ランダムフォントモードのON/OFF
+let _vlRandomMode = 0;               // 0: OFF, 1: COLOR, 2: FONT, 3: ALL
 let _vlLastTapTime = 0;              // ダブルタップ検出用：前回タップ時刻
 let _vlTapCount = 0;                 // タップ回数カウント用
 let _vlSwipeStartY = 0;              // スワイプ開始Y座標
@@ -844,18 +844,21 @@ function _toRoman(num) {
 }
 
 const VIEW_LOCK_COLORS = [
-  '255, 0, 170',   // ピンク（赤系・タイムレグルス色）
-  '255, 128, 0',   // オレンジ
-  '255, 255, 0',   // 黄色
-  '0, 255, 128',   // 緑色
-  '0, 255, 240',   // シアン（標準）
-  '170, 0, 255',   // 紫色
-  '255, 255, 255'  // 白色
+  '255, 0, 170',   // 1. ピンク（赤系・タイムレグルス色）
+  '255, 128, 0',   // 2. オレンジ
+  '255, 255, 0',   // 3. 黄色
+  '0, 255, 128',   // 4. 緑色
+  '0, 255, 240',   // 5. シアン（標準）
+  '0, 100, 255',   // 6. 藍色
+  '170, 0, 255',   // 7. 紫色
+  '255, 255, 255'  // 8. 白色
 ];
 
 function changeViewLockStyle(reason = "tick") {
-  // フォント：ランダムモードON時の自動更新、またはモード切り替え時にランダム選択
-  if ((reason === "tick" || reason === "toggle") && _vlRandomFontMode) {
+  const isTickOrToggle = (reason === "tick" || reason === "toggle");
+
+  // フォント：ランダムモード2(FONT)または3(ALL)時の自動更新
+  if (isTickOrToggle && (_vlRandomMode === 2 || _vlRandomMode === 3)) {
     _viewLockCurrentFontIndex = Math.floor(Math.random() * VIEW_LOCK_FONTS.length);
   }
   
@@ -865,12 +868,15 @@ function changeViewLockStyle(reason = "tick") {
     clockEl.style.fontFamily = randomFont;
   }
   
-  // 色・フォーマット・スケールの変更は、初期化時、またはランダムモードON時の自動更新/切り替え時のみ行う
-  if (reason === "init" || ((reason === "tick" || reason === "toggle") && _vlRandomFontMode)) {
-    // ランダムモード時はサイコロタイムにランダムインデックスで選抟
+  // フォーマット・スケールの変更は、初期化時またはフォントランダム時
+  if (reason === "init" || (isTickOrToggle && (_vlRandomMode === 2 || _vlRandomMode === 3))) {
     _viewLockCurrentFormatIndex = Math.floor(Math.random() * VIEW_LOCK_FORMATS.length);
-    _vlCurrentGlowColor = VIEW_LOCK_COLORS[Math.floor(Math.random() * VIEW_LOCK_COLORS.length)];
     _viewLockScaleFactor = 0.75 + Math.random() * 0.25;
+  }
+  
+  // 色の変更は、初期化時またはカラーランダム時
+  if (reason === "init" || (isTickOrToggle && (_vlRandomMode === 1 || _vlRandomMode === 3))) {
+    _vlCurrentGlowColor = VIEW_LOCK_COLORS[Math.floor(Math.random() * VIEW_LOCK_COLORS.length)];
   }
   // ネオン輝きを現在のカラーと強度で適用（初期・ティック・スワイプ全て共通）
   if (clockEl) {
@@ -1204,16 +1210,22 @@ function _vlShowFlash(text, colorRGB = "0,255,224") {
 }
 
 /* ============================================================
-   viewLockScreen ランダムフォントモード切り替え
+   viewLockScreen ランダムモード切り替え
    ============================================================ */
-function _vlToggleRandomFont() {
-  _vlRandomFontMode = !_vlRandomFontMode;
-  if (_vlRandomFontMode) {
-    _vlShowFlash("ＲＡＮＤＯＭ　ＳＴＡＲＴ");
-    changeViewLockStyle("toggle"); // 即ランダムフォントを適用
+function _vlCycleRandomMode() {
+  _vlRandomMode = (_vlRandomMode + 1) % 4;
+  
+  if (_vlRandomMode === 1) {
+    _vlShowFlash("ＣＯＬＯＲ　ＲＡＮＤＯＭ", "255,128,0");
+    changeViewLockStyle("toggle");
+  } else if (_vlRandomMode === 2) {
+    _vlShowFlash("ＦＯＮＴ　ＲＡＮＤＯＭ", "0,255,128");
+    changeViewLockStyle("toggle");
+  } else if (_vlRandomMode === 3) {
+    _vlShowFlash("ＡＬＬ　ＲＡＮＤＯＭ", "0,255,240");
+    changeViewLockStyle("toggle");
   } else {
-    _vlShowFlash("ＲＡＮＤＯＭ　ＳＴＯＰ", "255,0,170");
-    // フォントを現在インデックスに固定。色・位置の変更はしない
+    _vlShowFlash("ＲＡＮＤＯＭ　ＯＦＦ", "255,0,170");
   }
 }
 
@@ -1270,7 +1282,7 @@ function _vlEndHold(e) {
 
   if (absDeltaX > 25 && absDeltaX > absDeltaY && elapsed < 700) {
     // ─── 横スワイプ検出 — フォント＋フォーマット切替 ───
-    if (_vlRandomFontMode) {
+    if (_vlRandomMode === 2 || _vlRandomMode === 3) {
       _viewLockCurrentFontIndex = Math.floor(Math.random() * VIEW_LOCK_FONTS.length);
       _viewLockCurrentFormatIndex = Math.floor(Math.random() * VIEW_LOCK_FORMATS.length);
     } else {
@@ -1311,9 +1323,9 @@ function _vlEndHold(e) {
     }
 
     if (_vlTapCount === 3) {
-      // トリプルタップ → RANDOM START/STOP
+      // トリプルタップ → ランダムモード切り替え
       _vlTapCount = 0;
-      _vlToggleRandomFont();
+      _vlCycleRandomMode();
     } else {
       // シングルタップ/ダブルタップ → 確定待ちタイマーをセット
       _vlSingleTapTimer = setTimeout(() => {

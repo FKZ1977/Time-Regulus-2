@@ -844,11 +844,13 @@ function _toRoman(num) {
 }
 
 const VIEW_LOCK_COLORS = [
-  '0, 255, 240', // シアン（標準）
-  '255, 0, 170', // ピンク（タイムレグルス色）
-  '0, 255, 128', // 緑色
-  '170, 0, 255', // 紫色
-  '255, 255, 255' // 白色
+  '255, 0, 170',   // ピンク（赤系・タイムレグルス色）
+  '255, 128, 0',   // オレンジ
+  '255, 255, 0',   // 黄色
+  '0, 255, 128',   // 緑色
+  '0, 255, 240',   // シアン（標準）
+  '170, 0, 255',   // 紫色
+  '255, 255, 255'  // 白色
 ];
 
 function changeViewLockStyle(reason = "tick") {
@@ -1216,16 +1218,14 @@ function _vlToggleRandomFont() {
 }
 
 /* ============================================================
-   viewLockScreen ネオンカラーランダム変更（トリプルタップ用）
+   viewLockScreen ネオンカラー順次変更（ダブルタップ用）
    ============================================================ */
-function _vlRandomizeNeonColor() {
-  const oldColor = _vlCurrentGlowColor;
-  let newColor = oldColor;
-  while (newColor === oldColor) {
-    newColor = VIEW_LOCK_COLORS[Math.floor(Math.random() * VIEW_LOCK_COLORS.length)];
-  }
-  _vlCurrentGlowColor = newColor;
-  _vlShowFlash("ＣＯＬＯＲ　ＣＨＡＮＧＥ", newColor);
+function _vlCycleNeonColor() {
+  let currentIndex = VIEW_LOCK_COLORS.indexOf(_vlCurrentGlowColor);
+  if (currentIndex === -1) currentIndex = 0;
+  const nextIndex = (currentIndex + 1) % VIEW_LOCK_COLORS.length;
+  _vlCurrentGlowColor = VIEW_LOCK_COLORS[nextIndex];
+  _vlShowFlash("ＣＯＬＯＲ　ＣＨＡＮＧＥ", _vlCurrentGlowColor);
   changeViewLockStyle("swipe"); // 位置移動なしでスタイル再適用
 }
 
@@ -1349,8 +1349,8 @@ function _vlEndHold(e) {
             }
           }, 50);
         } else if (count === 2) {
-          // ダブルタップ → ネオンカラーランダム変更
-          _vlRandomizeNeonColor();
+          // ダブルタップ → ネオンカラー順次変更
+          _vlCycleNeonColor();
         }
       }, 400);
     }

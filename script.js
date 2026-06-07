@@ -767,6 +767,7 @@ let _viewLockCurrentFontIndex = 0;   // 現在のフォントインデックス
 let _viewLockCurrentFormatIndex = 0; // 現在のフォーマットインデックス
 let _vlRandomFontMode = false;        // ランダムフォントモードのON/OFF
 let _vlLastTapTime = 0;              // ダブルタップ検出用：前回タップ時刻
+let _vlTapCount = 0;                 // タップ回数カウント用
 let _vlSwipeStartY = 0;              // スワイプ開始Y座標
 let _vlSwipeStartX = 0;              // スワイプ開始X座標
 let _viewLockShowDate = false;       // シングルタップでの日付表示切り替え
@@ -1214,6 +1215,20 @@ function _vlToggleRandomFont() {
   }
 }
 
+/* ============================================================
+   viewLockScreen ネオンカラーランダム変更（トリプルタップ用）
+   ============================================================ */
+function _vlRandomizeNeonColor() {
+  const oldColor = _vlCurrentGlowColor;
+  let newColor = oldColor;
+  while (newColor === oldColor) {
+    newColor = VIEW_LOCK_COLORS[Math.floor(Math.random() * VIEW_LOCK_COLORS.length)];
+  }
+  _vlCurrentGlowColor = newColor;
+  _vlShowFlash("ＣＯＬＯＲ　ＣＨＡＮＧＥ", newColor);
+  changeViewLockStyle("swipe"); // 位置移動なしでスタイル再適用
+}
+
 // ──────────────────────────────────────────────────────────────
 // viewLockScreen 長押しジェスチャー ハンドラ群（モジュールレベル名前付き関数）
 // クロージャではなく名前付き関数にすることで、removeEventListener による
@@ -1284,46 +1299,59 @@ function _vlEndHold(e) {
   } else if (elapsed < 400 && absDeltaY <= 20 && absDeltaX <= 20) {
     // ─── タップ検出（スワイプでない） ───
     const now = Date.now();
-    if (_vlLastTapTime > 0 && now - _vlLastTapTime < 400) {
-      // ダブルタップ → RANDOM START/STOP
+    if (_vlLastTapTime > 0 && now - _vlLastTapTime > 400) {
+      _vlTapCount = 0; // 400ms以上空いたらリセット
+    }
+    _vlLastTapTime = now;
+    _vlTapCount++;
+
+    if (_vlSingleTapTimer) {
+      clearTimeout(_vlSingleTapTimer);
+      _vlSingleTapTimer = null;
+    }
+
+    if (_vlTapCount === 3) {
+      // トリプルタップ → RANDOM START/STOP
+      _vlTapCount = 0;
       _vlToggleRandomFont();
-      _vlLastTapTime = 0;
-      if (_vlSingleTapTimer) {
-        clearTimeout(_vlSingleTapTimer);
-        _vlSingleTapTimer = null;
-      }
     } else {
-      // シングルタップ → タイマーをセットし、ダブルタップが来なければ実行
-      _vlLastTapTime = now;
-      if (_vlSingleTapTimer) clearTimeout(_vlSingleTapTimer);
+      // シングルタップ/ダブルタップ → 確定待ちタイマーをセット
       _vlSingleTapTimer = setTimeout(() => {
+        const count = _vlTapCount;
+        _vlTapCount = 0;
         _vlLastTapTime = 0;
-        _vlSingleTapTimer = null;
-        _viewLockShowDate = !_viewLockShowDate;
-        _updateViewLockClock();
-        // 日付追加で要素が上に拡大しても画面外にはみ出さないよう位置を再クランプ
-        setTimeout(() => {
-          const clockEl = document.getElementById("viewLockClock");
-          if (!clockEl) return;
-          const winW = window.innerWidth;
-          const winH = window.innerHeight;
-          const transformStr = clockEl.style.transform;
-          let currentX = 0, currentY = 0;
-          if (transformStr) {
-            const match = transformStr.match(/translate\(([^p]+)px,\s*([^p]+)px\)/);
-            if (match) { currentX = parseFloat(match[1]); currentY = parseFloat(match[2]); }
-          }
-          if (isNaN(currentX) || isNaN(currentY)) return;
-          const w = clockEl.offsetWidth;
-          const h = clockEl.offsetHeight;
-          const maxX = Math.max(0, (winW - w) / 2);
-          const maxY = Math.max(0, (winH - h) / 2);
-          let cx = Math.max(-maxX, Math.min(maxX, currentX));
-          let cy = Math.max(-maxY, Math.min(maxY, currentY));
-          if (cx !== currentX || cy !== currentY) {
-            clockEl.style.transform = `translate(${cx}px, ${cy}px)`;
-          }
-        }, 50);
+        
+        if (count === 1) {
+          // シングルタップ → 日付表示のトグル
+          _viewLockShowDate = !_viewLockShowDate;
+          _updateViewLockClock();
+          // 日付追加で要素が上に拡大しても画面外にはみ出さないよう位置を再クランプ
+          setTimeout(() => {
+            const clockEl = document.getElementById("viewLockClock");
+            if (!clockEl) return;
+            const winW = window.innerWidth;
+            const winH = window.innerHeight;
+            const transformStr = clockEl.style.transform;
+            let currentX = 0, currentY = 0;
+            if (transformStr) {
+              const match = transformStr.match(/translate\(([^p]+)px,\s*([^p]+)px\)/);
+              if (match) { currentX = parseFloat(match[1]); currentY = parseFloat(match[2]); }
+            }
+            if (isNaN(currentX) || isNaN(currentY)) return;
+            const w = clockEl.offsetWidth;
+            const h = clockEl.offsetHeight;
+            const maxX = Math.max(0, (winW - w) / 2);
+            const maxY = Math.max(0, (winH - h) / 2);
+            let cx = Math.max(-maxX, Math.min(maxX, currentX));
+            let cy = Math.max(-maxY, Math.min(maxY, currentY));
+            if (cx !== currentX || cy !== currentY) {
+              clockEl.style.transform = `translate(${cx}px, ${cy}px)`;
+            }
+          }, 50);
+        } else if (count === 2) {
+          // ダブルタップ → ネオンカラーランダム変更
+          _vlRandomizeNeonColor();
+        }
       }, 400);
     }
     // iOSのghost clickをブロック
@@ -1424,6 +1452,7 @@ function initViewLockHold() {
   _vlIsLongPressSuccess = false;
   _vlBlockingClick = false;
   _vlLastTapTime = 0;
+  _vlTapCount = 0;
   _vlSwipeStartY = 0;
   _vlSwipeStartX = 0;
   // リスナーを登録

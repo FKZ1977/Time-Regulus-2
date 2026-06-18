@@ -4161,6 +4161,16 @@ document.addEventListener("focusin", function(e) {
         applyLastErrorToReverseInputs();
       }
     }
+    // モード選択から誤差の計算モードに横スワイプした場合、RealTimeを必ずOFFにリセット
+    if (destId === 'errorMode' && srcId === 'modeSelect') {
+      const realTimeCb = document.getElementById('realTimeCheckbox');
+      if (realTimeCb && realTimeCb.checked) {
+        realTimeCb.checked = false;
+        if (typeof toggleRealTime === 'function') {
+          toggleRealTime(false);
+        }
+      }
+    }
   }
 
   // スワイプ/遷移中はボタン誤作動を防ぐ

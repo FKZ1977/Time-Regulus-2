@@ -1,4 +1,4 @@
-const currentVersion = "3.1.2";
+const currentVersion = "3.1.3";
 let lastError = null;
 let hasCalculated = false;
 let reverseMode = "toStandard";
@@ -16,28 +16,6 @@ let _pendingMainInit = null; // 「開く」ボタン押下後に実行するメ
 let realTimeInterval = null; // Real Timeチェック時の毎秒更新インターバル
 let _standardSecUnlocked = false; // RealTime ONで一度解除したらOFF後も秒を自由入力可能にするフラグ
 
-// ==========================================================================
-// Wake Lock API 管理（ダミー画面・置時計画面の消灯防止）
-// 輝度は変更せず、画面のスリープ・消灯だけを防ぎます。
-// iOS Safari 16.4以降 / Android Chrome 84以降 対応。
-// ==========================================================================
-let _wakeLock = null;
-
-async function _acquireWakeLock() {
-  if (!('wakeLock' in navigator)) return; // 非対応ブラウザは何もしない
-  try {
-    _wakeLock = await navigator.wakeLock.request('screen');
-  } catch (e) {
-    // 取得失敗（バッテリー低下などOS側の拒否）は無視して続行
-  }
-}
-
-function _releaseWakeLock() {
-  if (_wakeLock) {
-    _wakeLock.release();
-    _wakeLock = null;
-  }
-}
 
 // セレクトボックス未選択時の灰色表示同期用ヘルパー
 function updateSelectPlaceholderColor(selectId) {
@@ -982,22 +960,17 @@ function showViewLockScreen() {
   // スタイル変更は _updateViewLockClock 内の分切り替わり検知で処理します。
   _viewLockClockTimer = setInterval(_updateViewLockClock, 1000);
   
-  // ★【消灯防止】Wake Lock を取得する（輝度は変えず消灯だけを防ぐ）
-  _acquireWakeLock();
-  
   window.addEventListener('resize', _handleViewLockResize);
   
   // ★【省電力】画面が非表示（スリープ・タブ切替）になったらタイマーを停止し、戻ったら再開する
-  // Wake Lock は visibilitychange で復帰時に再取得が必要（仕様上の制約）
   function _viewLockVisibilityHandler() {
     if (document.hidden) {
       // 画面が隠れた → タイマーを一時停止
       if (_viewLockClockTimer) { clearInterval(_viewLockClockTimer); _viewLockClockTimer = null; }
     } else {
-      // 画面が戻った → タイマーを再開し、時刻を即時更新＆Wake Lock を再取得
+      // 画面が戻った → タイマーを再開し、時刻を即時更新
       _updateViewLockClock();
       _viewLockClockTimer = setInterval(_updateViewLockClock, 1000);
-      _acquireWakeLock();
     }
   }
   document.addEventListener('visibilitychange', _viewLockVisibilityHandler);
@@ -1432,7 +1405,6 @@ function _vlStartHold(e) {
       document.removeEventListener('visibilitychange', viewLock._visibilityHandler);
       viewLock._visibilityHandler = null;
     }
-    _releaseWakeLock();
     if (viewLock) viewLock.style.display = "none";
     document.getElementById("lockScreen").style.display = "block";
     // Bug①修正: 2フレーム待機してアニメーション確実再起動（display:blockの描画完了を待つ）
@@ -1529,18 +1501,13 @@ function showDecoyScreen() {
   _updateDecoyClock();
   _decoyClockTimer = setInterval(_updateDecoyClock, 20);
 
-  // ★【消灯防止】Wake Lock を取得する（輝度は変えず消灯だけを防ぐ）
-  _acquireWakeLock();
-
   // ★【省電力】画面が非表示になったらタイマーを停止し、戻ったら再開する
-  // Wake Lock は visibilitychange で復帰時に再取得が必要（仕様上の制約）
   function _decoyVisibilityHandler() {
     if (document.hidden) {
       if (_decoyClockTimer) { clearInterval(_decoyClockTimer); _decoyClockTimer = null; }
     } else {
       _updateDecoyClock();
       _decoyClockTimer = setInterval(_updateDecoyClock, 20);
-      _acquireWakeLock();
     }
   }
   document.addEventListener('visibilitychange', _decoyVisibilityHandler);
@@ -1566,9 +1533,6 @@ function hideDecoyScreen() {
   _decoyClockPaused = false;
   _decoyLastTapTime = 0;
   _decoyTapCount = 0;
-
-  // ★【消灯防止】Wake Lock を解放する
-  _releaseWakeLock();
 
   const decoy = document.getElementById("decoyScreen");
   cancelDecoyTimer(); // タイマーも解除
@@ -2177,7 +2141,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
   // 起動時のバージョンポップアップ
   if (localStorage.getItem("lastVersion") !== currentVersion) {
-    alert("タイムレグルスがv3.1.2にアップデートされました！");
+    alert("タイムレグルスがv3.1.3にアップデートされました！");
     localStorage.setItem("lastVersion", currentVersion);
   }
 

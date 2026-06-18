@@ -2866,7 +2866,18 @@ function showCorrectionMode() {
   }
 }
 
+function disableRealTimeIfActive() {
+  const realTimeCb = document.getElementById('realTimeCheckbox');
+  if (realTimeCb && realTimeCb.checked) {
+    realTimeCb.checked = false;
+    if (typeof toggleRealTime === 'function') {
+      toggleRealTime(false);
+    }
+  }
+}
+
 function backToModeSelect() {
+  disableRealTimeIfActive();
   document.getElementById("errorMode").style.display = "none";
   document.getElementById("correctionMode").style.display = "none";
   document.getElementById("resultListPage").style.display = "none";
@@ -3393,6 +3404,7 @@ function applyLastErrorToReverseInputs() {
 }
 
 function switchToCorrectionMode() {
+  disableRealTimeIfActive();
   document.getElementById("errorMode").style.display = "none";
   document.getElementById("correctionMode").style.display = "block";
 
@@ -4161,16 +4173,6 @@ document.addEventListener("focusin", function(e) {
         applyLastErrorToReverseInputs();
       }
     }
-    // モード選択から誤差の計算モードに横スワイプした場合、RealTimeを必ずOFFにリセット
-    if (destId === 'errorMode' && srcId === 'modeSelect') {
-      const realTimeCb = document.getElementById('realTimeCheckbox');
-      if (realTimeCb && realTimeCb.checked) {
-        realTimeCb.checked = false;
-        if (typeof toggleRealTime === 'function') {
-          toggleRealTime(false);
-        }
-      }
-    }
   }
 
   // スワイプ/遷移中はボタン誤作動を防ぐ
@@ -4355,6 +4357,9 @@ document.addEventListener("focusin", function(e) {
     if (Math.abs(dX) > threshold) {
       // ===== 遷移確定 =====
       isTransitioning = true;
+      if (currentId === 'errorMode' && typeof disableRealTimeIfActive === 'function') {
+        disableRealTimeIfActive();
+      }
 
       fromEl.style.transition = 'transform 0.3s ease';
       toEl.style.transition   = 'transform 0.3s ease';

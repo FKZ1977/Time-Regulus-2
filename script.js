@@ -4061,6 +4061,16 @@ if (document.readyState === "loading") {
 /* ==========================================================================
    テンキーキーボード表示時の自動スクロール（入力補助OFF時など）
    ========================================================================== */
+let _lastTextInputBlurTime = 0;
+document.addEventListener("focusout", function(e) {
+  if (e.target && e.target.tagName === "INPUT" && 
+      e.target.type !== "checkbox" && 
+      e.target.type !== "radio" && 
+      e.target.type !== "button") {
+    _lastTextInputBlurTime = Date.now();
+  }
+});
+
 document.addEventListener("focusin", function(e) {
   if (activeTimePickerGroup) return; // ピッカー起動中はキーボード用自動スクロールとの二重競合をシャットアウト！
   if (e.target.tagName === "INPUT" && 
@@ -4068,6 +4078,14 @@ document.addEventListener("focusin", function(e) {
       e.target.type !== "radio" && 
       e.target.type !== "button" && 
       e.target.type !== "date") {
+    
+    // 隣接する入力枠への移動時（連続入力時）は、画面が上下にバウンドするのを防ぐためスクロール処理をスキップ
+    if (e.relatedTarget && e.relatedTarget.tagName === "INPUT") {
+      return;
+    }
+    if (Date.now() - _lastTextInputBlurTime < 150) {
+      return;
+    }
     
     // キーボード展開アニメーション完了を待ってからスクロール判定
     setTimeout(() => {

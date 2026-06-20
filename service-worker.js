@@ -1,24 +1,14 @@
-const CACHE_NAME = "time-regulus-v3.1.3-c1"; // フォントオフライン対応・省電力化
+﻿const CACHE_NAME = "time-regulus-v3.1.3-c12";
 const urlsToCache = [
   "./",
   "./index.html",
-  "./style-lock.css?c=1",
-  "./style-main.css?c=1",
-  "./script.js?c=1",
+  "./style-lock.css?c=12",
+  "./style-main.css?c=12",
+  "./script.js?c=12",
   "./manifest.json",
   "./icon-192.png",
   "./icon-512.png",
-  "./QRCorde.PNG",
-  // ★【オフライン対応】置時計用フォントファイル（アプリ同梱）
-  "./fonts/Orbitron-Bold.woff2",
-  "./fonts/VT323.woff2",
-  "./fonts/ShareTechMono.woff2",
-  "./fonts/Sixtyfour.woff2",
-  "./fonts/RubikDirt.woff2",
-  "./fonts/MoiraiOne.woff2",
-  "./fonts/BungeeShade.ttf",
-  "./fonts/DiplomataSC.ttf",
-  "./fonts/Bellefair.ttf"
+  "./QRCorde.PNG"
 ];
 
 // インストール時に必要なアセットをキャッシュ

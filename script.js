@@ -1,4 +1,4 @@
-const currentVersion = "3.1.3";
+﻿const currentVersion = "3.1.3";
 let lastError = null;
 let hasCalculated = false;
 let reverseMode = "toStandard";
@@ -684,25 +684,33 @@ function checkPass() {
   const inputField = document.getElementById("passcode");
   const input = inputField.value;
   const correct = "164";
-  const DECOY_PASS = "12345"; // 元祖ダミー画面（タイマー機能付き）用パスワード
-  const VIEW_LOCK_PASS = "7777"; // 新しいダミー時計画面（ネオン時計）用パスワード
+  // ★ 12345 は将来の機能用に予約済み（現在は未割り当て）
   const errorMessage = document.getElementById("error");
 
-  if (input === DECOY_PASS) {
-    // 囮パスワード → ダミー時計画面へ
-    inputField.value = "";
-    inputField.style.border = "";
-    errorMessage.innerText = "";
-    showDecoyScreen();
-    return;
-  }
 
-  if (input === VIEW_LOCK_PASS) {
-    // 第2の囮パスワード → view_lock_screenへ
-    inputField.value = "";
-    inputField.style.border = "";
-    errorMessage.innerText = "";
-    showViewLockScreen();
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  if (input === '12345') {
+    inputField.value = '';
+    inputField.style.border = '';
+    errorMessage.innerText = '';
+    showReadmePage();
     return;
   }
 
@@ -728,403 +736,7 @@ function checkPass() {
 }
 
 /* ============================================================
-   第2のおとり画面 (view_lock_screen) ロジック
-   ============================================================ */
-let _viewLockClockTimer = null;
-let _viewLockHoldTimer = null;
-let _viewLockStyleInterval = null;
-let _viewLockCurrentFormat = 'standard';
-let _viewLockScaleFactor = 1.0;
-// viewLockScreen 長押しジェスチャー用モジュールレベル状態
-// クロージャの代わりに名前付き関数を使うことで removeEventListener が確実に機能する
-let _vlPressStartTime = 0;
-let _vlIsLongPressSuccess = false;
-let _vlBlockingClick = false;
-// スワイプ・ダブルタップ・フォント切り替え管理
-let _viewLockCurrentFontIndex = 0;   // 現在のフォントインデックス
-let _viewLockCurrentFormatIndex = 0; // 現在のフォーマットインデックス
-let _vlRandomMode = 0;               // 0: OFF, 1: COLOR, 2: FONT, 3: ALL
-let _vlLastTapTime = 0;              // ダブルタップ検出用：前回タップ時刻
-let _vlTapCount = 0;                 // タップ回数カウント用
-let _vlSwipeStartY = 0;              // スワイプ開始Y座標
-let _vlSwipeStartX = 0;              // スワイプ開始X座標
-let _viewLockShowDate = false;       // シングルタップでの日付表示切り替え
-let _vlSingleTapTimer = null;        // シングルタップとダブルタップの判別用タイマー
-let _vlGlowIntensity = 1.0;          // ネオンの輝き強度（0.1〜2.0）
-let _vlCurrentGlowColor = '0, 255, 240'; // 現在のネオンカラー（RGB文字列）
-
-const VIEW_LOCK_FONTS = [
-  // ── デジタル・SF系 ──────────────────────────────────────
-  'Orbitron',          // SFっぽい未来的デジタル
-  'VT323',             // レトロゲーム・CRTモニター風ドット文字
-  'Share Tech Mono',   // シャープでクリーンなデジタルモノスペース
-  'Sixtyfour',         // 64セグメントの超ユニークデジタル
-  // ── かすれ・消えそう系 ───────────────────────────────────
-  'Rubik Dirt',        // 土ぼこり・傷ついてかすれた文字
-  'Moirai One',        // 波打つように消えかかった神秘的な文字
-  // ── ぐるぐる・立体系 ─────────────────────────────────────
-  'Bungee Shade',      // 影が立体的でくるっとしたポップ文字
-  // ── 個性的・エレガント系 ─────────────────────────────────
-  'Diplomata SC',      // 古典的・彫刻のような重厚感のある文字
-  'Bellefair',         // 繊細でエレガントな細身の文字
-];
-
-// 合計20パターン：標準:8, 全角:4, 漢字系各1（計4）, ローマ:3　※漢字系は出現頻度を絞る
-const VIEW_LOCK_FORMATS = [
-  'standard', 'standard', 'standard', 'standard', 'standard', 'standard', 'standard', 'standard',
-  'fullwidth', 'fullwidth', 'fullwidth', 'fullwidth',
-  'kanji',
-  'old_kanji',
-  'kanji_digit',
-  'old_kanji_digit',
-  'roman', 'roman', 'roman'
-];
-
-function _toKanji(num) {
-  const kanjiNums = ['零', '一', '二', '三', '四', '五', '六', '七', '八', '九'];
-  if (num < 10) return kanjiNums[num];
-  const tens = Math.floor(num / 10);
-  const ones = num % 10;
-  return (tens > 1 ? kanjiNums[tens] : '') + '十' + (ones > 0 ? kanjiNums[ones] : '');
-}
-
-function _toOldKanji(num) {
-  const oldKanjiNums = ['零', '壱', '弐', '参', '肆', '伍', '陸', '漆', '捌', '玖'];
-  if (num < 10) return oldKanjiNums[num];
-  const tens = Math.floor(num / 10);
-  const ones = num % 10;
-  return (tens > 1 ? oldKanjiNums[tens] : '') + '拾' + (ones > 0 ? oldKanjiNums[ones] : '');
-}
-
-function _toKanjiDigit(num) {
-  const kanjiNums = ['〇', '一', '二', '三', '四', '五', '六', '七', '八', '九'];
-  const str = String(num).padStart(2, '0');
-  return kanjiNums[parseInt(str[0])] + kanjiNums[parseInt(str[1])];
-}
-
-function _toOldKanjiDigit(num) {
-  const oldKanjiNums = ['零', '壱', '弐', '参', '肆', '伍', '陸', '漆', '捌', '玖'];
-  const str = String(num).padStart(2, '0');
-  return oldKanjiNums[parseInt(str[0])] + oldKanjiNums[parseInt(str[1])];
-}
-
-function _toRoman(num) {
-  if (num === 0) return "0";
-  const lookup = {L:50, XL:40, X:10, IX:9, V:5, IV:4, I:1};
-  let roman = '';
-  for (let i in lookup) {
-    while (num >= lookup[i]) {
-      roman += i;
-      num -= lookup[i];
-    }
-  }
-  return roman;
-}
-
-const VIEW_LOCK_COLORS = [
-  '255, 0, 170',   // 1. ピンク（赤系・タイムレグルス色）
-  '255, 128, 0',   // 2. オレンジ
-  '255, 255, 0',   // 3. 黄色
-  '0, 255, 128',   // 4. 緑色
-  '0, 255, 240',   // 5. シアン（標準）
-  '0, 100, 255',   // 6. 藍色
-  '170, 0, 255',   // 7. 紫色
-  '255, 255, 255'  // 8. 白色
-];
-
-function changeViewLockStyle(reason = "tick") {
-  const isTickOrToggle = (reason === "tick" || reason === "toggle");
-
-  // フォント：ランダムモード2(FONT)または3(ALL)時の自動更新
-  if (isTickOrToggle && (_vlRandomMode === 2 || _vlRandomMode === 3)) {
-    _viewLockCurrentFontIndex = Math.floor(Math.random() * VIEW_LOCK_FONTS.length);
-  }
-  
-  const randomFont = VIEW_LOCK_FONTS[_viewLockCurrentFontIndex];
-  const clockEl = document.getElementById("viewLockClock");
-  if (clockEl) {
-    clockEl.style.fontFamily = randomFont;
-  }
-  
-  // フォーマット・スケールの変更は、初期化時またはフォントランダム時
-  if (reason === "init" || (isTickOrToggle && (_vlRandomMode === 2 || _vlRandomMode === 3))) {
-    _viewLockCurrentFormatIndex = Math.floor(Math.random() * VIEW_LOCK_FORMATS.length);
-    _viewLockScaleFactor = 0.75 + Math.random() * 0.25;
-  }
-  
-  // 色の変更は、初期化時またはカラーランダム時
-  if (reason === "init" || (isTickOrToggle && (_vlRandomMode === 1 || _vlRandomMode === 3))) {
-    _vlCurrentGlowColor = VIEW_LOCK_COLORS[Math.floor(Math.random() * VIEW_LOCK_COLORS.length)];
-  }
-  // ネオン輝きを現在のカラーと強度で適用（初期・ティック・スワイプ全て共通）
-  if (clockEl) {
-    const g = _vlGlowIntensity;
-    clockEl.style.textShadow = `
-      0 0 10px rgba(${_vlCurrentGlowColor}, ${Math.min(1, 0.8 * g)}),
-      0 0 20px rgba(${_vlCurrentGlowColor}, ${Math.min(1, 0.6 * g)}),
-      0 0 40px rgba(${_vlCurrentGlowColor}, ${Math.min(1, 0.4 * g)}),
-      0 0 80px rgba(${_vlCurrentGlowColor}, ${Math.min(1, 0.2 * g)})
-    `;
-  }
-  _viewLockCurrentFormat = VIEW_LOCK_FORMATS[_viewLockCurrentFormatIndex];
-  
-  _updateViewLockClock();
-  
-  // 位置のランダム移動：スワイプ時（フォント確認中）は動かさない。それ以外（1分ごとの更新など）はバーンイン防止のため動かす。
-  if (reason !== "swipe") {
-    setTimeout(() => {
-      if (!clockEl) return;
-      const winW = window.innerWidth;
-      const winH = window.innerHeight;
-      
-      const w = clockEl.offsetWidth;
-      const h = clockEl.offsetHeight;
-      
-      const maxX = Math.max(0, (winW - w) / 2);
-      const maxY = Math.max(0, (winH - h) / 2);
-      
-      const randomX = (Math.random() * 2 - 1) * maxX;
-      const randomY = (Math.random() * 2 - 1) * maxY;
-      
-      clockEl.style.transform = `translate(${randomX}px, ${randomY}px)`;
-    }, 350);
-  }
-}
-
-let _viewLockResizeTimer = null;
-function _handleViewLockResize() {
-  clearTimeout(_viewLockResizeTimer);
-  _viewLockResizeTimer = setTimeout(() => {
-    const clockEl = document.getElementById("viewLockClock");
-    if (!clockEl || clockEl.style.display === "none") return;
-    
-    // ★【バグ修正】画面の回転・リサイズに合わせてフォントサイズを再計算させる
-    _updateViewLockClock();
-    
-    const winW = window.innerWidth;
-    const winH = window.innerHeight;
-    const w = clockEl.offsetWidth;
-    const h = clockEl.offsetHeight;
-    
-    // Flexboxのtransform方式に対応した画面外はみ出し補正
-    const transformStr = clockEl.style.transform;
-    let currentX = 0;
-    let currentY = 0;
-    
-    if (transformStr) {
-      const match = transformStr.match(/translate\(([^p]+)px,\s*([^p]+)px\)/);
-      if (match) {
-        currentX = parseFloat(match[1]);
-        currentY = parseFloat(match[2]);
-      }
-    }
-    
-    if (isNaN(currentX) || isNaN(currentY)) return;
-    
-    const maxX = Math.max(0, (winW - w) / 2);
-    const maxY = Math.max(0, (winH - h) / 2);
-    
-    let changed = false;
-    
-    if (currentX < -maxX) { currentX = -maxX; changed = true; }
-    if (currentX > maxX) { currentX = maxX; changed = true; }
-    
-    if (currentY < -maxY) { currentY = -maxY; changed = true; }
-    if (currentY > maxY) { currentY = maxY; changed = true; }
-    
-    if (changed) {
-      clockEl.style.transform = `translate(${currentX}px, ${currentY}px)`;
-    }
-  }, 100);
-}
-
-function showViewLockScreen() {
-  if (typeof gtag === 'function') {
-    gtag('event', 'view_clock_screen_triggered', {
-      'event_category': 'Security',
-      'event_label': 'View Lock Screen Triggered'
-    });
-  }
-
-  document.getElementById("lockScreen").style.display = "none";
-  const viewLock = document.getElementById("viewLockScreen");
-  viewLock.style.display = "block";
-
-  // 入室時：ランダムフォントを1つ選択し、モードをOFF（手動スワイプ切替）でスタート
-  _viewLockCurrentFontIndex = Math.floor(Math.random() * VIEW_LOCK_FONTS.length);
-  _vlRandomFontMode = false;
-  _vlLastTapTime = 0;
-  changeViewLockStyle("init");
-  
-  // setInterval(changeViewLockStyle, 60000) は削除。
-  // スタイル変更は _updateViewLockClock 内の分切り替わり検知で処理します。
-  _viewLockClockTimer = setInterval(_updateViewLockClock, 1000);
-  
-  window.addEventListener('resize', _handleViewLockResize);
-  
-  // ★【省電力】画面が非表示（スリープ・タブ切替）になったらタイマーを停止し、戻ったら再開する
-  function _viewLockVisibilityHandler() {
-    if (document.hidden) {
-      // 画面が隠れた → タイマーを一時停止
-      if (_viewLockClockTimer) { clearInterval(_viewLockClockTimer); _viewLockClockTimer = null; }
-    } else {
-      // 画面が戻った → タイマーを再開し、時刻を即時更新
-      _updateViewLockClock();
-      _viewLockClockTimer = setInterval(_updateViewLockClock, 1000);
-    }
-  }
-  document.addEventListener('visibilitychange', _viewLockVisibilityHandler);
-  // クリーンアップ用にリスナーを保存
-  viewLock._visibilityHandler = _viewLockVisibilityHandler;
-  
-  initViewLockHold();
-}
-
-let _lastViewLockMinute = -1; // 分の切り替わり検知用
-
-function _updateViewLockClock() {
-  const now = new Date();
-  const h = now.getHours();
-  const m = now.getMinutes();
-  
-  const s = now.getSeconds();
-  
-  // ★「分」の切り替わり時にスタイルを自動ランダム変更
-  if (_lastViewLockMinute !== -1 && _lastViewLockMinute !== m) {
-    // 【バグ修正】ここで先に_lastViewLockMinuteを更新しないと、changeViewLockStyle内で
-    // 再度_updateViewLockClockが呼ばれた際に無限ループに陥ってしまう
-    _lastViewLockMinute = m;
-    changeViewLockStyle("tick");
-    return;
-  }
-  _lastViewLockMinute = m;
-  
-  let timeStr = "";
-  let dateStr = "";
-  const year = now.getFullYear();
-  const month = now.getMonth() + 1;
-  const date = now.getDate();
-  const reiwaYear = year >= 2019 ? year - 2018 : 1;
-  
-  switch (_viewLockCurrentFormat) {
-    case 'fullwidth':
-      const fw_h = String(h).padStart(2, '0').replace(/[0-9]/g, str => String.fromCharCode(str.charCodeAt(0) + 0xFEE0));
-      const fw_m = String(m).padStart(2, '0').replace(/[0-9]/g, str => String.fromCharCode(str.charCodeAt(0) + 0xFEE0));
-      timeStr = `${fw_h}：${fw_m}`;
-      const fw_y = String(year).replace(/[0-9]/g, str => String.fromCharCode(str.charCodeAt(0) + 0xFEE0));
-      const fw_mo = String(month).padStart(2, '0').replace(/[0-9]/g, str => String.fromCharCode(str.charCodeAt(0) + 0xFEE0));
-      const fw_d = String(date).padStart(2, '0').replace(/[0-9]/g, str => String.fromCharCode(str.charCodeAt(0) + 0xFEE0));
-      dateStr = `${fw_y}年${fw_mo}月${fw_d}日`;
-      break;
-    case 'kanji':
-      timeStr = `${_toKanji(h)}時${_toKanji(m)}分`;
-      dateStr = `令和${reiwaYear === 1 ? '元' : _toKanji(reiwaYear)}年${_toKanji(month)}月${_toKanji(date)}日`;
-      break;
-    case 'old_kanji':
-      timeStr = `${_toOldKanji(h)}時${_toOldKanji(m)}分`;
-      dateStr = `令和${reiwaYear === 1 ? '元' : _toOldKanji(reiwaYear)}年${_toOldKanji(month)}月${_toOldKanji(date)}日`;
-      break;
-    case 'kanji_digit':
-      timeStr = `${_toKanjiDigit(h)}：${_toKanjiDigit(m)}`;
-      dateStr = `令和${reiwaYear === 1 ? '元' : _toKanjiDigit(reiwaYear)}年${_toKanjiDigit(month)}月${_toKanjiDigit(date)}日`;
-      break;
-    case 'old_kanji_digit':
-      timeStr = `${_toOldKanjiDigit(h)}：${_toOldKanjiDigit(m)}`;
-      dateStr = `令和${reiwaYear === 1 ? '元' : _toOldKanjiDigit(reiwaYear)}年${_toOldKanjiDigit(month)}月${_toOldKanjiDigit(date)}日`;
-      break;
-    case 'roman':
-      timeStr = `${_toRoman(h)} : ${_toRoman(m)}`;
-      dateStr = `${_toRoman(year)} . ${_toRoman(month)} . ${_toRoman(date)}`;
-      break;
-    case 'standard':
-    default:
-      timeStr = `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
-      dateStr = `${year}/${String(month).padStart(2, '0')}/${String(date).padStart(2, '0')}`;
-      break;
-  }
-  const clockEl = document.getElementById("viewLockClock");
-  const dateEl = document.getElementById("viewLockDate");
-  
-  // 独立した日付枠は使用しないため常に非表示
-  if (dateEl) {
-    dateEl.style.display = "none";
-  }
-
-  if (clockEl) {
-    if (_viewLockShowDate) {
-      clockEl.innerHTML = `<div style="font-size: 0.6em; line-height: 1.2; margin-bottom: 0.1em; text-align: center;">${dateStr}</div><div style="text-align: center;">${timeStr}</div>`;
-    } else {
-      clockEl.innerText = timeStr;
-    }
-
-    
-    // 表示される文字列の長さに応じて、画面幅（vw）に対する最大フォントサイズを動的に計算する
-    // 日付表示時は日付文字列の幅も比較に含め、はみ出しを防ぐ
-    const refStr = (_viewLockShowDate && dateStr && dateStr.length > timeStr.length)
-      ? dateStr
-      : timeStr;
-    let emWidth = 0;
-    for (let i = 0; i < refStr.length; i++) {
-      if (refStr.charCodeAt(i) > 255) {
-        emWidth += 1.05;
-      } else {
-        emWidth += 0.65;
-      }
-    }
-    // 日付が0.6emで表示される場合、時刻より幅が広くなる影響も考慮する
-    // → dateStrが refStrに選ばれた場合は、実際に0.6倍の大きさなので逆算する必要はない（すでに小さい内側に嵌まるため）
-    
-    let maxVw = 95 / emWidth;
-    let calculatedVw = maxVw * _viewLockScaleFactor;
-    
-    // vh上限も95%まで拡大
-    const vhLimit = 95 * _viewLockScaleFactor;
-    const winW = window.innerWidth;
-    const winH = window.innerHeight;
-    
-    let fontSizePx = (calculatedVw / 100) * winW;
-    let maxFontSizePxByVh = (vhLimit / 100) * winH;
-    
-    let finalPx = Math.min(fontSizePx, maxFontSizePxByVh);
-    if (finalPx < 60) finalPx = 60; // 下限 60px
-    
-    // ★【バグ修正】CSSアニメーション（transition）が設定されていると、
-    // offsetWidthの測定値がアニメーション途中の値になってしまい、サイズが振動するバグを防ぐ
-    const originalTransition = clockEl.style.transition;
-    clockEl.style.transition = 'none';
-    
-    clockEl.style.fontSize = finalPx + 'px';
-    
-    // ★【はみ出し完全防止】フォントごとの文字幅・高さの違い（複数行や特殊フォント対策）
-    // 実際にブラウザが計算した文字幅と高さを取得し、画面サイズを超えていたら縮小する
-    const actualWidth = clockEl.offsetWidth;
-    const actualHeight = clockEl.offsetHeight;
-    const targetMaxWidth = winW * 0.95;
-    const targetMaxHeight = winH * 0.95;
-    
-    let scaleDownRatio = 1;
-    if (actualWidth > targetMaxWidth) {
-      scaleDownRatio = Math.min(scaleDownRatio, targetMaxWidth / actualWidth);
-    }
-    if (actualHeight > targetMaxHeight) {
-      scaleDownRatio = Math.min(scaleDownRatio, targetMaxHeight / actualHeight);
-    }
-    
-    if (scaleDownRatio < 1) {
-      finalPx = finalPx * scaleDownRatio;
-      clockEl.style.fontSize = finalPx + 'px';
-    }
-    
-    // 変更をブラウザに反映（強制リフロー）させた後、アニメーション設定を元に戻す
-    void clockEl.offsetWidth;
-    clockEl.style.transition = originalTransition;
-  }
-}
-
-
-/* ============================================================
    ロック画面のアニメーションを強制再起動する
-   decoyScreen / viewLockScreen から戻ったときに呼び出す。
    CSS animation のクラスを一度外して強制リフローをかけ、再連結して再生させる。
    ============================================================ */
 function restartLockScreenAnimation() {
@@ -1148,955 +760,1376 @@ function restartLockScreenAnimation() {
   });
 }
 
-/* ============================================================
-   viewLockScreen フラッシュメッセージ表示（RANDOM START/STOP）
-   ============================================================ */
-function _vlShowFlash(text, colorRGB = "0,255,224") {
-  const viewLock = document.getElementById("viewLockScreen");
-  if (!viewLock) return;
-  // 既存フラッシュがあれば削除
-  const existing = viewLock.querySelector('.vl-flash-msg');
-  if (existing) existing.remove();
-
-  const flash = document.createElement("div");
-  flash.className = "vl-flash-msg";
-  flash.textContent = text;
-  flash.style.cssText = [
-    "position:fixed",
-    "top:50%",
-    "left:50%",
-    "transform:translate(-50%,-50%) scale(0.5)",
-    "font-size:min(6.5vw,42px)",
-    `color:rgba(${colorRGB},1)`,
-    `text-shadow:0 0 20px rgba(${colorRGB},0.9),0 0 40px rgba(${colorRGB},0.6)`,
-    "font-family:'Orbitron',sans-serif",
-    "font-weight:bold",
-    "text-align:center",
-    "z-index:9999",
-    "pointer-events:none",
-    "letter-spacing:0.05em",
-    "white-space:nowrap",
-    "animation:vlFlashAnim 1.5s ease-out forwards"
-  ].join(";");
-  viewLock.appendChild(flash);
-  setTimeout(() => { if (flash.parentNode) flash.parentNode.removeChild(flash); }, 1600);
-}
-
-/* ============================================================
-   viewLockScreen ランダムモード切り替え
-   ============================================================ */
-function _vlCycleRandomMode() {
-  _vlRandomMode = (_vlRandomMode + 1) % 4;
-  
-  if (_vlRandomMode === 1) {
-    _vlShowFlash("ＣＯＬＯＲ　ＲＡＮＤＯＭ", "255,128,0");
-    changeViewLockStyle("toggle");
-  } else if (_vlRandomMode === 2) {
-    _vlShowFlash("ＦＯＮＴ　ＲＡＮＤＯＭ", "0,255,128");
-    changeViewLockStyle("toggle");
-  } else if (_vlRandomMode === 3) {
-    _vlShowFlash("ＡＬＬ　ＲＡＮＤＯＭ", "0,255,240");
-    changeViewLockStyle("toggle");
-  } else {
-    _vlShowFlash("ＲＡＮＤＯＭ　ＯＦＦ", "255,0,170");
-  }
-}
-
-/* ============================================================
-   viewLockScreen ネオンカラー順次変更（ダブルタップ用）
-   ============================================================ */
-function _vlCycleNeonColor() {
-  let currentIndex = VIEW_LOCK_COLORS.indexOf(_vlCurrentGlowColor);
-  if (currentIndex === -1) currentIndex = 0;
-  const nextIndex = (currentIndex + 1) % VIEW_LOCK_COLORS.length;
-  _vlCurrentGlowColor = VIEW_LOCK_COLORS[nextIndex];
-  _vlShowFlash("ＣＯＬＯＲ　ＣＨＡＮＧＥ", _vlCurrentGlowColor);
-  changeViewLockStyle("swipe"); // 位置移動なしでスタイル再適用
-}
-
-// ──────────────────────────────────────────────────────────────
-// viewLockScreen 長押しジェスチャー ハンドラ群（モジュールレベル名前付き関数）
-// クロージャではなく名前付き関数にすることで、removeEventListener による
-// 完全なリスナー削除が可能になり、孤児タイマー問題を根本解決する。
-// ──────────────────────────────────────────────────────────────
-
-// iPhoneのghost click（幽霊クリック）をブロックするハンドラ
-function _vlClickBlocker(e) {
-  if (_vlBlockingClick) {
-    e.stopPropagation();
-    e.preventDefault();
-  }
-}
-
-// 指離し（touchend / mouseup）ハンドラ
-function _vlEndHold(e) {
-  if (_vlIsLongPressSuccess) return;
-  clearTimeout(_viewLockHoldTimer);
-  _viewLockHoldTimer = null;
-  const ring = document.getElementById("viewLockHoldRing");
-  const circle = document.getElementById("viewLockRingCircle");
-  if (ring) ring.style.opacity = "0";
-  if (circle) {
-    circle.style.transition = "stroke-dashoffset 0.1s linear";
-    circle.style.strokeDashoffset = "164";
-  }
-
-  if (_vlPressStartTime === 0) return;
-  const elapsed = Date.now() - _vlPressStartTime;
-  _vlPressStartTime = 0; // 必ずリセット
-
-  const touch = e.changedTouches ? e.changedTouches[0] : e;
-  const endY = touch ? touch.clientY : _vlSwipeStartY;
-  const endX = touch ? touch.clientX : _vlSwipeStartX;
-  const deltaY = _vlSwipeStartY - endY;      // 正: 上スワイプ（指が上）/ 負: 下スワイプ（指が下）
-  const deltaX = _vlSwipeStartX - endX;       // 正: 左スワイプ（指が左）/ 負: 右スワイプ（指が右）
-  const absDeltaY = Math.abs(deltaY);
-  const absDeltaX = Math.abs(deltaX);
-
-  if (absDeltaX > 25 && absDeltaX > absDeltaY && elapsed < 700) {
-    // ─── 横スワイプ検出 — フォント＋フォーマット切替 ───
-    if (_vlRandomMode === 2 || _vlRandomMode === 3) {
-      _viewLockCurrentFontIndex = Math.floor(Math.random() * VIEW_LOCK_FONTS.length);
-      _viewLockCurrentFormatIndex = Math.floor(Math.random() * VIEW_LOCK_FORMATS.length);
-    } else {
-      if (deltaX > 0) {
-        // 左スワイプ → 前のフォント＋フォーマット
-        _viewLockCurrentFontIndex = (_viewLockCurrentFontIndex - 1 + VIEW_LOCK_FONTS.length) % VIEW_LOCK_FONTS.length;
-        _viewLockCurrentFormatIndex = (_viewLockCurrentFormatIndex - 1 + VIEW_LOCK_FORMATS.length) % VIEW_LOCK_FORMATS.length;
-      } else {
-        // 右スワイプ → 次のフォント＋フォーマット
-        _viewLockCurrentFontIndex = (_viewLockCurrentFontIndex + 1) % VIEW_LOCK_FONTS.length;
-        _viewLockCurrentFormatIndex = (_viewLockCurrentFormatIndex + 1) % VIEW_LOCK_FORMATS.length;
-      }
-    }
-    changeViewLockStyle("swipe");
-  } else if (absDeltaY > 25 && absDeltaY > absDeltaX && elapsed < 700) {
-    // ─── 縦スワイプ検出 — ネオン輝き強度の増減 ───
-    const step = 0.2;
-    if (deltaY > 0) {
-      // 上スワイプ → 輝き強く
-      _vlGlowIntensity = Math.min(2.0, _vlGlowIntensity + step);
-    } else {
-      // 下スワイプ → 輝き弱く
-      _vlGlowIntensity = Math.max(0.1, _vlGlowIntensity - step);
-    }
-    changeViewLockStyle("swipe");
-  } else if (elapsed < 400 && absDeltaY <= 20 && absDeltaX <= 20) {
-    // ─── タップ検出（スワイプでない） ───
-    const now = Date.now();
-    if (_vlLastTapTime > 0 && now - _vlLastTapTime > 400) {
-      _vlTapCount = 0; // 400ms以上空いたらリセット
-    }
-    _vlLastTapTime = now;
-    _vlTapCount++;
-
-    if (_vlSingleTapTimer) {
-      clearTimeout(_vlSingleTapTimer);
-      _vlSingleTapTimer = null;
-    }
-
-    if (_vlTapCount === 3) {
-      // トリプルタップ → ランダムモード切り替え
-      _vlTapCount = 0;
-      _vlCycleRandomMode();
-    } else {
-      // シングルタップ/ダブルタップ → 確定待ちタイマーをセット
-      _vlSingleTapTimer = setTimeout(() => {
-        const count = _vlTapCount;
-        _vlTapCount = 0;
-        _vlLastTapTime = 0;
-        
-        if (count === 1) {
-          // シングルタップ → 日付表示のトグル
-          _viewLockShowDate = !_viewLockShowDate;
-          _updateViewLockClock();
-          // 日付追加で要素が上に拡大しても画面外にはみ出さないよう位置を再クランプ
-          setTimeout(() => {
-            const clockEl = document.getElementById("viewLockClock");
-            if (!clockEl) return;
-            const winW = window.innerWidth;
-            const winH = window.innerHeight;
-            const transformStr = clockEl.style.transform;
-            let currentX = 0, currentY = 0;
-            if (transformStr) {
-              const match = transformStr.match(/translate\(([^p]+)px,\s*([^p]+)px\)/);
-              if (match) { currentX = parseFloat(match[1]); currentY = parseFloat(match[2]); }
-            }
-            if (isNaN(currentX) || isNaN(currentY)) return;
-            const w = clockEl.offsetWidth;
-            const h = clockEl.offsetHeight;
-            const maxX = Math.max(0, (winW - w) / 2);
-            const maxY = Math.max(0, (winH - h) / 2);
-            let cx = Math.max(-maxX, Math.min(maxX, currentX));
-            let cy = Math.max(-maxY, Math.min(maxY, currentY));
-            if (cx !== currentX || cy !== currentY) {
-              clockEl.style.transform = `translate(${cx}px, ${cy}px)`;
-            }
-          }, 50);
-        } else if (count === 2) {
-          // ダブルタップ → ネオンカラー順次変更
-          _vlCycleNeonColor();
-        }
-      }, 400);
-    }
-    // iOSのghost clickをブロック
-    _vlBlockingClick = true;
-    setTimeout(() => { _vlBlockingClick = false; }, 300);
-  }
-}
-
-// スワイプ中の指移動（touchmove / mousemove）ハンドラ：長押しをキャンセル
-function _vlMoveHold(e) {
-  if (!_vlPressStartTime) return;
-  const touch = e.touches ? e.touches[0] : e;
-  const moveY = touch.clientY;
-  const moveX = touch.clientX;
-  
-  // 開始位置から20px以上動いたら長押しをキャンセル（リングも消す）
-  if (Math.abs(moveY - _vlSwipeStartY) > 20 || Math.abs(moveX - _vlSwipeStartX) > 20) {
-    if (_viewLockHoldTimer) {
-      clearTimeout(_viewLockHoldTimer);
-      _viewLockHoldTimer = null;
-      const ring = document.getElementById("viewLockHoldRing");
-      const circle = document.getElementById("viewLockRingCircle");
-      if (ring) ring.style.opacity = "0";
-      if (circle) {
-        circle.style.transition = "stroke-dashoffset 0.1s linear";
-        circle.style.strokeDashoffset = "164";
-      }
-    }
-  }
-}
-
-// 指触れ（touchstart / mousedown）ハンドラ
-function _vlStartHold(e) {
-  if (e.cancelable) e.preventDefault();
-  
-  // 連続スワイプ・マルチタッチ等によるタイマーの重複（孤児化）を防止
-  if (_viewLockHoldTimer) {
-    clearTimeout(_viewLockHoldTimer);
-    _viewLockHoldTimer = null;
-  }
-
-  _vlIsLongPressSuccess = false;
-  _vlPressStartTime = Date.now();
-  const ring = document.getElementById("viewLockHoldRing");
-  const circle = document.getElementById("viewLockRingCircle");
-  const touch = e.touches ? e.touches[0] : e;
-  _vlSwipeStartY = touch.clientY; // スワイプ開始Y座標を記録
-  _vlSwipeStartX = touch.clientX; // スワイプ開始X座標を記録
-  if (ring) {
-    ring.style.left = touch.clientX + "px";
-    ring.style.top = touch.clientY + "px";
-    ring.style.opacity = "1";
-  }
-  if (circle) {
-    circle.style.transition = "stroke-dashoffset 1s linear";
-    requestAnimationFrame(() => { circle.style.strokeDashoffset = "0"; });
-  }
-  // 1秒長押しで初期画面へ戻るタイマー
-  _viewLockHoldTimer = setTimeout(() => {
-    _vlIsLongPressSuccess = true;
-    if (_viewLockClockTimer)   { clearInterval(_viewLockClockTimer);   _viewLockClockTimer   = null; }
-    if (_viewLockStyleInterval) { clearInterval(_viewLockStyleInterval); _viewLockStyleInterval = null; }
-    window.removeEventListener('resize', _handleViewLockResize);
-    const viewLock = document.getElementById("viewLockScreen");
-    if (viewLock && viewLock._visibilityHandler) {
-      document.removeEventListener('visibilitychange', viewLock._visibilityHandler);
-      viewLock._visibilityHandler = null;
-    }
-    if (viewLock) viewLock.style.display = "none";
-    document.getElementById("lockScreen").style.display = "block";
-    // Bug①修正: 2フレーム待機してアニメーション確実再起動（display:blockの描画完了を待つ）
-    requestAnimationFrame(() => requestAnimationFrame(() => restartLockScreenAnimation()));
-    if (ring)   { ring.style.opacity = "0"; }
-    if (circle) {
-      circle.style.transition = "stroke-dashoffset 0.1s linear";
-      circle.style.strokeDashoffset = "164";
-    }
-  }, 1000);
-}
-
-function initViewLockHold() {
-  const viewLock = document.getElementById("viewLockScreen");
-  if (!viewLock) return;
-  // ★先に既存リスナーを必ず削除する（重複登録の完全防止）
-  // 同一関数参照を渡すことで removeEventListener が正確に機能する
-  viewLock.removeEventListener('click',       _vlClickBlocker, true);
-  viewLock.removeEventListener('mousedown',   _vlStartHold);
-  viewLock.removeEventListener('mousemove',   _vlMoveHold);
-  viewLock.removeEventListener('touchstart',  _vlStartHold);
-  viewLock.removeEventListener('touchmove',   _vlMoveHold);
-  viewLock.removeEventListener('mouseup',     _vlEndHold);
-  viewLock.removeEventListener('mouseleave',  _vlEndHold);
-  viewLock.removeEventListener('touchend',    _vlEndHold);
-  viewLock.removeEventListener('touchcancel', _vlEndHold);
-  // 状態をリセット
-  _vlPressStartTime = 0;
-  _vlIsLongPressSuccess = false;
-  _vlBlockingClick = false;
-  _vlLastTapTime = 0;
-  _vlTapCount = 0;
-  _vlSwipeStartY = 0;
-  _vlSwipeStartX = 0;
-  // リスナーを登録
-  viewLock.addEventListener('click',       _vlClickBlocker, true);
-  viewLock.addEventListener('mousedown',   _vlStartHold);
-  viewLock.addEventListener('mousemove',   _vlMoveHold);
-  viewLock.addEventListener('touchstart',  _vlStartHold, { passive: false });
-  viewLock.addEventListener('touchmove',   _vlMoveHold, { passive: true });
-  viewLock.addEventListener('mouseup',     _vlEndHold);
-  viewLock.addEventListener('mouseleave',  _vlEndHold);
-  viewLock.addEventListener('touchend',    _vlEndHold);
-  viewLock.addEventListener('touchcancel', _vlEndHold);
-  viewLock.addEventListener('contextmenu', (e) => e.preventDefault());
-}
 
 
-/* ============================================================
-   ダミー画面（デコイ時計）ロジック
-   ============================================================ */
-let _decoyClockTimer  = null; // 時計更新タイマー
-let _decoyHoldTimer   = null; // 長押し判定タイマー
-let _decoyHoldStarted = false;
-let _decoyClockPaused = false;
-let _decoyLastTapTime = 0;
-let _decoyDisplayMode = 0; // 0: 通常, 1: 24時間残り, 2: 日の出/日没
-let _decoySingleTapTimer = null;
-let _decoyTapCount = 0;
-let _decoyHideSubSeconds = false;
 
-function showDecoyScreen() {
-  // Google Analytics: ダミー画面への遷移をカウント（国別データなどもAnalytics上で確認可能）
-  if (typeof gtag === 'function') {
-    gtag('event', 'view_decoy_screen', {
-      'event_category': 'Security',
-      'event_label': 'Decoy Screen Triggered'
-    });
-  }
 
-  document.getElementById("lockScreen").style.display = "none";
-  const decoy = document.getElementById("decoyScreen");
-  decoy.style.display = "block";
 
-  const clockWrap = decoy.querySelector(".decoy-clock-wrap");
-  // onclickハンドラは不要になりました（_decoyHoldEndで処理します）
 
-  // アニメーションを確実に最初から再生させる（フェードイン・浮上）
-  const title = decoy.querySelector(".anim-title-rise");
-  const fades = decoy.querySelectorAll(".anim-slow-fade");
-  if (title) {
-    title.classList.remove("anim-title-rise");
-    void title.offsetWidth;
-    title.classList.add("anim-title-rise");
-  }
-  fades.forEach(el => {
-    el.classList.remove("anim-slow-fade");
-    void el.offsetWidth;
-    el.classList.add("anim-slow-fade");
-  });
 
-  // ★ コンマ秒（2桁）を素早く表示するため50fps（20ms）で動かす
-  // ただし画面が非表示（スリープ・タブ切替）になったら即座に停止する（省電力）
-  _updateDecoyClock();
-  _decoyClockTimer = setInterval(_updateDecoyClock, 20);
 
-  // ★【省電力】画面が非表示になったらタイマーを停止し、戻ったら再開する
-  function _decoyVisibilityHandler() {
-    if (document.hidden) {
-      if (_decoyClockTimer) { clearInterval(_decoyClockTimer); _decoyClockTimer = null; }
-    } else {
-      _updateDecoyClock();
-      _decoyClockTimer = setInterval(_updateDecoyClock, 20);
-    }
-  }
-  document.addEventListener('visibilitychange', _decoyVisibilityHandler);
-  const decoyEl = document.getElementById("decoyScreen");
-  if (decoyEl) decoyEl._visibilityHandler = _decoyVisibilityHandler;
 
-  // 長押しイベント登録
-  decoy.addEventListener("touchstart",  _decoyHoldStart,  { passive: false });
-  decoy.addEventListener("touchend",    _decoyHoldEnd,    { passive: true });
-  decoy.addEventListener("touchcancel", _decoyHoldEnd,    { passive: true });
-  decoy.addEventListener("mousedown",   _decoyHoldStart);
-  decoy.addEventListener("mouseup",     _decoyHoldEnd);
-  decoy.addEventListener("mouseleave",  _decoyHoldEnd);
-}
 
-function hideDecoyScreen() {
-  clearInterval(_decoyClockTimer);
-  _decoyClockTimer = null;
-  clearTimeout(_decoyHoldTimer);
-  _decoyHoldTimer = null;
-  _decoyHoldStarted = false;
-  _decoyDisplayMode = 0;
-  _decoyClockPaused = false;
-  _decoyLastTapTime = 0;
-  _decoyTapCount = 0;
 
-  const decoy = document.getElementById("decoyScreen");
-  cancelDecoyTimer(); // タイマーも解除
-  // ★【省電力】visibilitychangeリスナーをクリーンアップ
-  if (decoy._visibilityHandler) {
-    document.removeEventListener('visibilitychange', decoy._visibilityHandler);
-    decoy._visibilityHandler = null;
-  }
-  decoy.removeEventListener("touchstart",  _decoyHoldStart);
-  decoy.removeEventListener("touchend",    _decoyHoldEnd);
-  decoy.removeEventListener("touchcancel", _decoyHoldEnd);
-  decoy.removeEventListener("mousedown",   _decoyHoldStart);
-  decoy.removeEventListener("mouseup",     _decoyHoldEnd);
-  decoy.removeEventListener("mouseleave",  _decoyHoldEnd);
 
-  // ヒント・リングをリセット
-  const hint = document.getElementById("decoyHint");
-  if (hint) { hint.textContent = ""; hint.classList.remove("visible"); }
-  const ring = document.getElementById("decoyHoldRing");
-  if (ring) ring.style.display = "none";
-  const circle = document.getElementById("decoyRingCircle");
-  if (circle) circle.style.strokeDashoffset = "163";
 
-  decoy.style.display = "none";
-  document.getElementById("lockScreen").style.display = "block";
-  // ロック画面のパスコード入力欄をクリア
-  const pc = document.getElementById("passcode");
-  if (pc) { pc.value = ""; pc.style.border = ""; }
-  const err = document.getElementById("error");
-  if (err) err.innerText = "";
-  
-  // Bug修正: 2フレーム遅延呼び出し（display:blockの描画完了待ちによるアニメーション不発防止）
-  requestAnimationFrame(() => requestAnimationFrame(() => restartLockScreenAnimation()));
-}
 
-// 日の出・日の入りの近似計算（東京の緯度経度をデフォルトとする）
-function getSunriseSunset(date, lat = 35.6895, lng = 139.6917) {
-  const rad = Math.PI / 180;
-  const noonLocal = new Date(date.getFullYear(), date.getMonth(), date.getDate(), 12, 0, 0);
-  const start = new Date(noonLocal.getFullYear(), 0, 0);
-  const diff = (noonLocal - start) + ((start.getTimezoneOffset() - noonLocal.getTimezoneOffset()) * 60 * 1000);
-  const oneDay = 1000 * 60 * 60 * 24;
-  const dayOfYear = Math.floor(diff / oneDay);
-  
-  const gamma = (2 * Math.PI / 365) * (dayOfYear - 1 + (12 - 12) / 24);
-  const eqTime = 229.18 * (
-    0.000075 +
-    0.001868 * Math.cos(gamma) -
-    0.032077 * Math.sin(gamma) -
-    0.014615 * Math.cos(2 * gamma) -
-    0.040849 * Math.sin(2 * gamma)
-  );
-  
-  const decl = 0.006918 -
-    0.399912 * Math.cos(gamma) +
-    0.070257 * Math.sin(gamma) -
-    0.006758 * Math.cos(2 * gamma) +
-    0.000907 * Math.sin(2 * gamma) -
-    0.002697 * Math.cos(3 * gamma) +
-    0.00148 * Math.sin(3 * gamma);
-    
-  const zenith = 90.833 * rad;
-  const haRad = Math.acos(
-    Math.cos(zenith) / (Math.cos(lat * rad) * Math.cos(decl)) - Math.tan(lat * rad) * Math.tan(decl)
-  );
-  const haDeg = haRad / rad;
-  
-  const sunriseUTCMinutes = 720 - 4 * (lng + haDeg) - eqTime;
-  const sunsetUTCMinutes  = 720 - 4 * (lng - haDeg) - eqTime;
-  
-  const sunrise = new Date(noonLocal.getTime());
-  sunrise.setUTCHours(0, 0, 0, 0);
-  sunrise.setUTCMinutes(Math.round(sunriseUTCMinutes));
-  
-  const sunset = new Date(noonLocal.getTime());
-  sunset.setUTCHours(0, 0, 0, 0);
-  sunset.setUTCMinutes(Math.round(sunsetUTCMinutes));
-  
-  return { sunrise, sunset };
-}
 
-function _updateDecoyClock() {
-  if (_decoyClockPaused) return; // ダブルタップ停止中は更新しない
-  const now = new Date();
-  const dateEl = document.getElementById("decoyDate");
-  const timeEl = document.getElementById("decoyTime");
 
-  if (_decoyDisplayMode === 1) {
-    // Mode 1: 24時間の残り時間
-    const tomorrow = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
-    const diff = Math.max(0, tomorrow - now);
-    
-    const h = String(Math.floor(diff / (1000 * 60 * 60))).padStart(2, "0");
-    const mi = String(Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60))).padStart(2, "0");
-    const s = String(Math.floor((diff % (1000 * 60)) / 1000)).padStart(2, "0");
-    const ms = String(Math.floor((diff % 1000) / 10)).padStart(2, "0");
 
-    if (dateEl) {
-      dateEl.style.visibility = "visible";
-      dateEl.style.fontSize = ""; // Reset inline font-size
-      if (now.getMonth() === 11 && now.getDate() === 31) {
-        dateEl.textContent = "年明けまで";
-      } else {
-        dateEl.textContent = "一日の終わりまで";
-      }
-    }
-    if (timeEl) {
-      timeEl.style.fontSize = ""; // Reset inline font-size
-      timeEl.textContent = _decoyHideSubSeconds ? `${h}:${mi}:${s}` : `${h}:${mi}:${s}.${ms}`;
-    }
-  } else if (_decoyDisplayMode === 2) {
-    // Mode 2: 日の出・日没
-    const todaySun = getSunriseSunset(now);
-    let targetEvent = "";
-    let targetTime = null;
 
-    if (now < todaySun.sunrise) {
-      targetEvent = "日の出";
-      targetTime = todaySun.sunrise;
-    } else if (now < todaySun.sunset) {
-      targetEvent = "日没";
-      targetTime = todaySun.sunset;
-    } else {
-      const tomorrow = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
-      const tomorrowSun = getSunriseSunset(tomorrow);
-      targetEvent = "日の出";
-      targetTime = tomorrowSun.sunrise;
-    }
 
-    const nextH = String(targetTime.getHours()).padStart(2, "0");
-    const nextM = String(targetTime.getMinutes()).padStart(2, "0");
-    const nextS = String(targetTime.getSeconds()).padStart(2, "0");
-    const nextTimeString = `${nextH}:${nextM}:${nextS}`;
 
-    const diff = Math.max(0, targetTime - now);
-    const h = String(Math.floor(diff / (1000 * 60 * 60))).padStart(2, "0");
-    const mi = String(Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60))).padStart(2, "0");
-    const s = String(Math.floor((diff % (1000 * 60)) / 1000)).padStart(2, "0");
-    const ms = String(Math.floor((diff % 1000) / 10)).padStart(2, "0");
 
-    if (dateEl) {
-      dateEl.style.visibility = "visible";
-      dateEl.style.fontSize = ""; // 固定サイズを維持
-      dateEl.textContent = `${targetEvent}　${nextTimeString}`;
-    }
-    if (timeEl) {
-      timeEl.style.fontSize = ""; // 固定サイズを維持
-      timeEl.textContent = _decoyHideSubSeconds ? `${h}:${mi}:${s}` : `${h}:${mi}:${s}.${ms}`;
-    }
-  } else {
-    // Mode 0: 通常
-    const y   = now.getFullYear();
-    const mo  = String(now.getMonth() + 1).padStart(2, "0");
-    const d   = String(now.getDate()).padStart(2, "0");
-    const h   = String(now.getHours()).padStart(2, "0");
-    const mi  = String(now.getMinutes()).padStart(2, "0");
-    const s   = String(now.getSeconds()).padStart(2, "0");
-    const ms  = String(Math.floor(now.getMilliseconds() / 10)).padStart(2, "0"); // 0-99 (コンマ2桁)
 
-    if (dateEl) {
-      dateEl.style.visibility = "visible";
-      dateEl.style.fontSize = ""; // Reset inline font-size
-      dateEl.textContent = `${y}年${mo}月${d}日`;
-    }
-    // 全角コロンだと幅を取りすぎて改行されるため、半角コロンに変更
-    if (timeEl) {
-      timeEl.style.fontSize = ""; // Reset inline font-size
-      timeEl.textContent = _decoyHideSubSeconds ? `${h}:${mi}:${s}` : `${h}:${mi}:${s}.${ms}`;
-    }
-  }
-}
 
-function _decoyHoldStart(e) {
-  // ボタン類がタップされた場合は長押し判定やpreventDefaultを除外し、本来のclickを発火させる
-  if (e && e.target && (e.target.tagName === 'BUTTON' || e.target.closest('button'))) return;
 
-  if (e && e.cancelable) e.preventDefault(); // ghost click防止
-  if (_decoyHoldStarted) return;
-  _decoyHoldStarted = true;
 
-  // ヒントを表示
-  const hint = document.getElementById("decoyHint");
-  if (hint) { hint.textContent = "長押しで戻る..."; hint.classList.add("visible"); }
 
-  // プログレスリングを表示して開始
-  const ring   = document.getElementById("decoyHoldRing");
-  const circle = document.getElementById("decoyRingCircle");
-  if (ring)   ring.style.display = "block";
-  if (circle) {
-    // 一度リセットしてからアニメーション開始
-    circle.style.transition = "none";
-    circle.style.strokeDashoffset = "163";
-    // 強制リフロー後にアニメーション開始
-    void circle.getBoundingClientRect();
-    circle.style.transition = "stroke-dashoffset 3s linear";
-    circle.style.strokeDashoffset = "0";
-  }
 
-  // 3秒後にロック画面へ戻る
-  _decoyHoldTimer = setTimeout(() => {
-    hideDecoyScreen();
-  }, 3000);
-}
 
-function _decoyHoldEnd(e) {
-  if (e && e.target && (e.target.tagName === 'BUTTON' || e.target.closest('button'))) return;
 
-  if (!_decoyHoldStarted) return;
-  _decoyHoldStarted = false;
-  clearTimeout(_decoyHoldTimer);
-  _decoyHoldTimer = null;
 
-  // ヒントとリングをリセット
-  const hint = document.getElementById("decoyHint");
-  if (hint) { hint.textContent = ""; hint.classList.remove("visible"); }
-  const ring   = document.getElementById("decoyHoldRing");
-  const circle = document.getElementById("decoyRingCircle");
-  if (ring)   ring.style.display = "none";
-  if (circle) {
-    circle.style.transition = "none";
-    circle.style.strokeDashoffset = "163";
-  }
 
-  // タップ判定（長押しで戻る前に離した場合）
-  const now = Date.now();
-  if (_decoyLastTapTime > 0 && now - _decoyLastTapTime > 400) {
-    _decoyTapCount = 0; // 400ms以上空いたらリセット
-  }
-  _decoyLastTapTime = now;
-  _decoyTapCount++;
-  
-  if (_decoySingleTapTimer) clearTimeout(_decoySingleTapTimer);
-  
-  if (_decoyTapCount === 3) {
-    // トリプルタップ (元々はダブルタップの機能)
-    _decoyTapCount = 0;
-    _decoyClockPaused = !_decoyClockPaused; // 停止/再開をトグル
-    if (!_decoyClockPaused) {
-      _updateDecoyClock(); // 即時反映
-    }
-  } else {
-    // 400ms待って次のタップが来なければ確定させる
-    _decoySingleTapTimer = setTimeout(() => {
-      const count = _decoyTapCount;
-      _decoyTapCount = 0;
-      if (count === 1) {
-        // シングルタップ
-        _decoyDisplayMode = (_decoyDisplayMode + 1) % 3;
-      } else if (count === 2) {
-        // ダブルタップ (元々はトリプルタップの機能)
-        _decoyHideSubSeconds = !_decoyHideSubSeconds;
-        if (_decoyHideSubSeconds) {
-          _decoyClockPaused = false; // コンマ秒をなくした時計が起動したときは静止を解除
-        }
-      }
-      if (!_decoyClockPaused || count === 2) {
-        _updateDecoyClock(); // 即時反映
-      }
-    }, 400);
-  }
-}
 
-let _decoyTimerInterval = null;
-let _decoyAlarmInterval = null;
-let _decoyTargetTime = 0;
-let _decoyTimerPaused = false;
-let _decoyRemainTimeOnPause = 0;
-let _decoyAudioCtx = null; // iOS用オーディオコンテキスト
-let _decoyEngineSource = null; // アイドリング音のループソース
-let _bikeAudioElement = null; // MP3再生用Audio要素
 
-function toggleDecoyTimer() {
-  if (!_decoyTimerInterval && !_decoyTimerPaused) return; // 起動していない
 
-  const btn = document.getElementById("decoyPauseBtn");
-  if (_decoyTimerPaused) {
-    // 再生（再開）
-    _decoyTimerPaused = false;
-    _decoyTargetTime = Date.now() + _decoyRemainTimeOnPause;
-    _decoyTimerInterval = setInterval(_updateDecoyCountdown, 100);
-    if (btn) btn.textContent = "❚❚";
-  } else {
-    // 一時停止
-    _decoyTimerPaused = true;
-    _decoyRemainTimeOnPause = _decoyTargetTime - Date.now();
-    clearInterval(_decoyTimerInterval);
-    _decoyTimerInterval = null;
-    if (btn) btn.innerHTML = '<span style="display:inline-block; transform:scale(0.85, 1.35);">►</span>';
-  }
-}
 
-function startDecoyTimer(minutes) {
-  // ── iOS Safariオーディオロック解除（初回のみ） ──
-  try {
-    if (!_decoyAudioCtx) {
-      _decoyAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    }
-    if (_decoyAudioCtx.state === 'suspended') {
-      _decoyAudioCtx.resume();
-    }
-    // 無音のオシレーターを再生してブラウザにオーディオ利用を許可させる
-    const osc = _decoyAudioCtx.createOscillator();
-    const gain = _decoyAudioCtx.createGain();
-    gain.gain.value = 0;
-    osc.connect(gain);
-    gain.connect(_decoyAudioCtx.destination);
-    osc.start();
-    osc.stop(_decoyAudioCtx.currentTime + 0.01);
-    
-    // MP3音源の先読み（Audio要素を使うことでローカル環境 file:// でのCORSエラーを回避）
-    if (!_bikeAudioElement) {
-      _bikeAudioElement = new Audio();
-      _bikeAudioElement.preload = 'auto'; // autoplay誘発を防ぎ、先読みだけする
-      _bikeAudioElement.loop = true;
-      _bikeAudioElement.src = './bike.mp3'; // srcを後設定することで自動再生を防ぐ
-    }
-  } catch (e) {}
 
-  const decoyScreen = document.getElementById("decoyScreen");
-  const ring = document.getElementById("decoyHoldRing");
-  const pauseBtn = document.getElementById("decoyPauseBtn");
 
-  // もしアラーム発動中なら、アラームだけ止めて現在時刻から時間を上書き設定（ここは新規と同じ扱い）
-  if (decoyScreen && decoyScreen.classList.contains("decoy-alarm")) {
-    clearInterval(_decoyAlarmInterval);
-    _decoyAlarmInterval = null;
-    if (_decoyEngineSource) {
-      try { 
-        if (_decoyEngineSource.stop) _decoyEngineSource.stop(); 
-        else if (_decoyEngineSource.pause) {
-          _decoyEngineSource.pause();
-          _decoyEngineSource.currentTime = 0;
-        }
-      } catch(e){}
-      _decoyEngineSource = null;
-    }
-    decoyScreen.classList.remove("decoy-alarm");
-    if (ring) ring.classList.remove("decoy-alarm");
-    _decoyTargetTime = Date.now() + minutes * 60 * 1000;
-    _decoyTimerPaused = false;
-    if (pauseBtn) pauseBtn.textContent = "❚❚";
-  } 
-  // 一時停止中ならそこに時間を加算して再開
-  else if (_decoyTimerPaused) {
-    _decoyRemainTimeOnPause += minutes * 60 * 1000;
-    _decoyTargetTime = Date.now() + _decoyRemainTimeOnPause;
-    _decoyTimerPaused = false;
-    if (pauseBtn) pauseBtn.textContent = "❚❚";
-  }
-  // 既にタイマー稼働中なら、目標時間を延長（加算）
-  else if (_decoyTimerInterval) {
-    _decoyTargetTime += minutes * 60 * 1000;
-  } 
-  // 新規スタート
-  else {
-    _decoyTargetTime = Date.now() + minutes * 60 * 1000;
-    _decoyTimerPaused = false;
-    if (pauseBtn) pauseBtn.textContent = "❚❚";
-  }
-  
-  const display = document.getElementById("decoyCountdown");
-  if (display) display.style.visibility = "visible";
-  if (pauseBtn) pauseBtn.style.visibility = "visible";
-  
-  if (!_decoyTimerInterval) {
-    _decoyTimerInterval = setInterval(_updateDecoyCountdown, 100);
-  }
-  _updateDecoyCountdown();
-}
 
-function cancelDecoyTimer() {
-  clearInterval(_decoyTimerInterval);
-  _decoyTimerInterval = null;
-  clearInterval(_decoyAlarmInterval);
-  _decoyAlarmInterval = null;
-  if (_decoyEngineSource) {
-    try { 
-      if (_decoyEngineSource.stop) _decoyEngineSource.stop(); 
-      else if (_decoyEngineSource.pause) {
-        _decoyEngineSource.pause();
-        _decoyEngineSource.currentTime = 0;
-      }
-    } catch(e){}
-    _decoyEngineSource = null;
-  }
-  _decoyTimerPaused = false;
-  
-  const display = document.getElementById("decoyCountdown");
-  if (display) {
-    display.style.visibility = "hidden";
-    display.textContent = "00:00.0";
-  }
-  const pauseBtn = document.getElementById("decoyPauseBtn");
-  if (pauseBtn) {
-    pauseBtn.style.visibility = "hidden";
-    pauseBtn.textContent = "❚❚";
-  }
-  
-  const decoyScreen = document.getElementById("decoyScreen");
-  if (decoyScreen) decoyScreen.classList.remove("decoy-alarm");
-  const ring = document.getElementById("decoyHoldRing");
-  if (ring) ring.classList.remove("decoy-alarm");
-}
 
-function _updateDecoyCountdown() {
-  // タイマーが起動していない場合は何もしない（誤発動防止）
-  if (!_decoyTimerInterval && !_decoyTimerPaused) return;
-  // _decoyTargetTimeの初期値(0)のまま呼ばれた場合も無視
-  if (_decoyTargetTime <= 0) return;
 
-  const remain = _decoyTargetTime - Date.now();
-  const display = document.getElementById("decoyCountdown");
-  
-  if (remain <= 0) {
-    // 時間切れ
-    clearInterval(_decoyTimerInterval);
-    _decoyTimerInterval = null;
-    if (display) display.textContent = "00:00.0";
-    
-    // アラーム発動（ピンク色 + エンジン音 + バイブレーション）
-    const decoyScreen = document.getElementById("decoyScreen");
-    const ring = document.getElementById("decoyHoldRing");
-    if (decoyScreen && !decoyScreen.classList.contains("decoy-alarm")) {
-      decoyScreen.classList.add("decoy-alarm");
-      if (ring) ring.classList.add("decoy-alarm");
-      
-      // ── アメ車のアイドリング音（アメリカンVツイン）合成 ──
-      function _startAmericanIdle() {
-        if (!_decoyAudioCtx) return;
-        try {
-          if (_decoyAudioCtx.state === 'suspended') {
-            _decoyAudioCtx.resume();
-          }
-          
-          if (_decoyEngineSource) {
-            try { 
-              if (_decoyEngineSource.stop) _decoyEngineSource.stop(); 
-              else if (_decoyEngineSource.pause) {
-                _decoyEngineSource.pause();
-                _decoyEngineSource.currentTime = 0;
-              }
-            } catch(e){}
-          }
-          
-          function _playSyntheticAmericanIdle() {
-            // ── MP3がない場合は従来の合成音（一番最初の仕様＋三拍子リズム）にフォールバック ──
-            const ctx = _decoyAudioCtx;
-            const sampleRate = ctx.sampleRate;
-          // 400 RPM = 150ms per rev = 300ms per 720-degree cycle
-          const cycleMs = 300; 
-          
-          // 2サイクル分の長さ
-          const totalMs = cycleMs * 2; 
-          const bufferLen = Math.floor(sampleRate * (totalMs / 1000));
-          const buffer = ctx.createBuffer(1, bufferLen, sampleRate);
-          const data = buffer.getChannelData(0);
-          
-          // 一番最初の「音質」を再現する爆発生成関数（ピッチダウン＋ノイズ＋WaveShaper歪み）
-          function addSpike(timeMs, amp) {
-            const startSample = Math.floor((timeMs / 1000) * sampleRate);
-            const durSec = 0.08; // 初回と同じ短い爆発時間
-            
-            for (let i = 0; i < sampleRate * durSec; i++) {
-              let idx = startSample + i;
-              if (idx >= bufferLen) break;
-              
-              // 減衰エンベロープ
-              const env = Math.exp(-i / (sampleRate * durSec) * 5);
-              const t = i / sampleRate;
-              
-              // 初回のピッチダウン (140Hz -> 40Hz)
-              const freqStart = 140;
-              const freqDrop = 100 / durSec;
-              const phase = 2 * Math.PI * (freqStart * t - 0.5 * freqDrop * t * t);
-              const thud = Math.sin(phase);
-              
-              // 排気ノイズ
-              const noise = (Math.random() * 2 - 1);
-              
-              // 初回と同じミックスバランス
-              data[idx] += (thud * 0.7 + noise * 0.3) * env * amp;
-            }
-          }
-          
-          // ── 三拍子リズム (420RPM) は維持 ──
-          addSpike(0, 1.2); 
-          addSpike(131, 0.85); 
-          
-          addSpike(300 + 15, 1.1);
-          addSpike(300 + 15 + 131 + 8, 0.8);
-          
-          const src = ctx.createBufferSource();
-          src.buffer = buffer;
-          src.loop = true;
-          
-          // マフラーのくぐもった音をシミュレート（初回の設定を完全復元）
-          const filter = ctx.createBiquadFilter();
-          filter.type = 'lowpass';
-          filter.frequency.value = 300; 
-          filter.Q.value = 1.5;
-          
-          // 歪み（初回のオーバードライブ設定）
-          const dist = ctx.createWaveShaper();
-          const curve = new Float32Array(400);
-          for (let i = 0; i < 400; i++) {
-            let x = (i * 2 / 400) - 1;
-            curve[i] = Math.tanh(x * 5); // 初回と同じ強さの歪み
-          }
-          dist.curve = curve;
-          
-          const gain = ctx.createGain();
-          gain.gain.value = 2.0; // 音量
-          
-          // 初回と同じ結線順序 (src -> dist -> filter -> gain)
-          src.connect(dist);
-          dist.connect(filter);
-          filter.connect(gain);
-          gain.connect(ctx.destination);
-          
-          src.start();
-          _decoyEngineSource = src;
-          } // _playSyntheticAmericanIdle 終了
-          
-          // ── MP3音源があればそれを優先してループ再生 ──
-          if (_bikeAudioElement) {
-            _bikeAudioElement.currentTime = 0;
-            const playPromise = _bikeAudioElement.play();
-            if (playPromise !== undefined) {
-              playPromise.then(() => {
-                _decoyEngineSource = _bikeAudioElement;
-              }).catch(e => {
-                console.warn("bike.mp3の再生に失敗しました。合成音に切り替えます。", e);
-                _playSyntheticAmericanIdle();
-              });
-            } else {
-              _decoyEngineSource = _bikeAudioElement;
-            }
-          } else {
-            _playSyntheticAmericanIdle();
-          }
-          
-        } catch (e) {
-        }
-      }
-      
-      // アイドリング音スタート
-      _startAmericanIdle();
-      
-      // バイブレーションはアイドリングの「三拍子」に合わせてリピート
-      // ループ全体の長さは約610ms
-      _decoyAlarmInterval = setInterval(() => {
-        if (navigator.vibrate) navigator.vibrate([50, 74, 40, 151, 50, 74, 40, 131]); 
-      }, 610);
-    }
-  } else {
-    // 残り時間描画
-    const m = String(Math.floor(remain / 60000)).padStart(2, "0");
-    const s = String(Math.floor((remain % 60000) / 1000)).padStart(2, "0");
-    const ms = String(Math.floor((remain % 1000) / 100)); // 1桁 (0.1秒)
-    if (display) display.textContent = `${m}:${s}.${ms}`;
-  }
-}
 
-// （以前ここにあった重複・古い仕様の restartLockScreenAnimation は削除・統合されました）
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 function generateKeypad() {
   const keypad = document.getElementById("keypad");
@@ -4142,7 +4175,7 @@ document.addEventListener("focusin", function(e) {
   // スワイプ可能な画面一覧（modeSelectを先頭に追加）
   const SWIPEABLE = ['modeSelect', 'errorMode', 'correctionMode', 'resultListPage'];
   // スワイプさせない画面一覧（デコイ画面も完全固定）
-  const LOCKED    = ['lockScreen', 'decoyScreen'];
+  const LOCKED    = ['lockScreen'];
 
   function getEl(id) { return document.getElementById(id); }
 
@@ -4461,3 +4494,190 @@ document.addEventListener("focusin", function(e) {
   });
 
 })();
+
+/* ============================================================
+   README ページ (12345) 用ロジック
+   ============================================================ */
+let _readmeHoldTimer = null;
+
+function showReadmePage() {
+  if (typeof gtag === 'function') { gtag('event', 'view_Copyright_info'); }
+  document.getElementById('lockScreen').style.display = 'none';
+  const page = document.getElementById('readmePage');
+  page.style.display = 'block';
+
+  // 初期化時にセレクトボックスの一番上をアクティブにする
+  const select = document.getElementById('readmeCountrySelect');
+  if (select && select.options.length > 0) {
+    select.selectedIndex = 0;
+    jumpToReadmeSection(select.value);
+  }
+
+  initReadmeHold();
+}
+
+function hideReadmePage() {
+  document.getElementById('readmePage').style.display = 'none';
+  document.getElementById('lockScreen').style.display = 'block';
+  restartLockScreenAnimation();
+}
+
+function jumpToReadmeSection(sectionId) {
+  const target = document.getElementById(sectionId);
+  const container = document.getElementById('readmeBody');
+  if (target && container) {
+    container.scrollTo({
+      top: target.offsetTop - container.offsetTop,
+      behavior: 'smooth'
+    });
+  }
+
+  const titleDict = {
+    'sec-ja': '著作権情報',
+    'sec-en': 'Copyright Info',
+    'sec-pt': 'Direitos Autorais',
+    'sec-es': 'Derechos de Autor',
+    'sec-fr': 'Droits d\'Auteur',
+    'sec-it': 'Diritti d\'Autore',
+    'sec-de': 'Urheberrecht',
+    'sec-uk': 'Авторське право',
+    'sec-hi': 'कॉपीराइट जानकारी',
+    'sec-ar': 'معلومات حقوق النشر',
+    'sec-ru': 'Авторские права',
+    'sec-id': 'Hak Cipta',
+    'sec-tr': 'Telif Hakkı Bilgisi',
+    'sec-zh': '版权信息',
+    'sec-ko': '저작권 정보'
+  };
+
+  const titleEl = document.getElementById('readmeTitle');
+  if (titleEl && titleDict[sectionId]) {
+    titleEl.innerText = titleDict[sectionId];
+  }
+}
+
+// 長押しで初期画面に戻る
+// Make sure handlers are outside or removed to avoid duplicate listeners
+let _readmeStartHoldHandler = null;
+let _readmeCancelHoldHandler = null;
+
+function initReadmeHold() {
+  const page = document.getElementById('readmePage');
+  if (!page) return;
+
+  const ringContainer = document.getElementById('readmeHoldRing');
+  const ring = document.getElementById('readmeRingCircle');
+  const hint = document.getElementById('readmeHoldHint');
+
+  if (ring) {
+    ring.style.transition = 'none';
+    ring.style.strokeDashoffset = '164'; 
+  }
+  if (hint) {
+    hint.innerText = '';
+    hint.style.color = 'rgba(255, 255, 255, 0)';
+  }
+
+  const startHold = (e) => {
+    if (e.target.tagName.toLowerCase() === 'select') return;
+
+    let x, y;
+    if (e.touches && e.touches.length > 0) {
+      x = e.touches[0].clientX;
+      y = e.touches[0].clientY;
+    } else {
+      x = e.clientX;
+      y = e.clientY;
+    }
+
+    if (ringContainer) {
+      ringContainer.style.display = 'block';
+      ringContainer.style.left = x + 'px';
+      ringContainer.style.top = y + 'px';
+      // Force reflow on the container to ensure display:block takes effect before transition
+      void ringContainer.offsetWidth;
+    }
+    
+    if (ring) {
+      // Set transition and offset inside requestAnimationFrame for smooth drawing
+      requestAnimationFrame(() => {
+        ring.style.transition = 'stroke-dashoffset 1s linear';
+        ring.style.strokeDashoffset = '0';
+      });
+    }
+    if (hint) {
+      hint.style.display = 'block';
+      hint.style.left = x + 'px';
+      hint.style.top = (y - 55) + 'px';
+      hint.innerText = '長押しで戻る';
+      void hint.offsetWidth;
+      requestAnimationFrame(() => {
+        hint.style.color = 'rgba(0, 255, 224, 0.8)';
+      });
+    }
+
+    if (_readmeHoldTimer) {
+      clearTimeout(_readmeHoldTimer);
+    }
+
+    _readmeHoldTimer = setTimeout(() => {
+      hideReadmePage();
+      cancelHold();
+    }, 1000);
+  };
+
+  const cancelHold = () => {
+    if (_readmeHoldTimer) {
+      clearTimeout(_readmeHoldTimer);
+      _readmeHoldTimer = null;
+    }
+    if (ring) {
+      ring.style.transition = 'stroke-dashoffset 0.2s ease';
+      ring.style.strokeDashoffset = '164';
+      setTimeout(() => {
+        if (!_readmeHoldTimer && ringContainer) ringContainer.style.display = 'none';
+      }, 200);
+    }
+    if (hint) {
+      hint.style.color = 'rgba(255, 255, 255, 0)';
+      setTimeout(() => {
+        if (!_readmeHoldTimer) hint.style.display = 'none';
+      }, 200);
+    }
+  };
+
+  // Remove old listeners if they exist
+  if (_readmeStartHoldHandler) {
+    page.removeEventListener('mousedown', _readmeStartHoldHandler);
+    page.removeEventListener('touchstart', _readmeStartHoldHandler);
+  }
+  if (_readmeCancelHoldHandler) {
+    page.removeEventListener('mouseup', _readmeCancelHoldHandler);
+    page.removeEventListener('mouseleave', _readmeCancelHoldHandler);
+    page.removeEventListener('mousemove', _readmeCancelHoldHandler);
+    page.removeEventListener('dblclick', _readmeCancelHoldHandler);
+    page.removeEventListener('touchend', _readmeCancelHoldHandler);
+    page.removeEventListener('touchcancel', _readmeCancelHoldHandler);
+    page.removeEventListener('touchmove', _readmeCancelHoldHandler);
+    const body = document.getElementById('readmeBody');
+    if (body) body.removeEventListener('scroll', _readmeCancelHoldHandler);
+  }
+
+  // Save references
+  _readmeStartHoldHandler = startHold;
+  _readmeCancelHoldHandler = cancelHold;
+
+  // Add new listeners
+  page.addEventListener('mousedown', startHold);
+  page.addEventListener('mouseup', cancelHold);
+  page.addEventListener('mouseleave', cancelHold);
+  page.addEventListener('mousemove', cancelHold);
+  page.addEventListener('dblclick', cancelHold);
+  page.addEventListener('touchstart', startHold, { passive: true });
+  page.addEventListener('touchend', cancelHold);
+  page.addEventListener('touchcancel', cancelHold);
+  page.addEventListener('touchmove', cancelHold, { passive: true });
+  
+  const body = document.getElementById('readmeBody');
+  if (body) body.addEventListener('scroll', cancelHold, { passive: true });
+}

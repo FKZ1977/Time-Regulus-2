@@ -1,69 +1,69 @@
-/* ============================================================
-   オフライン対応フォント定義（置時計用 9種 - アプリ同梱フォント）
-   ============================================================ */
-@font-face {
-  font-family: 'Orbitron';
-  font-style: normal;
-  font-weight: 700;
-  font-display: swap;
-  src: url('./fonts/Orbitron-Bold.woff2') format('woff2');
-}
-@font-face {
-  font-family: 'VT323';
-  font-style: normal;
-  font-weight: 400;
-  font-display: swap;
-  src: url('./fonts/VT323.woff2') format('woff2');
-}
-@font-face {
-  font-family: 'Share Tech Mono';
-  font-style: normal;
-  font-weight: 400;
-  font-display: swap;
-  src: url('./fonts/ShareTechMono.woff2') format('woff2');
-}
-@font-face {
-  font-family: 'Sixtyfour';
-  font-style: normal;
-  font-weight: 400;
-  font-display: swap;
-  src: url('./fonts/Sixtyfour.woff2') format('woff2');
-}
-@font-face {
-  font-family: 'Rubik Dirt';
-  font-style: normal;
-  font-weight: 400;
-  font-display: swap;
-  src: url('./fonts/RubikDirt.woff2') format('woff2');
-}
-@font-face {
-  font-family: 'Moirai One';
-  font-style: normal;
-  font-weight: 400;
-  font-display: swap;
-  src: url('./fonts/MoiraiOne.woff2') format('woff2');
-}
-@font-face {
-  font-family: 'Bungee Shade';
-  font-style: normal;
-  font-weight: 400;
-  font-display: swap;
-  src: url('./fonts/BungeeShade.ttf') format('truetype');
-}
-@font-face {
-  font-family: 'Diplomata SC';
-  font-style: normal;
-  font-weight: 400;
-  font-display: swap;
-  src: url('./fonts/DiplomataSC.ttf') format('truetype');
-}
-@font-face {
-  font-family: 'Bellefair';
-  font-style: normal;
-  font-weight: 400;
-  font-display: swap;
-  src: url('./fonts/Bellefair.ttf') format('truetype');
-}
+﻿
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 * {
   box-sizing: border-box;
@@ -163,14 +163,14 @@ input, textarea {
     animation: fadeOut 0.5s ease-out forwards;
 }
 
-/* --- 置時計 RANDOM START/STOP フラッシュメッセージアニメーション --- */
-@keyframes vlFlashAnim {
-  0%   { opacity: 0; transform: translate(-50%, -50%) scale(0.5); }
-  20%  { opacity: 1; transform: translate(-50%, -50%) scale(1.08); }
-  35%  { opacity: 1; transform: translate(-50%, -50%) scale(1.0); }
-  75%  { opacity: 1; transform: translate(-50%, -50%) scale(1.0); }
-  100% { opacity: 0; transform: translate(-50%, -50%) scale(0.9); }
-}
+
+
+
+
+
+
+
+
 
 html, body {
   width: 100%;
@@ -2851,310 +2851,473 @@ body.input-helper-off-mode #reverseDisplayDateGroup_direct {
 }
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 /* ============================================================
-   ダミー画面（デコイ時計）スタイル
+   著作権情報ページ（readmePage）スタイル
    ============================================================ */
-#decoyScreen {
-  text-align: center;
-  padding-top: 30px;
-  min-height: 100vh;
-  background: var(--bg-dark);
-  user-select: none;
-  -webkit-user-select: none;
+#readmePage {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: var(--bg-dark, #0a0a12);
+  z-index: 9000;
+  flex-direction: column;
+  overflow: hidden;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+#readmePage[style*="block"],
+#readmePage[style*="flex"] {
+  display: flex !important;
 }
 
-#decoyScreen .decoy-title {
-  font-size: 36px;
-  letter-spacing: 4px;
-  margin-top: 10px;
+/* ヘッダー固定 */
+#readmeHeader {
+  flex-shrink: 0;
+  padding: 18px 16px 10px;
+  background: var(--bg-dark, #0a0a12);
+  border-bottom: 1px solid rgba(0, 255, 224, 0.15);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+#readmeTitle {
+  font-size: 20px;
+  letter-spacing: 3px;
+  color: var(--accent, #00ffe0);
+  text-shadow: 0 0 12px rgba(0, 255, 224, 0.5);
+  margin: 0;
 }
 
-.decoy-subtitle {
-  color: var(--text-sub);
-  font-size: 13px;
-  letter-spacing: 4px;
-  margin-top: -10px;
+/* 国選択ドロップダウン */
+#readmeCountryBar {
+  width: 100%;
+  max-width: 340px;
+}
+#readmeCountrySelect {
+  width: 100%;
+  background-color: rgba(0, 255, 224, 0.06);
+  background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23ffffff'%3E%3Cpath d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 24px;
+  border: 1px solid rgba(0, 255, 224, 0.3);
+  border-radius: 10px;
+  color: var(--text-main, #e0e0ff);
+  font-size: 16px;
+  padding: 10px 36px 10px 16px;
+  -webkit-appearance: none;
+  appearance: none;
+  text-align: left;
+  cursor: pointer;
+  outline: none;
+  transition: box-shadow 0.2s, border-color 0.2s;
+}
+#readmeCountrySelect:focus {
+  border-color: var(--accent, #00ffe0);
+  box-shadow: 0 0 8px rgba(0, 255, 224, 0.3);
+}
+
+/* スクロール本文 */
+#readmeBody {
+  flex: 1;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: 16px;
+}
+
+/* 各言語セクション */
+.readme-section {
   margin-bottom: 40px;
+  padding: 20px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(0, 255, 224, 0.1);
+  border-radius: 14px;
+  scroll-margin-top: 20px;
 }
-
-.decoy-clock-wrap {
-  display: inline-block;
-  padding: 30px 20px;
-  border: 1px solid rgba(0, 255, 224, 0.25);
-  border-radius: 20px;
-  background: rgba(0, 255, 224, 0.04);
-  box-shadow: 0 0 40px rgba(0, 255, 224, 0.08), inset 0 0 30px rgba(0, 255, 224, 0.04);
+.readme-section[dir="rtl"] {
+  text-align: right;
 }
-
-.decoy-date {
-  font-family: 'Courier New', 'Share Tech Mono', monospace;
+.readme-flag {
   font-size: 28px;
-  color: var(--accent);
-  text-shadow: 0 0 16px var(--accent), 0 0 32px rgba(0, 255, 224, 0.4);
-  letter-spacing: 4px;
-  margin-bottom: 16px;
+  margin-bottom: 6px;
 }
-
-.decoy-time {
-  font-family: 'Courier New', 'Share Tech Mono', monospace;
-  font-size: 40px;
-  white-space: nowrap;
+.readme-lang-title {
+  font-size: 16px;
+  color: var(--accent, #00ffe0);
+  text-shadow: 0 0 8px rgba(0, 255, 224, 0.4);
+  letter-spacing: 2px;
+  margin: 0 0 12px;
   font-weight: bold;
-  color: var(--accent);
-  text-shadow: 0 0 20px var(--accent), 0 0 50px rgba(0, 255, 224, 0.5);
-  letter-spacing: 4px;
-  line-height: 1;
 }
-
-.decoy-hint {
-  margin-top: 60px;
-  font-size: 12px;
-  color: rgba(255,255,255,0.15);
-  letter-spacing: 1px;
-  min-height: 20px;
-  transition: color 0.5s ease;
+.readme-section p {
+  font-size: 13px;
+  line-height: 1.7;
+  color: var(--text-main, #e0e0ff);
+  margin: 0 0 10px;
+  -webkit-user-select: text !important;
+  user-select: text !important;
 }
-
-.decoy-hint.visible {
-  color: rgba(255,255,255,0.4);
+.readme-section ul {
+  margin: 4px 0 10px;
+  padding-left: 1.4em;
+}
+.readme-section[dir="rtl"] ul {
+  padding-left: 0;
+  padding-right: 1.4em;
+}
+.readme-section li {
+  font-size: 13px;
+  line-height: 1.7;
+  color: rgba(224, 224, 255, 0.85);
+  margin-bottom: 4px;
+  -webkit-user-select: text !important;
+  user-select: text !important;
 }
 
 /* 長押しプログレスリング */
-#decoyHoldRing {
+#readmeHoldRing {
   display: none;
+  pointer-events: none;
   position: fixed;
-  bottom: 60px;
+  top: 50%;
   left: 50%;
-  transform: translateX(-50%);
-  width: 60px;
-  height: 60px;
+  transform: translate(-50%, -50%);
+  width: 56px;
+  height: 56px;
+  z-index: 9100;
 }
-
-#decoyHoldRing circle {
+#readmeHoldRing circle {
   fill: none;
-  stroke: var(--accent);
+  stroke: var(--accent, #00ffe0);
   stroke-width: 4;
-  stroke-dasharray: 163; /* 2*π*26 ≈ 163 */
+  stroke-dasharray: 163;
   stroke-dashoffset: 163;
   stroke-linecap: round;
   transform: rotate(-90deg);
   transform-origin: 50% 50%;
-  transition: stroke-dashoffset 3s linear;
   filter: drop-shadow(0 0 6px var(--accent));
+  transition: stroke-dashoffset 1.5s linear;
 }
-
-/* ============================================================
-   ダミー画面用タイマー・アラーム
-   ============================================================ */
-.decoy-timer-container {
-  margin-top: 30px;
-}
-.decoy-timer-top {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 12px;
-  margin-bottom: 12px;
-}
-.decoy-pause-btn {
-  background: transparent;
-  border: 1px solid rgba(0, 255, 224, 0.4);
-  color: var(--accent);
-  border-radius: 50%;
-  width: 32px;
-  height: 32px;
-  font-size: 14px;
-  cursor: pointer;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  transition: all 0.3s ease;
-  line-height: 1;
-}
-.decoy-pause-btn:active {
-  background: rgba(0, 255, 224, 0.2);
-}
-.decoy-timer-cancel {
-  margin-top: 16px;
-}
-.decoy-timer-cancel button {
-  background: transparent;
-  border: 1px solid rgba(255, 0, 170, 0.4);
-  color: var(--text-sub);
-  padding: 6px 20px;
-  border-radius: 6px;
-  font-size: 14px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-.decoy-countdown {
-  font-family: 'Courier New', 'Share Tech Mono', monospace;
-  font-size: 28px;
-  color: var(--accent);
-  text-shadow: 0 0 10px var(--accent);
-  margin-bottom: 0;
-  letter-spacing: 2px;
-}
-.decoy-timer-buttons {
-  display: flex;
-  justify-content: center;
-  gap: 12px;
-}
-.decoy-timer-buttons button {
-  background: transparent;
-  border: 1px solid rgba(0, 255, 224, 0.4);
-  color: var(--accent);
-  padding: 6px 12px;
-  border-radius: 6px;
-  font-size: 14px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-.decoy-timer-buttons button:active {
-  background: rgba(0, 255, 224, 0.2);
-}
-
-/* アラーム発動時 (水色→ピンク) */
-#decoyScreen.decoy-alarm .decoy-title,
-#decoyScreen.decoy-alarm .decoy-date,
-#decoyScreen.decoy-alarm .decoy-time,
-#decoyScreen.decoy-alarm .decoy-countdown,
-#decoyScreen.decoy-alarm .decoy-pause-btn,
-#decoyScreen.decoy-alarm .decoy-timer-buttons button,
-#decoyScreen.decoy-alarm .decoy-timer-cancel button {
-  color: var(--toggle-bg) !important;
-  text-shadow: 0 0 16px var(--toggle-bg), 0 0 32px rgba(255, 0, 170, 0.5) !important;
-  border-color: rgba(255, 0, 170, 0.4) !important;
-}
-#decoyScreen.decoy-alarm .decoy-timer-buttons button:active,
-#decoyScreen.decoy-alarm .decoy-pause-btn:active,
-#decoyScreen.decoy-alarm .decoy-timer-cancel button:active {
-  background: rgba(255, 0, 170, 0.2) !important;
-}
-#decoyScreen.decoy-alarm .decoy-clock-wrap {
-  border-color: rgba(255, 0, 170, 0.4) !important;
-  box-shadow: 0 0 40px rgba(255, 0, 170, 0.15), inset 0 0 30px rgba(255, 0, 170, 0.1) !important;
-}
-#decoyHoldRing.decoy-alarm circle {
-  stroke: var(--toggle-bg) !important;
-  filter: drop-shadow(0 0 6px var(--toggle-bg)) !important;
-}
-
-/* ダミー画面の横向き（landscape）用スタイル */
-@media screen and (orientation: landscape) {
-  #decoyScreen .decoy-title,
-  #decoyScreen .decoy-subtitle,
-  #decoyScreen .decoy-timer-container,
-  #decoyScreen .decoy-hint {
-    display: none !important;
-  }
-  
-  #decoyScreen:not([style*="none"]) {
-    padding-top: 0;
-    display: flex !important;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-  }
-
-  #decoyScreen .decoy-clock-wrap {
-    padding: 0;
-    width: 100%;
-    border: none;
-    background: transparent;
-    box-shadow: none;
-  }
-
-  #decoyScreen .decoy-date {
-    font-size: 6vw;
-    margin-bottom: 2vh;
-  }
-
-  #decoyScreen .decoy-time {
-    font-size: 13vw;
-    white-space: nowrap;
-  }
-}
-
-/* ============================================================
-   第2のおとり画面 (view_lock_screen)
-   ============================================================ */
-#viewLockScreen {
-  background: var(--bg-color);
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  user-select: none;
-  -webkit-user-select: none;
-}
-
-
-/* ネオン時計 */
-.view-lock-clock-wrap {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100vh;
-  width: 100%;
-  overflow: visible; /* hiddenにすると文字が左右でスッパリ切れてしまうため visible に変更 */
-}
-.view-lock-clock {
-  font-family: 'Orbitron', 'Courier New', monospace;
-  /* フォントサイズはJSで動的に上書きされます */
-  font-size: 30px;
-  font-weight: 700;
-  color: #fff;
-  white-space: nowrap;
-  flex-shrink: 0; /* Flexbox内で要素が勝手に縮み、はみ出した文字が描画レイヤーの端で切れるのを防ぐ */
-  padding: 0 10px;
-  box-sizing: border-box;
-  text-shadow: 
-    0 0 10px rgba(0, 255, 240, 0.8),
-    0 0 20px rgba(0, 255, 240, 0.6),
-    0 0 40px rgba(0, 255, 240, 0.4),
-    0 0 80px rgba(0, 255, 240, 0.2);
-  letter-spacing: 2px;
-  transition: transform 1s ease-in-out, color 0.3s, text-shadow 0.3s, font-size 0.3s;
-}
-.view-lock-date {
-  font-family: 'Orbitron', 'Courier New', monospace;
-  font-size: 20px;
-  font-weight: 700;
-  color: #fff;
-  white-space: nowrap;
-  margin-bottom: 2vh;
-  text-shadow: 
-    0 0 10px rgba(0, 255, 240, 0.8),
-    0 0 20px rgba(0, 255, 240, 0.6),
-    0 0 40px rgba(0, 255, 240, 0.4),
-    0 0 80px rgba(0, 255, 240, 0.2);
-  letter-spacing: 2px;
-  transition: color 0.3s, text-shadow 0.3s, font-size 0.3s;
-}
-
-/* 長押しプログレスリング */
-#viewLockHoldRing {
+#readmeHoldHint {
   position: fixed;
+  display: none;
   top: 50%;
   left: 50%;
-  transform: translate(-50%, -50%) rotate(-90deg);
-  width: 120px;
-  height: 120px;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0);
+  letter-spacing: 1px;
   pointer-events: none;
-  opacity: 0;
-  transition: opacity 0.3s;
-  z-index: 9999;
+  z-index: 9100;
+  transition: color 0.2s;
+  white-space: nowrap;
 }
-#viewLockHoldRing circle {
-  fill: none;
-  stroke: var(--accent);
-  stroke-width: 4;
-  stroke-dasharray: 164;
-  stroke-dashoffset: 164;
-  filter: drop-shadow(0 0 8px var(--accent));
-  transition: stroke-dashoffset 0.1s linear;
-}
-
-
-

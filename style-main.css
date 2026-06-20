@@ -3163,6 +3163,10 @@ body.input-helper-off-mode #reverseDisplayDateGroup_direct {
    著作権情報ページ（readmePage）スタイル
    ============================================================ */
 #readmePage {
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
   display: none;
   position: fixed;
   inset: 0;
@@ -3290,16 +3294,16 @@ body.input-helper-off-mode #reverseDisplayDateGroup_direct {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  width: 56px;
-  height: 56px;
+  width: 100px;
+  height: 100px;
   z-index: 9100;
 }
 #readmeHoldRing circle {
   fill: none;
   stroke: var(--accent, #00ffe0);
   stroke-width: 4;
-  stroke-dasharray: 163;
-  stroke-dashoffset: 163;
+  stroke-dasharray: 302;
+  stroke-dashoffset: 302;
   stroke-linecap: round;
   transform: rotate(-90deg);
   transform-origin: 50% 50%;
@@ -3313,7 +3317,7 @@ body.input-helper-off-mode #reverseDisplayDateGroup_direct {
   left: 50%;
   transform: translate(-50%, -50%);
   text-align: center;
-  font-size: 11px;
+  font-size: 16px; font-weight: bold; text-shadow: 0 0 4px rgba(0,0,0,0.8);;
   color: rgba(255, 255, 255, 0);
   letter-spacing: 1px;
   pointer-events: none;

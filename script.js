@@ -4561,6 +4561,12 @@ function jumpToReadmeSection(sectionId) {
 let _readmeStartHoldHandler = null;
 let _readmeCancelHoldHandler = null;
 
+// Make sure handlers are outside or removed to avoid duplicate listeners
+let _readmeStartHoldHandler = null;
+let _readmeCancelHoldHandler = null;
+let _readmeHoldRaf = null;
+let _readmeHintRaf = null;
+
 function initReadmeHold() {
   const page = document.getElementById('readmePage');
   if (!page) return;
@@ -4571,7 +4577,7 @@ function initReadmeHold() {
 
   if (ring) {
     ring.style.transition = 'none';
-    ring.style.strokeDashoffset = '164'; 
+    ring.style.strokeDashoffset = '302'; 
   }
   if (hint) {
     hint.innerText = '';
@@ -4590,17 +4596,26 @@ function initReadmeHold() {
       y = e.clientY;
     }
 
+    if (_readmeHoldTimer) {
+      clearTimeout(_readmeHoldTimer);
+    }
+    _readmeHoldTimer = setTimeout(() => {
+      hideReadmePage();
+      cancelHold();
+    }, 1000);
+
     if (ringContainer) {
       ringContainer.style.display = 'block';
       ringContainer.style.left = x + 'px';
       ringContainer.style.top = y + 'px';
-      // Force reflow on the container to ensure display:block takes effect before transition
       void ringContainer.offsetWidth;
     }
     
     if (ring) {
-      // Set transition and offset inside requestAnimationFrame for smooth drawing
-      requestAnimationFrame(() => {
+      if (_readmeHoldRaf) cancelAnimationFrame(_readmeHoldRaf);
+      _readmeHoldRaf = requestAnimationFrame(() => {
+        _readmeHoldRaf = null;
+        if (!_readmeHoldTimer) return; // Prevent animation if already released
         ring.style.transition = 'stroke-dashoffset 1s linear';
         ring.style.strokeDashoffset = '0';
       });
@@ -4608,22 +4623,16 @@ function initReadmeHold() {
     if (hint) {
       hint.style.display = 'block';
       hint.style.left = x + 'px';
-      hint.style.top = (y - 55) + 'px';
+      hint.style.top = (y - 80) + 'px';
       hint.innerText = '長押しで戻る';
       void hint.offsetWidth;
-      requestAnimationFrame(() => {
+      if (_readmeHintRaf) cancelAnimationFrame(_readmeHintRaf);
+      _readmeHintRaf = requestAnimationFrame(() => {
+        _readmeHintRaf = null;
+        if (!_readmeHoldTimer) return;
         hint.style.color = 'rgba(0, 255, 224, 0.8)';
       });
     }
-
-    if (_readmeHoldTimer) {
-      clearTimeout(_readmeHoldTimer);
-    }
-
-    _readmeHoldTimer = setTimeout(() => {
-      hideReadmePage();
-      cancelHold();
-    }, 1000);
   };
 
   const cancelHold = () => {
@@ -4633,7 +4642,7 @@ function initReadmeHold() {
     }
     if (ring) {
       ring.style.transition = 'stroke-dashoffset 0.2s ease';
-      ring.style.strokeDashoffset = '164';
+      ring.style.strokeDashoffset = '302';
       setTimeout(() => {
         if (!_readmeHoldTimer && ringContainer) ringContainer.style.display = 'none';
       }, 200);
@@ -4646,7 +4655,6 @@ function initReadmeHold() {
     }
   };
 
-  // Remove old listeners if they exist
   if (_readmeStartHoldHandler) {
     page.removeEventListener('mousedown', _readmeStartHoldHandler);
     page.removeEventListener('touchstart', _readmeStartHoldHandler);
@@ -4663,11 +4671,9 @@ function initReadmeHold() {
     if (body) body.removeEventListener('scroll', _readmeCancelHoldHandler);
   }
 
-  // Save references
   _readmeStartHoldHandler = startHold;
   _readmeCancelHoldHandler = cancelHold;
 
-  // Add new listeners
   page.addEventListener('mousedown', startHold);
   page.addEventListener('mouseup', cancelHold);
   page.addEventListener('mouseleave', cancelHold);

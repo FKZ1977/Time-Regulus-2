@@ -3304,7 +3304,7 @@ body.input-helper-off-mode #reverseDisplayDateGroup_direct {
   stroke-width: 4;
   stroke-dasharray: 302;
   stroke-dashoffset: 302;
-  stroke-linecap: round;
+  stroke-linecap: butt;
   transform: rotate(-90deg);
   transform-origin: 50% 50%;
   filter: drop-shadow(0 0 6px var(--accent));

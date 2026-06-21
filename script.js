@@ -2179,6 +2179,7 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   // 暗証番号入力欄のフォーカス& Enterキー対応
+  if (typeof generateKeypad === 'function') { generateKeypad(); }
   const passInput = document.getElementById("passcode");
   if (passInput) {
     passInput.focus();
@@ -3735,7 +3736,7 @@ function addResultToList() {
             msg.classList.remove('fade-out');
             msg.innerText = originalText; 
         }, 500); 
-    }, 1000); 
+    }, 3050); 
     return;
   }
   
@@ -3773,7 +3774,7 @@ function addResultToList() {
           msg.style.display = 'none';
           msg.classList.remove('fade-out');
       }, 500); 
-  }, 1000); 
+  }, 3050); 
 }
 
 function showResultList() {
@@ -4518,8 +4519,16 @@ function showReadmePage() {
 
 function hideReadmePage() {
   document.getElementById('readmePage').style.display = 'none';
-  document.getElementById('lockScreen').style.display = 'block';
-  restartLockScreenAnimation();
+  const lockScreen = document.getElementById('lockScreen');
+  lockScreen.style.display = 'block';
+  const animEls = lockScreen.querySelectorAll('.anim-title-rise, .anim-slow-fade');
+  animEls.forEach(el => {
+    el.classList.remove('anim-title-rise');
+    el.classList.remove('anim-slow-fade');
+    el.style.opacity = '1';
+    el.style.transform = 'none';
+  });
+  if (typeof generateKeypad === 'function') generateKeypad();
 }
 
 function jumpToReadmeSection(sectionId) {
@@ -4561,9 +4570,6 @@ function jumpToReadmeSection(sectionId) {
 let _readmeStartHoldHandler = null;
 let _readmeCancelHoldHandler = null;
 
-// Make sure handlers are outside or removed to avoid duplicate listeners
-let _readmeStartHoldHandler = null;
-let _readmeCancelHoldHandler = null;
 let _readmeHoldRaf = null;
 let _readmeHintRaf = null;
 
@@ -4575,17 +4581,38 @@ function initReadmeHold() {
   const ring = document.getElementById('readmeRingCircle');
   const hint = document.getElementById('readmeHoldHint');
 
-  if (ring) {
-    ring.style.transition = 'none';
-    ring.style.strokeDashoffset = '302'; 
-  }
-  if (hint) {
-    hint.innerText = '';
-    hint.style.color = 'rgba(255, 255, 255, 0)';
-  }
+  let holdStartTime = 0;
+  let holdDuration = 3000;
+  let isHolding = false;
+
+  const updateRing = () => {
+    if (!isHolding) return;
+    const now = Date.now();
+    const elapsed = now - holdStartTime;
+    let progress = elapsed / holdDuration;
+    
+    if (progress >= 1) {
+      progress = 1;
+      if (ring) {
+        ring.style.strokeDashoffset = '0';
+      }
+      hideReadmePage();
+      cancelHold();
+      return;
+    }
+    
+    if (ring) {
+      const offset = 302 - (302 * progress);
+      ring.style.strokeDashoffset = offset;
+    }
+    _readmeHoldRaf = requestAnimationFrame(updateRing);
+  };
 
   const startHold = (e) => {
     if (e.target.tagName.toLowerCase() === 'select') return;
+    
+    isHolding = true;
+    holdStartTime = Date.now();
 
     let x, y;
     if (e.touches && e.touches.length > 0) {
@@ -4596,61 +4623,46 @@ function initReadmeHold() {
       y = e.clientY;
     }
 
-    if (_readmeHoldTimer) {
-      clearTimeout(_readmeHoldTimer);
-    }
-    _readmeHoldTimer = setTimeout(() => {
-      hideReadmePage();
-      cancelHold();
-    }, 1000);
-
     if (ringContainer) {
       ringContainer.style.display = 'block';
       ringContainer.style.left = x + 'px';
       ringContainer.style.top = y + 'px';
-      void ringContainer.offsetWidth;
     }
-    
     if (ring) {
-      if (_readmeHoldRaf) cancelAnimationFrame(_readmeHoldRaf);
-      _readmeHoldRaf = requestAnimationFrame(() => {
-        _readmeHoldRaf = null;
-        if (!_readmeHoldTimer) return; // Prevent animation if already released
-        ring.style.transition = 'stroke-dashoffset 1s linear';
-        ring.style.strokeDashoffset = '0';
-      });
+      ring.style.transition = 'none';
+      ring.style.strokeDashoffset = '302';
     }
     if (hint) {
+      hint.style.transition = 'color 0.2s ease';
       hint.style.display = 'block';
       hint.style.left = x + 'px';
       hint.style.top = (y - 80) + 'px';
       hint.innerText = '長押しで戻る';
-      void hint.offsetWidth;
-      if (_readmeHintRaf) cancelAnimationFrame(_readmeHintRaf);
-      _readmeHintRaf = requestAnimationFrame(() => {
-        _readmeHintRaf = null;
-        if (!_readmeHoldTimer) return;
+      requestAnimationFrame(() => {
         hint.style.color = 'rgba(0, 255, 224, 0.8)';
       });
     }
+
+    if (_readmeHoldRaf) cancelAnimationFrame(_readmeHoldRaf);
+    _readmeHoldRaf = requestAnimationFrame(updateRing);
   };
 
   const cancelHold = () => {
-    if (_readmeHoldTimer) {
-      clearTimeout(_readmeHoldTimer);
-      _readmeHoldTimer = null;
-    }
+    isHolding = false;
+    if (_readmeHoldRaf) cancelAnimationFrame(_readmeHoldRaf);
+    _readmeHoldRaf = null;
+
     if (ring) {
       ring.style.transition = 'stroke-dashoffset 0.2s ease';
       ring.style.strokeDashoffset = '302';
       setTimeout(() => {
-        if (!_readmeHoldTimer && ringContainer) ringContainer.style.display = 'none';
+        if (!isHolding && ringContainer) ringContainer.style.display = 'none';
       }, 200);
     }
     if (hint) {
       hint.style.color = 'rgba(255, 255, 255, 0)';
       setTimeout(() => {
-        if (!_readmeHoldTimer) hint.style.display = 'none';
+        if (!isHolding) hint.style.display = 'none';
       }, 200);
     }
   };
@@ -4662,13 +4674,8 @@ function initReadmeHold() {
   if (_readmeCancelHoldHandler) {
     page.removeEventListener('mouseup', _readmeCancelHoldHandler);
     page.removeEventListener('mouseleave', _readmeCancelHoldHandler);
-    page.removeEventListener('mousemove', _readmeCancelHoldHandler);
-    page.removeEventListener('dblclick', _readmeCancelHoldHandler);
     page.removeEventListener('touchend', _readmeCancelHoldHandler);
     page.removeEventListener('touchcancel', _readmeCancelHoldHandler);
-    page.removeEventListener('touchmove', _readmeCancelHoldHandler);
-    const body = document.getElementById('readmeBody');
-    if (body) body.removeEventListener('scroll', _readmeCancelHoldHandler);
   }
 
   _readmeStartHoldHandler = startHold;
@@ -4677,13 +4684,17 @@ function initReadmeHold() {
   page.addEventListener('mousedown', startHold);
   page.addEventListener('mouseup', cancelHold);
   page.addEventListener('mouseleave', cancelHold);
-  page.addEventListener('mousemove', cancelHold);
-  page.addEventListener('dblclick', cancelHold);
   page.addEventListener('touchstart', startHold, { passive: true });
   page.addEventListener('touchend', cancelHold);
   page.addEventListener('touchcancel', cancelHold);
-  page.addEventListener('touchmove', cancelHold, { passive: true });
   
   const body = document.getElementById('readmeBody');
   if (body) body.addEventListener('scroll', cancelHold, { passive: true });
+}
+
+// Force keypad generation on script execution
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', generateKeypad);
+} else {
+  if (typeof generateKeypad === 'function') generateKeypad();
 }

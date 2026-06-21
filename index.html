@@ -16,11 +16,11 @@
   <meta name="apple-mobile-web-app-title" content="TimeRegulus✨">
   <link rel="apple-touch-icon" href="icon-192.png">
   <!-- ★【起動高速化】ロック画面用CSS（小・ブロッキング）→ 先に読み込んで即表示 -->
-  <link rel="stylesheet" href="style-lock.css?c=27">
+  <link rel="stylesheet" href="style-lock.css?c=30">
   <!-- ★【起動高速化】メインCSS（大・非ブロッキング）→ ロック画面表示後に裏で読み込む -->
-  <link rel="stylesheet" href="style-main.css?c=27" media="print" onload="this.media='all'">
+  <link rel="stylesheet" href="style-main.css?c=30" media="print" onload="this.media='all'">
   <noscript>
-    <link rel="stylesheet" href="style-main.css?c=27">
+    <link rel="stylesheet" href="style-main.css?c=30">
   </noscript>
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -401,7 +401,7 @@
     <h1 class="fkz" style="margin-top: 4px;">結果一覧</h1>
     <div id="resultListContainer" style="margin-top: 10px;"></div>
   </div>
-  <div id="informationPage" style="display:none; text-align:center; padding: 40px 16px;"><br>
+  <div id="informationPage" style="display:none; text-align:center; padding: 40px 16px; min-height: 100vh; width: 100%; box-sizing: border-box;"><br>
     <button class="back-btn" onclick="backToLockScreen()">← 初期画面に戻る</button>
     <h1 class="fkz" style="margin-top: 40px;">Information</h1>
     <div id="informationContent"
@@ -425,7 +425,7 @@
     <p>ＱＲコードから新しい情報を確認してください。</p>
     <button class="action-btn" onclick="showQRCodePage()" style="margin-top: 30px;">QRコードを表示</button>
   </div>
-  <div id="qrCodePage" style="display:none; text-align:center; padding: 40px 16px;">
+  <div id="qrCodePage" style="display:none; text-align:center; padding: 40px 16px; min-height: 100vh; width: 100%; box-sizing: border-box;">
     <div style="margin-top: 100px;">
       <img id="qrCodeImage" src="QRCorde.PNG" alt="Time Regulus QR Code"
         style="border: 4px solid var(--text-main); border-radius: 8px;">
@@ -470,7 +470,7 @@
       </div>
     </div>
   </div>
-  <script src="script.js?c=27" defer></script>
+  <script src="script.js?c=30" defer></script>
   <script>
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {

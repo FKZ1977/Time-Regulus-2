@@ -4523,6 +4523,12 @@ function returnToLockScreenFromHold() {
   const resetConfirm = document.getElementById('resetConfirmContainer');
   if (resetConfirm) resetConfirm.style.display = 'none';
 
+  // ★ 暗証番号入力枠をクリアする
+  const passcode = document.getElementById('passcode');
+  if (passcode) passcode.value = '';
+  const errorMsg = document.getElementById('error');
+  if (errorMsg) errorMsg.textContent = '';
+
   const lockScreen = document.getElementById('lockScreen');
   if (lockScreen) {
     lockScreen.style.display = 'block';

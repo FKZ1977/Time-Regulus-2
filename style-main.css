@@ -1,4 +1,4 @@
-﻿
+
 
 
 
@@ -3266,8 +3266,6 @@ body.input-helper-off-mode #reverseDisplayDateGroup_direct {
   line-height: 1.7;
   color: var(--text-main, #e0e0ff);
   margin: 0 0 10px;
-  -webkit-user-select: text !important;
-  user-select: text !important;
 }
 .readme-section ul {
   margin: 4px 0 10px;
@@ -3282,8 +3280,6 @@ body.input-helper-off-mode #reverseDisplayDateGroup_direct {
   line-height: 1.7;
   color: rgba(224, 224, 255, 0.85);
   margin-bottom: 4px;
-  -webkit-user-select: text !important;
-  user-select: text !important;
 }
 
 /* 長押しプログレスリング */
@@ -3302,8 +3298,8 @@ body.input-helper-off-mode #reverseDisplayDateGroup_direct {
   fill: none;
   stroke: var(--accent, #00ffe0);
   stroke-width: 4;
-  stroke-dasharray: 302;
-  stroke-dashoffset: 302;
+  stroke-dasharray: 163.4;
+  stroke-dashoffset: 163.4;
   stroke-linecap: butt;
   transform: rotate(-90deg);
   transform-origin: 50% 50%;

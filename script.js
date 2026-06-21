@@ -1,4 +1,4 @@
-﻿const currentVersion = "3.1.3";
+const currentVersion = "3.1.3";
 let lastError = null;
 let hasCalculated = false;
 let reverseMode = "toStandard";
@@ -4507,27 +4507,33 @@ function showReadmePage() {
   const page = document.getElementById('readmePage');
   page.style.display = 'block';
 
-  // 初期化時にセレクトボックスの一番上をアクティブにする
   const select = document.getElementById('readmeCountrySelect');
   if (select && select.options.length > 0) {
     select.selectedIndex = 0;
     jumpToReadmeSection(select.value);
   }
-
-  initReadmeHold();
 }
 
-function hideReadmePage() {
-  document.getElementById('readmePage').style.display = 'none';
-  const lockScreen = document.getElementById('lockScreen');
-  lockScreen.style.display = 'block';
-  const animEls = lockScreen.querySelectorAll('.anim-title-rise, .anim-slow-fade');
-  animEls.forEach(el => {
-    el.classList.remove('anim-title-rise');
-    el.classList.remove('anim-slow-fade');
-    el.style.opacity = '1';
-    el.style.transform = 'none';
+function returnToLockScreenFromHold() {
+  const pagesToHide = ['readmePage', 'informationPage', 'qrCodePage', 'modeSelect'];
+  pagesToHide.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.style.display = 'none';
   });
+  const resetConfirm = document.getElementById('resetConfirmContainer');
+  if (resetConfirm) resetConfirm.style.display = 'none';
+
+  const lockScreen = document.getElementById('lockScreen');
+  if (lockScreen) {
+    lockScreen.style.display = 'block';
+    const animEls = lockScreen.querySelectorAll('.anim-title-rise, .anim-slow-fade');
+    animEls.forEach(el => {
+      el.classList.remove('anim-title-rise');
+      el.classList.remove('anim-slow-fade');
+      el.style.opacity = '1';
+      el.style.transform = 'none';
+    });
+  }
   if (typeof generateKeypad === 'function') generateKeypad();
 }
 
@@ -4566,23 +4572,18 @@ function jumpToReadmeSection(sectionId) {
 }
 
 // 長押しで初期画面に戻る
-// Make sure handlers are outside or removed to avoid duplicate listeners
-let _readmeStartHoldHandler = null;
-let _readmeCancelHoldHandler = null;
-
 let _readmeHoldRaf = null;
 let _readmeHintRaf = null;
 
-function initReadmeHold() {
-  const page = document.getElementById('readmePage');
-  if (!page) return;
-
+function initHoldToReturn() {
+  const pagesToBind = ['readmePage', 'informationPage', 'qrCodePage', 'modeSelect'];
+  
   const ringContainer = document.getElementById('readmeHoldRing');
   const ring = document.getElementById('readmeRingCircle');
   const hint = document.getElementById('readmeHoldHint');
 
   let holdStartTime = 0;
-  let holdDuration = 3000;
+  let holdDuration = 1000;
   let isHolding = false;
 
   const updateRing = () => {
@@ -4593,23 +4594,32 @@ function initReadmeHold() {
     
     if (progress >= 1) {
       progress = 1;
+      isHolding = false;
+      if (_readmeHoldRaf) cancelAnimationFrame(_readmeHoldRaf);
+      _readmeHoldRaf = null;
+      if (ringContainer) ringContainer.style.display = 'none';
+      if (hint) hint.style.display = 'none';
       if (ring) {
-        ring.style.strokeDashoffset = '0';
+        ring.style.transition = 'none';
+        ring.style.strokeDashoffset = '163.4';
       }
-      hideReadmePage();
-      cancelHold();
+      returnToLockScreenFromHold();
       return;
     }
     
     if (ring) {
-      const offset = 302 - (302 * progress);
+      const offset = 163.4 - (163.4 * progress);
       ring.style.strokeDashoffset = offset;
     }
     _readmeHoldRaf = requestAnimationFrame(updateRing);
   };
 
   const startHold = (e) => {
-    if (e.target.tagName.toLowerCase() === 'select') return;
+    if (e.target) {
+      const targetTag = e.target.tagName.toLowerCase();
+      if (['select', 'input', 'button', 'a'].includes(targetTag)) return;
+      if (e.target.closest && (e.target.closest('button') || e.target.closest('a'))) return;
+    }
     
     isHolding = true;
     holdStartTime = Date.now();
@@ -4630,7 +4640,7 @@ function initReadmeHold() {
     }
     if (ring) {
       ring.style.transition = 'none';
-      ring.style.strokeDashoffset = '302';
+      ring.style.strokeDashoffset = '163.4';
     }
     if (hint) {
       hint.style.transition = 'color 0.2s ease';
@@ -4648,13 +4658,14 @@ function initReadmeHold() {
   };
 
   const cancelHold = () => {
+    if (!isHolding) return;
     isHolding = false;
     if (_readmeHoldRaf) cancelAnimationFrame(_readmeHoldRaf);
     _readmeHoldRaf = null;
 
     if (ring) {
       ring.style.transition = 'stroke-dashoffset 0.2s ease';
-      ring.style.strokeDashoffset = '302';
+      ring.style.strokeDashoffset = '163.4';
       setTimeout(() => {
         if (!isHolding && ringContainer) ringContainer.style.display = 'none';
       }, 200);
@@ -4667,34 +4678,36 @@ function initReadmeHold() {
     }
   };
 
-  if (_readmeStartHoldHandler) {
-    page.removeEventListener('mousedown', _readmeStartHoldHandler);
-    page.removeEventListener('touchstart', _readmeStartHoldHandler);
-  }
-  if (_readmeCancelHoldHandler) {
-    page.removeEventListener('mouseup', _readmeCancelHoldHandler);
-    page.removeEventListener('mouseleave', _readmeCancelHoldHandler);
-    page.removeEventListener('touchend', _readmeCancelHoldHandler);
-    page.removeEventListener('touchcancel', _readmeCancelHoldHandler);
-  }
-
-  _readmeStartHoldHandler = startHold;
-  _readmeCancelHoldHandler = cancelHold;
-
-  page.addEventListener('mousedown', startHold);
-  page.addEventListener('mouseup', cancelHold);
-  page.addEventListener('mouseleave', cancelHold);
-  page.addEventListener('touchstart', startHold, { passive: true });
-  page.addEventListener('touchend', cancelHold);
-  page.addEventListener('touchcancel', cancelHold);
+  pagesToBind.forEach(id => {
+    const page = document.getElementById(id);
+    if (!page) return;
+    page.addEventListener('mousedown', startHold);
+    page.addEventListener('mouseup', cancelHold);
+    page.addEventListener('mouseleave', cancelHold);
+    page.addEventListener('touchstart', startHold, { passive: true });
+    page.addEventListener('touchend', cancelHold);
+    page.addEventListener('touchcancel', cancelHold);
+    
+    // 長押し時のネイティブコンテキストメニューや画像保存ポップアップを無効化（長押しのキャンセルを防ぐため）
+    page.addEventListener('contextmenu', (e) => {
+      if (e.target) {
+        const tag = e.target.tagName.toLowerCase();
+        if (['input', 'textarea', 'select'].includes(tag)) return;
+      }
+      e.preventDefault();
+    });
+  });
   
-  const body = document.getElementById('readmeBody');
-  if (body) body.addEventListener('scroll', cancelHold, { passive: true });
+  window.addEventListener('scroll', cancelHold, { capture: true, passive: true });
 }
 
 // Force keypad generation on script execution
 if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', generateKeypad);
+  document.addEventListener('DOMContentLoaded', () => {
+    if (typeof generateKeypad === 'function') generateKeypad();
+    initHoldToReturn();
+  });
 } else {
   if (typeof generateKeypad === 'function') generateKeypad();
+  initHoldToReturn();
 }

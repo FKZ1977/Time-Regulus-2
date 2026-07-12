@@ -1,4 +1,4 @@
-const CACHE_NAME = "time-regulus-v3.1.3-c30";
+﻿const CACHE_NAME = "time-regulus-v3.2.0-c30";
 const urlsToCache = [
   "./",
   "./index.html",
@@ -59,3 +59,4 @@ self.addEventListener('message', event => {
     self.skipWaiting();
   }
 });
+

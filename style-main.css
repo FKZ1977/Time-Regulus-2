@@ -1,4 +1,4 @@
-
+﻿
 
 
 
@@ -473,8 +473,11 @@ input, select {
   flex-direction: row;
   gap: 6px;
   flex-wrap: nowrap; /* はみ出さずに綺麗に収まります */
-  overflow-x: hidden; /* 横スクロールバーを非表示に */
   margin-bottom: 24px;
+  overflow: visible; /* 枠の切れ目で光が切れないように修正 */
+  padding: 4px;
+  margin-left: -4px;
+  margin-right: -4px;
 }
 
 .unit-input {
@@ -1842,7 +1845,7 @@ select.seconds-fixed-00,
 #standardNowButton {
   position: absolute;
   top: -10px; /* 下枠と絶対に接しないようにさらに上に引き上げる（美しい隙間を確保！） */
-  left: 96px !important; /* 「標準時刻：」ラベルのすぐ右隣に完全固定！トグルON/OFFで一切動きません */
+  left: 125px !important; /* 「標準時刻：」「Standard Time:」どちらも収まる125px位置に固定 */
   margin-top: 0 !important;
   padding: 0 !important; /* 高さと文字を中央で一致させるため */
   font-size: 14px !important; /* トグルスイッチより一回り大きい、見やすく押しやすい極上サイズ */
@@ -1858,19 +1861,40 @@ select.seconds-fixed-00,
   box-shadow: 0 4px 10px rgba(0, 255, 224, 0.35) !important;
 }
 
+/* カプセルラッパーの共通スタイル */
+.time-capsule-wrapper, .direct-capsule-wrapper {
+  overflow: hidden !important; /* 子要素の角丸はみ出しをシャットアウト */
+  width: auto !important;
+  min-width: 0 !important;
+  /* flexもトランジション対象に追加 → 年月日ON/OFF時に自然にスライド */
+  transition: flex 0.25s cubic-bezier(0.25, 1, 0.5, 1),
+              border-color 0.2s ease,
+              box-shadow 0.2s ease !important;
+}
+
+#errorModeDisplayInputGroup.date-omitted .time-capsule-wrapper,
+#errorModeDisplayInputGroup.date-omitted .direct-capsule-wrapper,
+#errorModeStandardInputGroup.date-omitted .time-capsule-wrapper,
+#errorModeStandardInputGroup.date-omitted .direct-capsule-wrapper {
+  flex: 1.0 !important;
+  width: 100% !important;
+  transition-delay: 0s !important;
+}
+
 /* 入力枠の基本設定（トグルON/OFF時にサイズを維持したまま、滑らかにスライド移動させる transition） */
 #errorModeDisplayInputGroup .datetime-row,
 #errorModeDisplayInputGroup .datetime-direct-row,
 #errorModeStandardInputGroup .datetime-row,
 #errorModeStandardInputGroup .datetime-direct-row {
-  margin: 0 auto !important; /* 常に中央寄せで完全固定 */
+  margin-left: max(0px, calc(50% - 155px)) !important;
+  margin-right: 0 !important;
   width: 100%;
-  max-width: 310px; /* デフォルト（ON時）は310px幅 */
+  max-width: 310px;
+  overflow: hidden; /* アニメーション中に年月日枠が枠外に飛び出さないようクリップ */
+  box-sizing: border-box;
   transition: max-width 0.25s cubic-bezier(0.25, 1, 0.5, 1),
               margin-left 0.25s cubic-bezier(0.25, 1, 0.5, 1);
-  /* ONのとき（右に戻るとき）：即座に移動 */
   transition-delay: 0s;
-  box-sizing: border-box;
 }
 
 /* 年月日省略時 (.date-omitted / 下がるとき) の入力枠スライド（コロンから5px離して上品な隙間＆右端ピッタリ！） */
@@ -1878,8 +1902,8 @@ select.seconds-fixed-00,
 #errorModeDisplayInputGroup.date-omitted .datetime-direct-row,
 #errorModeStandardInputGroup.date-omitted .datetime-row,
 #errorModeStandardInputGroup.date-omitted .datetime-direct-row {
-  max-width: 215px !important; /* 時分の横幅をスリムに潰さず、たっぷり215pxまで確保！ */
-  margin-left: 85px !important; /* コロン「：」からちょうど5px離した 85px に完全統一し、美しく整列！ */
+  max-width: 175px !important;
+  margin-left: max(0px, calc(var(--label-width, 90px) + 16px)) !important;
   transition-delay: 0s;
 }
 
@@ -1902,13 +1926,25 @@ select.seconds-fixed-00,
               visibility 0.22s ease,
               margin-right 0.25s ease,
               padding 0.25s ease;
-  transition-delay: 0.22s;
+  transition-delay: 0s; /* 即座に縮み始める */
 }
 
 /* 年月日省略時 (.date-omitted / 消えるとき)：カレンダーラッパーをごともろとも完全に消去！ */
 #errorModeDisplayInputGroup.date-omitted .date-input-wrapper,
 #errorModeStandardInputGroup.date-omitted .date-input-wrapper {
-  display: none !important;
+  flex: 0 !important;
+  max-width: 0 !important;
+  opacity: 0 !important;
+  margin-right: 0 !important;
+  padding: 0 !important;
+  border: none !important;
+  visibility: hidden !important;
+  overflow: hidden !important;
+  transition: flex 0.22s cubic-bezier(0.25, 1, 0.5, 1),
+              max-width 0.22s cubic-bezier(0.25, 1, 0.5, 1),
+              opacity 0.15s ease,
+              margin-right 0.22s ease !important;
+  transition-delay: 0s !important;
 }
 
 #errorModeDisplayInputGroup.date-omitted .date-input-wrapper input[type="date"],
@@ -1920,7 +1956,13 @@ select.seconds-fixed-00,
   padding: 0 !important;
   border: none !important;
   visibility: hidden !important;
-  overflow: hidden !important; /* 文字のはみ出しを完全シャットアウト！ */
+  overflow: hidden !important;
+  /* スムーズに縮んで消えるためのトランジション */
+  transition: flex 0.22s cubic-bezier(0.25, 1, 0.5, 1),
+              max-width 0.22s cubic-bezier(0.25, 1, 0.5, 1),
+              opacity 0.15s ease,
+              margin-right 0.22s ease !important;
+  transition-delay: 0s !important;
 }
 
 #errorModeDisplayInputGroup.date-omitted #displayDateGroup_direct,
@@ -1932,7 +1974,13 @@ select.seconds-fixed-00,
   padding: 0 !important;
   border: none !important;
   visibility: hidden !important;
-  overflow: hidden !important; /* 文字のはみ出しを完全シャットアウト！ */
+  overflow: hidden !important;
+  /* スムーズに縮んで消えるためのトランジション */
+  transition: flex 0.22s cubic-bezier(0.25, 1, 0.5, 1),
+              max-width 0.22s cubic-bezier(0.25, 1, 0.5, 1),
+              opacity 0.15s ease,
+              margin-right 0.22s ease !important;
+  transition-delay: 0s !important;
 }
 
 /* ==========================================================================
@@ -2091,14 +2139,49 @@ select.seconds-fixed-00,
 #correctionMode #reverseTimeBlock .datetime-row,
 #correctionMode #reverseTimeBlock .datetime-direct-row {
   flex: 1 !important;
-  width: auto !important;
-  max-width: 242px !important; /* 354px - 108px - 4px = 242px に拡張して右スペースを最適化！ */
+  width: 100% !important;
+  max-width: 242px !important;
   margin: 0 !important;
   height: 38px !important;
-  display: flex; /* !important を排除し、JSによるON/OFFの display 制御を正しく機能させる */
+  display: flex;
   align-items: center !important;
-  gap: 3px !important; /* 入力枠同士のgapを3pxに詰めて無駄な余白をカット */
+  gap: 3px !important;
   box-sizing: border-box !important;
+  transition: max-width 0.25s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+/* --- 2. 時分秒を一体包囲する親カプセル（ラッパー）定義 --- */
+.time-capsule-wrapper,
+.direct-capsule-wrapper {
+  display: flex !important;
+  align-items: center !important;
+  gap: 0 !important;
+  position: relative !important;
+  box-sizing: border-box !important;
+  height: 38px !important; /* 標準の入力枠高さに完全同期 */
+  flex: 1.8 !important; /* 日付枠（1.6）と並んだときの美しい黄金比率 */
+  background-color: #1f1f2f !important; /* カプセル全体の美麗ディープネイビー背景 */
+  border-radius: 8px !important; /* 親自体に確実な角丸を適用してへこみを完全消滅！ */
+  border: 1px solid rgba(255, 255, 255, 0.1) !important; /* 親カプセル自体に1枚のボーダーを適用 */
+  overflow: hidden !important; /* 子要素の角丸はみ出しをシャットアウト */
+  width: auto !important;
+  min-width: 0 !important;
+  /* flex・widthのアニメーションを追加して年月日ON/OFF時に自然にスライド */
+  transition: flex 0.25s cubic-bezier(0.25, 1, 0.5, 1),
+              width 0.25s cubic-bezier(0.25, 1, 0.5, 1),
+              border-color 0.2s ease,
+              box-shadow 0.2s ease !important;
+}
+
+/* 年月日省略時 (.date-omitted) のカプセルラッパーのサイズ拡張 */
+#errorModeDisplayInputGroup.date-omitted .time-capsule-wrapper,
+#errorModeDisplayInputGroup.date-omitted .direct-capsule-wrapper,
+#errorModeStandardInputGroup.date-omitted .time-capsule-wrapper,
+#errorModeStandardInputGroup.date-omitted .direct-capsule-wrapper {
+  flex: 1.0 !important;
+  width: 100% !important;
+  /* transition-delay なし（即座に、ただし滑らかに） */
+  transition-delay: 0s !important;
 }
 
 /* 年月日も計算ONの時（年月日枠あり）の、年月日枠の横幅設定
@@ -2206,7 +2289,13 @@ select.seconds-fixed-00,
   padding: 0 !important;
   border: none !important;
   visibility: hidden !important;
-  overflow: hidden !important; /* 文字のはみ出しを完全シャットアウト！ */
+  overflow: hidden !important;
+  /* スムーズに縮んで消えるためのトランジション */
+  transition: flex 0.22s cubic-bezier(0.25, 1, 0.5, 1),
+              max-width 0.22s cubic-bezier(0.25, 1, 0.5, 1),
+              opacity 0.15s ease,
+              margin-right 0.22s ease !important;
+  transition-delay: 0s !important;
 }
 
 #correctionMode #reverseTimeBlock .datetime-row.omit-date-active .time-input-wrapper,
@@ -2483,7 +2572,9 @@ body.picker-open-padding {
   overflow: hidden !important; /* 子要素の角丸はみ出しをシャットアウト */
   width: auto !important;
   min-width: 0 !important;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease !important;
+  transition: flex 0.25s cubic-bezier(0.25, 1, 0.5, 1),
+              border-color 0.2s ease,
+              box-shadow 0.2s ease !important;
 }
 
 /* 年月日省略時 (.date-omitted) のカプセルラッパーのサイズ拡張 (スライド不動性を絶対維持) */
@@ -2497,6 +2588,12 @@ body.picker-open-padding {
 
 /* 補正モードで年月日非表示のときのカプセルサイズ拡張 */
 #correctionMode #reverseTimeBlock .datetime-row.omit-date-active .time-capsule-wrapper,
+#correctionMode #reverseTimeBlock .datetime-row.omit-date-active,
+#correctionMode #reverseTimeBlock .datetime-direct-row.omit-date-active {
+  max-width: 175px !important;
+  transition: max-width 0.25s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
 #correctionMode #reverseTimeBlock .datetime-direct-row.omit-date-active .direct-capsule-wrapper {
   flex: 1.0 !important;
   width: 100% !important;
@@ -2806,13 +2903,21 @@ body.input-helper-off-mode #reverseDisplayDateGroup_direct {
 #reverseTimeBlock .datetime-row.omit-date-active #reverseDisplayDateWrapper,
 #reverseTimeBlock .datetime-direct-row.omit-date-active #reverseDisplayDateWrapper,
 #reverseTimeBlock .datetime-direct-row.omit-date-active #reverseDisplayDateGroup_direct {
-  display: none !important;
   flex: 0 !important;
   max-width: 0 !important;
   width: 0 !important;
   opacity: 0 !important;
   overflow: hidden !important;
   visibility: hidden !important;
+  margin-right: 0 !important;
+  padding: 0 !important;
+  border: none !important;
+  transition: flex 0.22s cubic-bezier(0.25, 1, 0.5, 1),
+              max-width 0.22s cubic-bezier(0.25, 1, 0.5, 1),
+              width 0.22s cubic-bezier(0.25, 1, 0.5, 1),
+              opacity 0.15s ease,
+              margin-right 0.22s ease !important;
+  transition-delay: 0s !important;
 }
 
 /* 4. 時分秒テンキー入力枠の３分割完全均等幅 (1:1:1) 強制化 */
@@ -2842,9 +2947,41 @@ body.input-helper-off-mode #reverseDisplayDateGroup_direct {
 }
 
 /* 年月日も計算トグルがOFFのときに「日」の枠を見えなくする（スペースは維持して時分秒を動かさない） */
+/* 「日」の枠の基本スタイル（滑らかなスライドアニメーション用） */
+.error-days-wrapper {
+  transition: flex 0.25s cubic-bezier(0.25, 1, 0.5, 1),
+              max-width 0.25s cubic-bezier(0.25, 1, 0.5, 1),
+              width 0.25s cubic-bezier(0.25, 1, 0.5, 1),
+              opacity 0.22s ease,
+              visibility 0.22s ease,
+              margin-right 0.25s ease,
+              padding 0.25s ease !important;
+  overflow: hidden !important; /* アニメーション中の文字はみ出しを防ぐ */
+  max-width: 100px; /* 通常時の最大幅 */
+}
+
+/* 年月日計算トグルOFFのときに「日」の枠を滑らかに幅0に縮小して消去する */
 .omit-days-active {
+  flex: 0 !important;
+  max-width: 0 !important;
+  width: 0 !important;
+  opacity: 0 !important;
   visibility: hidden !important;
+  margin-right: 0 !important;
+  padding: 0 !important;
+  border: none !important;
   pointer-events: none !important;
+  transition: flex 0.22s cubic-bezier(0.25, 1, 0.5, 1),
+              max-width 0.22s cubic-bezier(0.25, 1, 0.5, 1),
+              width 0.22s cubic-bezier(0.25, 1, 0.5, 1),
+              opacity 0.15s ease,
+              margin-right 0.22s ease !important;
+}
+
+/* 隣接する時分秒カプセルも滑らかに幅を広げる */
+.unit-capsule-wrapper {
+  transition: flex 0.25s cubic-bezier(0.25, 1, 0.5, 1),
+              width 0.25s cubic-bezier(0.25, 1, 0.5, 1) !important;
 }
 /* ==========================================================================
    スワイプアニメーション用クラス
@@ -3324,3 +3461,267 @@ body.input-helper-off-mode #reverseDisplayDateGroup_direct {
   transition: color 0.2s;
   white-space: nowrap;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* ============================================================
+   著作権情報ページ（readmePage）スタイル
+   ============================================================ */
+#readmePage {
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: var(--bg-dark, #0a0a12);
+  z-index: 9000;
+  flex-direction: column;
+  overflow: hidden;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+#readmePage[style*="block"],
+#readmePage[style*="flex"] {
+  display: flex !important;
+}
+
+/* ヘッダー固定 */
+#readmeHeader {
+  flex-shrink: 0;
+  padding: 18px 16px 10px;
+  background: var(--bg-dark, #0a0a12);
+  border-bottom: 1px solid rgba(0, 255, 224, 0.15);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+#readmeTitle {
+  font-size: 20px;
+  letter-spacing: 3px;
+  color: var(--accent, #00ffe0);
+  text-shadow: 0 0 12px rgba(0, 255, 224, 0.5);
+  margin: 0;
+}
+
+/* 国選択ドロップダウン */
+#readmeCountryBar {
+  width: 100%;
+  max-width: 340px;
+}
+#readmeCountrySelect {
+  width: 100%;
+  background-color: rgba(0, 255, 224, 0.06);
+  background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23ffffff'%3E%3Cpath d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 24px;
+  border: 1px solid rgba(0, 255, 224, 0.3);
+  border-radius: 10px;
+  color: var(--text-main, #e0e0ff);
+  font-size: 16px;
+  padding: 10px 36px 10px 16px;
+  -webkit-appearance: none;
+  appearance: none;
+  text-align: left;
+  cursor: pointer;
+  outline: none;
+  transition: box-shadow 0.2s, border-color 0.2s;
+}
+#readmeCountrySelect:focus {
+  border-color: var(--accent, #00ffe0);
+  box-shadow: 0 0 8px rgba(0, 255, 224, 0.3);
+}
+
+/* スクロール本文 */
+#readmeBody {
+  flex: 1;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: 16px;
+}
+
+/* 各言語セクション */
+.readme-section {
+  margin-bottom: 40px;
+  padding: 20px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(0, 255, 224, 0.1);
+  border-radius: 14px;
+  scroll-margin-top: 20px;
+}
+.readme-section[dir="rtl"] {
+  text-align: right;
+}
+.readme-flag {
+  font-size: 28px;
+  margin-bottom: 6px;
+}
+.readme-lang-title {
+  font-size: 16px;
+  color: var(--accent, #00ffe0);
+  text-shadow: 0 0 8px rgba(0, 255, 224, 0.4);
+  letter-spacing: 2px;
+  margin: 0 0 12px;
+  font-weight: bold;
+}
+.readme-section p {
+  font-size: 13px;
+  line-height: 1.7;
+  color: var(--text-main, #e0e0ff);
+  margin: 0 0 10px;
+}
+.readme-section ul {
+  margin: 4px 0 10px;
+  padding-left: 1.4em;
+}
+.readme-section[dir="rtl"] ul {
+  padding-left: 0;
+  padding-right: 1.4em;
+}
+.readme-section li {
+  font-size: 13px;
+  line-height: 1.7;
+  color: rgba(224, 224, 255, 0.85);
+  margin-bottom: 4px;
+}
+
+/* 長押しプログレスリング */
+#readmeHoldRing {
+  display: none;
+  pointer-events: none;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 100px;
+  height: 100px;
+  z-index: 9100;
+}
+#readmeHoldRing circle {
+  fill: none;
+  stroke: var(--accent, #00ffe0);
+  stroke-width: 4;
+  stroke-dasharray: 163.4;
+  stroke-dashoffset: 163.4;
+  stroke-linecap: butt;
+  transform: rotate(-90deg);
+  transform-origin: 50% 50%;
+  filter: drop-shadow(0 0 6px var(--accent));
+  transition: stroke-dashoffset 1.5s linear;
+}
+#readmeHoldHint {
+  position: fixed;
+  display: none;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  font-size: 16px; font-weight: bold; text-shadow: 0 0 4px rgba(0,0,0,0.8);;
+  color: rgba(255, 255, 255, 0);
+  letter-spacing: 1px;
+  pointer-events: none;
+  z-index: 9100;
+  transition: color 0.2s;
+  white-space: nowrap;
+}
+
+/* 多言語特有の文字被り防止（レイアウトを維持したまま、特定の長いラベルだけを縮小する） */
+body.lang-de label[data-i18n="display_time"],
+body.lang-uk label[data-i18n="display_time"],
+body.lang-uk label[data-i18n="standard_time"],
+body.lang-ru label[data-i18n="standard_time"] {
+  font-size: 13px !important;
+  letter-spacing: -0.5px !important;
+}
+
+/* Real Timeトグルの動的位置追従（時分秒枠全体の中央を常にキープ） */
+.real-time-toggle-dynamic {
+  width: 64.28% !important; /* 年月日ON時（時分秒が全体の約64.28%を占める） */
+}
+.date-omitted .real-time-toggle-dynamic {
+  width: 100% !important; /* 年月日OFF時（時分秒が全体の100%を占める） */
+}
+
+/* 年月日も計算のトグルを右端に揃える */
+.helper-toggle-wrapper {
+  justify-content: space-between !important;
+  width: 100% !important;
+}
+.correction-date-toggle-wrapper {
+  justify-content: flex-end !important;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* --- 15. 多言語化対応（フォントサイズの最適化） --- */
+/* 日本語など、短くて太い文字の場合は大きめに表示し、入力枠とのセット感を強調 */
+body.lang-ja .input-group > label,
+body.lang-zh .input-group > label,
+body.lang-ko .input-group > label,
+body.lang-ja #reverseTimeLabel,
+body.lang-zh #reverseTimeLabel,
+body.lang-ko #reverseTimeLabel {
+  font-size: 14.5px !important;
+}
+
+/* 欧州言語など、横に長くなりやすい言語の場合はフォントサイズを縮小し、重なりを防止 */
+body:not(.lang-ja):not(.lang-zh):not(.lang-ko) .input-group > label,
+body:not(.lang-ja):not(.lang-zh):not(.lang-ko) #reverseTimeLabel {
+  font-size: 11.5px !important;
+  letter-spacing: -0.5px !important;
+}
+
+
+/* 長すぎる黄色のエラーメッセージを1行に収めるための多言語対応 */
+body:not(.lang-ja):not(.lang-zh):not(.lang-ko) .warning-msg {
+  font-size: 10.5px !important;
+  letter-spacing: -0.5px !important;
+  white-space: nowrap !important;
+  transform: scale(0.9) !important;
+}
+

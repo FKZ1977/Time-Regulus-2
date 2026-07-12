@@ -1,4 +1,4 @@
-const currentVersion = "3.1.3";
+﻿const currentVersion = "3.2.0";
 let lastError = null;
 let hasCalculated = false;
 let reverseMode = "toStandard";
@@ -151,14 +151,13 @@ function buildDateString(y, m, d) {
 // 各項目の入力状態を一字ごとに判定し、不足なら漢字、入力済なら全角スペースのラベル文字列を返す
 function buildMissingLabel(hasY, hasM, hasD, hasH, hasMin, hasSec, showDate) {
   const SP = '\u3000'; // 全角スペース
-  // showDate=falseのときは年月日部分を完全に省略、trueのときは入力済や未入力かで漢字/スペース
-  const y  = showDate ? (!hasY  ? '年' : SP) : '';
-  const mo = showDate ? (!hasM  ? '月' : SP) : '';
-  const d  = showDate ? (!hasD  ? '日' : SP) : '';
-  const h  = !hasH   ? '時' : SP;
-  const mi = !hasMin ? '分' : SP;
-  const s  = !hasSec ? '秒' : SP;
-  return `⚠ 　${y}${mo}${d}${h}${mi}${s}　が不足`;
+  const y  = showDate ? (!hasY  ? t("year_missing") : SP) : '';
+  const mo = showDate ? (!hasM  ? t("month_missing") : SP) : '';
+  const d  = showDate ? (!hasD  ? t("day_missing") : SP) : '';
+  const h  = !hasH   ? t("hour_missing") : SP;
+  const mi = !hasMin ? t("min_missing") : SP;
+  const s  = !hasSec ? t("sec_missing") : SP;
+  return t("error_missing_parts", `${y}${mo}${d}${h}${mi}${s}`);
 }
 
 function buildTimeString(h, min) {
@@ -572,14 +571,14 @@ function openTimePicker(group) {
 
   // タイトルのネーム変更
   if (group === "display") {
-    if (titleEl) titleEl.innerText = "表示時刻を選択";
+    if (titleEl) titleEl.innerText = t("select_display_time");
   } else if (group === "standard") {
-    if (titleEl) titleEl.innerText = "標準時刻を選択";
+    if (titleEl) titleEl.innerText = t("select_standard_time");
   } else if (group === "reverseDisplay") {
     const labelEl = document.getElementById("reverseTimeLabel");
-    if (titleEl) titleEl.innerText = (labelEl ? labelEl.innerText.replace(":", "") : "表示時刻") + "を選択";
+    if (titleEl) titleEl.innerText = (labelEl ? labelEl.innerText.replace(":", "") : t("display_time").replace(":", "")) + t("select_time").replace("時刻", "");
   } else if (group === "error") {
-    if (titleEl) titleEl.innerText = "誤差時間を選択";
+    if (titleEl) titleEl.innerText = t("select_error_time");
   }
 
   // 標準時刻が上の場合の秒ホイールロック制御
@@ -710,6 +709,8 @@ function checkPass() {
     inputField.value = '';
     inputField.style.border = '';
     errorMessage.innerText = '';
+    // Analytics: 12345コードが入力されたことを記録
+    if (typeof gtag === 'function') { gtag('event', '12345_code'); }
     showReadmePage();
     return;
   }
@@ -727,7 +728,7 @@ function checkPass() {
       _pendingMainInit = null; // 二重実行防止
     }
   } else {
-    errorMessage.innerText = "暗証番号が違います";
+    errorMessage.innerText = t("wrong_passcode");
     inputField.style.border = "2px solid red";
     inputField.value = "";
     inputField.focus();
@@ -2174,7 +2175,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
   // 起動時のバージョンポップアップ
   if (localStorage.getItem("lastVersion") !== currentVersion) {
-    alert("タイムレグルスがv3.1.3にアップデートされました！");
+    alert("タイムレグルスがv3.2.0にアップデートされました！");
     localStorage.setItem("lastVersion", currentVersion);
   }
 
@@ -2851,6 +2852,10 @@ function showErrorMode() {
   document.getElementById("modeSelect").style.display = "none";
   document.getElementById("errorMode").style.display = "block";
 
+  if (typeof window.updateLabelWidths === 'function') {
+    window.updateLabelWidths();
+  }
+
   // モード選択から遷移するたびに RealTime を必ず OFF にリセット
   const realTimeCb = document.getElementById('realTimeCheckbox');
   if (realTimeCb && realTimeCb.checked) {
@@ -2858,7 +2863,9 @@ function showErrorMode() {
     toggleRealTime(false);
   }
 
-  
+  // 現在の言語でエラーメッセージを再描画（言語切り替え後も正しい言語で表示するため）
+  calculateError();
+
   // 初期状態でテンキーを起動する自動フォーカス処理
   if (!inputHelperEnabled) {
     setTimeout(() => {
@@ -3285,7 +3292,7 @@ function calculateError() {
     }
 
     // タイトル行を常に追加
-    const titleText = isStandardOnTop ? "標準時刻から誤差を算出" : "表示時刻から誤差を算出";
+    const titleText = isStandardOnTop ? t("calc_from_standard") : t("calc_from_display");
     const titleColor = isStandardOnTop ? "var(--toggle-bg)" : "var(--accent)";
     
     resultElement.style.border = '';
@@ -3293,7 +3300,7 @@ function calculateError() {
     resultElement.style.padding = '';
     resultElement.style.backgroundColor = '';
     resultElement.style.boxShadow = 'none';
-    resultElement.innerHTML = `
+    resultElement.classList.remove("warning-msg"); resultElement.innerHTML = `
         <span style="font-size: 16px; color: ${titleColor}; font-weight: bold;">${titleText}</span>
     `;
     
@@ -3333,9 +3340,9 @@ function calculateError() {
     resultElement.style.padding = '12px 16px';
     resultElement.style.backgroundColor = '';
     resultElement.style.boxShadow = '';
-    resultElement.innerHTML = `
+    resultElement.classList.remove("warning-msg"); resultElement.innerHTML = `
       <p style="margin: 0 0 4px; font-size: 17px; color: var(--accent); font-weight: bold;">Precision Sync!</p>
-      <p style="margin: 0; font-size: 14px; color: var(--text-sub);">表示時刻は標準時刻と完全に一致しています。</p>
+      <p style="margin: 0; font-size: 14px; color: var(--text-sub);">${t("perfect_match")}</p>
     `;
     document.getElementById("toReverseButton").style.display = "none";
     lastError = null;
@@ -3343,19 +3350,19 @@ function calculateError() {
   }
 
   const parts = [];
-  if (days > 0) parts.push(`${days}日`);
-  if (hours > 0) parts.push(`${hours}時間`);
-  if (minutes > 0) parts.push(`${minutes}分`);
-  if (seconds > 0) parts.push(`${seconds}秒`);
+  if (days > 0) parts.push(`${days}${t("days_suffix")}`);
+  if (hours > 0) parts.push(`${hours}${t("hours_suffix")}`);
+  if (minutes > 0) parts.push(`${minutes}${t("mins_suffix")}`);
+  if (seconds > 0) parts.push(`${seconds}${t("secs_suffix")}`);
 
   let directionText;
   let directionColor;
 
   if (isFast) {
-    directionText = "進んでいます。";
+    directionText = t("is_fast");
     directionColor = "var(--error-late-color)"; // 太文字の赤
   } else {
-    directionText = "遅れています。";
+    directionText = t("is_slow");
     directionColor = "var(--error-early-color)"; // 太文字の黄緑
   }
 
@@ -3364,7 +3371,7 @@ function calculateError() {
   resultElement.style.padding = '12px 16px';
   resultElement.style.backgroundColor = '';
   resultElement.style.boxShadow = '';
-  resultElement.innerHTML = `
+  resultElement.classList.remove("warning-msg"); resultElement.innerHTML = `
     <p style="margin: 0 0 6px; font-size: 17px; color: var(--accent); font-weight: bold; letter-spacing: 0.5px;">${parts.join('')}</p>
     <p style="margin: 0; font-size: 16px; color: ${directionColor}; font-weight: bold;">${directionText}</p>
   `;
@@ -3473,21 +3480,21 @@ function toggleReverseMode(doToggle = true) {
   function updateButtonTexts() {
     if (textLeft && textRight) {
       if (reverseMode === "toDisplay") {
-        textLeft.textContent = "表示時刻を求める";
-        textRight.textContent = "補正時刻を求める";
+        textLeft.textContent = t("find_display");
+        textRight.textContent = t("find_correction");
       } else {
-        textLeft.textContent = "補正時刻を求める";
-        textRight.textContent = "表示時刻を求める";
+        textLeft.textContent = t("find_correction");
+        textRight.textContent = t("find_display");
       }
     }
   }
 
   if (reverseMode === "toDisplay") {
-    label.innerHTML = '<span style="color: var(--toggle-bg); font-weight: bold;">探している時刻:</span>'; 
+    label.innerHTML = `<span style="color: var(--toggle-bg); font-weight: bold;">${t("target_time")}</span>`; 
     toggleBtn.classList.add("active-toggle-pink");
     toggleBtn.classList.remove("active-toggle");
   } else {
-    label.innerHTML = '<span style="color: var(--accent); font-weight: bold;">表示時刻:</span>'; 
+    label.innerHTML = `<span style="color: var(--accent); font-weight: bold;">${t("display_time")}</span>`; 
     toggleBtn.classList.remove("active-toggle-pink");
     toggleBtn.classList.add("active-toggle"); 
   }
@@ -3497,7 +3504,7 @@ function toggleReverseMode(doToggle = true) {
 
 function handleReverseCalculation() {
   const resultElement = document.getElementById("reverseResult");
-  resultElement.innerHTML = "";
+  resultElement.classList.remove("warning-msg"); resultElement.innerHTML = "";
 
   let days, errorTimeVal, seconds, direction;
   let timeDateVal, timeTimeVal, timeSec;
@@ -3550,8 +3557,8 @@ function handleReverseCalculation() {
   if (correctionWarningEl) correctionWarningEl.style.visibility = "hidden";
 
   if (!hasError && !hasTime) {
-    resultElement.innerText = "誤差と時刻を入力してください";
-    resultElement.style.color = "#e6c300"; // ★文字色を黄色に
+    resultElement.innerText = t("enter_error_and_time");
+    resultElement.style.color = "#e6c300"; resultElement.classList.add("warning-msg"); // ★文字色を黄色に
     resultElement.style.border = '';
     resultElement.style.backgroundColor = '';
     return;
@@ -3582,15 +3589,15 @@ function handleReverseCalculation() {
         correctionWarningEl.innerText = msg;
         correctionWarningEl.style.visibility = "visible";
     }
-    resultElement.innerHTML = '';
+    resultElement.classList.remove("warning-msg"); resultElement.innerHTML = '';
     resultElement.style.border = '';
     resultElement.style.backgroundColor = '';
     return;
   }
 
   if (hasTime && !hasError) {
-    resultElement.innerText = "補正に使う誤差を入力してください";
-    resultElement.style.color = "#e6c300"; // ★文字色を黄色に
+    resultElement.innerText = t("enter_correction_error");
+    resultElement.style.color = "#e6c300"; resultElement.classList.add("warning-msg"); // ★文字色を黄色に
     resultElement.style.border = '';
     resultElement.style.backgroundColor = '';
     return;
@@ -3644,9 +3651,9 @@ function handleReverseCalculation() {
     if (diffDays === 0) {
       resultStr = timeOnlyStr;
     } else if (diffDays > 0) {
-      resultStr = `${diffDays}日先の ${timeOnlyStr}`;
+      resultStr = `${t("days_ahead", diffDays)}${timeOnlyStr}`;
     } else {
-      resultStr = `${Math.abs(diffDays)}日前の ${timeOnlyStr}`;
+      resultStr = `${t("days_ago", Math.abs(diffDays))}${timeOnlyStr}`;
     }
   }
   
@@ -3655,27 +3662,38 @@ function handleReverseCalculation() {
   const resultBorderColor = isToStandard ? "var(--accent)" : "var(--toggle-bg)";
   const resultColor = isToStandard ? "var(--accent)" : "var(--toggle-text)";
 
-  const baseLabel = isToStandard ? "表示時刻" : "探している時刻";
-  const resultLabel = isToStandard ? "補正時刻" : "表示時刻";
+  const baseLabel = isToStandard ? t("display_time") : t("search_time");
+  const resultLabel = isToStandard ? t("correction_time") : t("display_time");
 
   resultElement.style.border = `2px solid ${resultBorderColor}`;
   resultElement.style.backgroundColor = resultBgColor;
   resultElement.style.color = 'var(--text-main)'; 
 
-  resultElement.innerHTML = `
-    <div style="padding: 6px 10px; line-height: 1.9; width: 100%; box-sizing: border-box;">
-      <div style="display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; margin-bottom: 0;">
-        <span style="font-size: 13px; text-align: right; white-space: nowrap; padding-right: 4px;">${baseLabel}が</span>
-        <span style="font-size: 14px; font-weight: bold; color: ${resultColor}; background: var(--bg-dark); border: 1px solid ${resultBorderColor}; border-radius: 6px; padding: 2px 8px; letter-spacing: 0.5px; white-space: nowrap;">${baseStr}</span>
-        <span></span>
+  resultElement.classList.remove("warning-msg"); resultElement.innerHTML = `
+    <div style="padding: 12px 10px; width: 100%; box-sizing: border-box; display: flex; justify-content: center;">
+      <div style="display: grid; grid-template-columns: auto auto 1fr; column-gap: 4px; row-gap: 8px; text-align: left;">
+        
+        <!-- 上段：入力時刻 -->
+        <div></div> <!-- 矢印のスペース -->
+        <div style="display: flex; align-items: center; justify-content: flex-end;">
+          <span style="font-size: 13px; white-space: nowrap;">${baseLabel}</span>
+        </div>
+        <div style="display: flex; align-items: center;">
+          <span style="font-size: 14px; font-weight: bold; color: ${resultColor}; background: var(--bg-dark); border: 1px solid ${resultBorderColor}; border-radius: 6px; padding: 2px 8px; letter-spacing: 0.5px; white-space: nowrap;">${baseStr}</span>
+        </div>
+
+        <!-- 下段：結果時刻 -->
+        <div style="display: flex; align-items: center; justify-content: flex-end;">
+          <span style="font-size: 13px; color: var(--text-sub);">→</span>
+        </div>
+        <div style="display: flex; align-items: center; justify-content: flex-end;">
+          <span style="font-size: 13px; white-space: nowrap;">${resultLabel}</span>
+        </div>
+        <div style="display: flex; align-items: center;">
+          <span style="font-size: 14px; font-weight: bold; color: ${resultColor}; background: var(--bg-dark); border: 1px solid ${resultBorderColor}; border-radius: 6px; padding: 2px 8px; letter-spacing: 0.5px; white-space: nowrap;">${resultStr}</span>
+        </div>
+
       </div>
-      <p style="margin: 0; font-size: 13px; text-align: center;">のとき</p>
-      <div style="display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; margin-top: 0;">
-        <span style="font-size: 13px; text-align: right; white-space: nowrap; padding-right: 4px;">${resultLabel}は</span>
-        <span style="font-size: 14px; font-weight: bold; color: ${resultColor}; background: var(--bg-dark); border: 1px solid ${resultBorderColor}; border-radius: 6px; padding: 2px 8px; letter-spacing: 0.5px; white-space: nowrap;">${resultStr}</span>
-        <span></span>
-      </div>
-      <p style="margin: 0; font-size: 13px; text-align: center;">である</p>
     </div>
   `;
 
@@ -3724,7 +3742,7 @@ function addResultToList() {
   if (isDuplicate) {
     const msg = document.getElementById("recordSuccessMessage");
     const originalText = msg.innerText;
-    msg.innerText = "既に記録されています";
+    msg.innerText = t("already_recorded");
     msg.style.display = 'inline-block';
     msg.classList.remove('fade-out');
     msg.classList.add('fade-in-out');
@@ -3758,12 +3776,12 @@ function addResultToList() {
   if (resultHistory.length > 0) {
       const listLink = document.getElementById("showListLink");
       listLink.style.display = "block"; 
-      listLink.innerText = "結果一覧を表示 →"; 
+      listLink.innerText = t("show_list_arrow"); 
   }
 
   // 成功メッセージ表示アニメーション
   const msg = document.getElementById("recordSuccessMessage");
-  msg.innerText = "✔ 追加しました";
+  msg.innerText = t("added_to_list");
   msg.style.display = 'inline-block';
   msg.classList.remove('fade-out');
   msg.classList.add('fade-in-out');
@@ -3788,7 +3806,7 @@ function renderResultList() {
   container.innerHTML = "";
   
   if (resultHistory.length === 0) {
-    container.innerHTML = "<p style='color: var(--text-sub); text-align: center;'>記録された結果はありません。</p>";
+    container.innerHTML = `<p style='color: var(--text-sub); text-align: center;'>${t("no_records")}</p>`;
     document.getElementById("showListLink").style.display = "none";
     return;
   }
@@ -3804,15 +3822,15 @@ function renderResultList() {
     const s = seconds || 0;
 
     if (d > 0) {
-      errorText = `${d}日${h}時間${m}分${s}秒`;
+      errorText = `${t("err_list_days", d)}${t("err_list_hours", h)}${t("err_list_mins", m)}${t("err_list_secs", s)}`;
     } else if (h > 0) {
-      errorText = `${h}時間${m}分${s}秒`;
+      errorText = `${t("err_list_hours", h)}${t("err_list_mins", m)}${t("err_list_secs", s)}`;
     } else if (m > 0) {
-      errorText = `${m}分${s}秒`;
+      errorText = `${t("err_list_mins", m)}${t("err_list_secs", s)}`;
     } else {
-      errorText = `${s}秒`;
+      errorText = `${t("err_list_secs", s)}`;
     }
-    errorText += `（${direction === "late" ? "進み" : "遅れ" }）`;
+    errorText += direction === "late" ? t("is_fast_parentheses") : t("is_slow_parentheses");
     
     const entriesByMode = group.entries.reduce((acc, entry) => {
       if (!acc[entry.mode]) {
@@ -3837,7 +3855,7 @@ function renderResultList() {
     outerBox.style.boxShadow = "0 0 10px rgba(0,0,0,0.3)";
 
     const title = document.createElement("h3");
-    title.innerHTML = `<strong>補正に使った誤差：</strong>${errorText}`;
+    title.innerHTML = `<strong>${t("error_used_for_correction")}</strong>${errorText}`;
     title.style.color = 'var(--accent)';
     title.style.marginTop = "2px";
     title.style.marginBottom = "8px";
@@ -3850,8 +3868,12 @@ function renderResultList() {
       if (!modeEntries || modeEntries.length === 0) return;
 
       const isToStandard = mode === 'toStandard';
-      const baseLabel = isToStandard ? "表示時刻" : "探索時刻";
-      const resultLabel = isToStandard ? "補正時刻" : "表示時刻";
+      // modeHeader 用（コロンなし・Bare名）
+      const baseLabelBare   = isToStandard ? t("display_time_bare")    : t("search_time_bare");
+      const resultLabelBare = isToStandard ? t("correction_time_bare") : t("display_time_bare");
+      // 行表示用（コロンあり）
+      const baseLabel   = isToStandard ? t("display_time")    : t("search_time");
+      const resultLabel = isToStandard ? t("correction_time") : t("display_time");
       const resultColor = isToStandard ? "var(--accent)" : "var(--toggle-text)"; 
       const borderColor = isToStandard ? "var(--accent)" : "var(--toggle-bg)"; 
       const bgColor = isToStandard ? "rgba(0, 255, 224, 0.05)" : "rgba(255, 0, 170, 0.05)";
@@ -3866,7 +3888,7 @@ function renderResultList() {
       innerBox.style.textAlign = "left";
 
       const modeHeader = document.createElement("div");
-      modeHeader.innerHTML = `<strong style="color: ${borderColor}; font-size: 13px;">${baseLabel} → ${resultLabel} の計算</strong>`;
+      modeHeader.innerHTML = `<strong style="color: ${borderColor}; font-size: 13px;">${baseLabelBare} → ${resultLabelBare}${t("mode_calc_label")}</strong>`;
       modeHeader.style.marginBottom = "4px";
       modeHeader.style.paddingBottom = "2px";
       innerBox.appendChild(modeHeader);
@@ -3901,9 +3923,9 @@ function renderResultList() {
           if (diffDays === 0) {
             resultStr = timeOnlyStr;
           } else if (diffDays > 0) {
-            resultStr = `${diffDays}日先の ${timeOnlyStr}`;
+            resultStr = `${t("days_ahead", diffDays)}${timeOnlyStr}`;
           } else {
-            resultStr = `${Math.abs(diffDays)}日前の ${timeOnlyStr}`;
+            resultStr = `${t("days_ago", Math.abs(diffDays))}${timeOnlyStr}`;
           }
         }
 
@@ -3912,16 +3934,31 @@ function renderResultList() {
         textSpan.style.flex = "1";
         textSpan.style.marginRight = "8px";
 
-        // 日付あり・なしに関わらず、同じHTML構造で表示する
+        // 矢印を左にはみ出させ、ラベル同士をコロンで縦に揃える3カラムグリッドレイアウト
         textSpan.innerHTML = `
-          <span style="font-size: 13px; color: var(--text-sub); display: block;">${baseLabel}が ${baseStr} →</span>
-          <span style="font-size: 14px; font-weight: bold; color: ${resultColor}; display: block; margin-top: 1px;">${resultLabel}は ${resultStr}</span>
+          <div style="display: grid; grid-template-columns: auto auto 1fr; column-gap: 4px;">
+            <div></div> <!-- 上段左：空白 -->
+            <div style="font-size: 13px; color: var(--text-sub); display: flex; align-items: center; justify-content: flex-end;">
+              <span style="white-space: nowrap;">${baseLabel}</span>
+            </div>
+            <div style="font-size: 13px; color: var(--text-sub); display: flex; align-items: center;">
+              <span>${baseStr}</span>
+            </div>
+            
+            <div style="font-size: 13px; color: var(--text-sub); display: flex; align-items: center; justify-content: flex-end;">→</div>
+            <div style="font-size: 14px; font-weight: bold; color: ${resultColor}; display: flex; align-items: center; justify-content: flex-end; margin-top: 1px;">
+              <span style="white-space: nowrap;">${resultLabel}</span>
+            </div>
+            <div style="font-size: 14px; font-weight: bold; color: ${resultColor}; display: flex; align-items: center; margin-top: 1px;">
+              <span>${resultStr}</span>
+            </div>
+          </div>
         `;
         line.appendChild(textSpan);
         
         const deleteBtn = document.createElement("button");
         deleteBtn.className = "delete-btn";
-        deleteBtn.innerText = "削除";
+        deleteBtn.innerText = t("delete");
         deleteBtn.onclick = () => deleteResultById(entry.id); 
         line.appendChild(deleteBtn);
         
@@ -3975,13 +4012,30 @@ function showInformationPage() {
 
 function backToLockScreen() {
   document.getElementById("informationPage").style.display = "none";
-  document.getElementById("qrCodePage").style.display = "none"; 
+  document.getElementById("qrCodePage").style.display = "none";
+  document.getElementById("readmePage").style.display = "none";
   document.getElementById("lockScreen").style.display = "block";
 }
 
 function showQRCodePage() {
   document.getElementById("informationPage").style.display = "none";
   document.getElementById("qrCodePage").style.display = "block";
+}
+
+// informationPageからreadmePageへ移動（著作権情報を見るボタンから）
+function showReadmePageFromInfo() {
+  document.getElementById("informationPage").style.display = "none";
+  if (typeof gtag === 'function') { gtag('event', 'view_Copyright_info'); }
+  showReadmePage();
+  // ← Information ボタンを表示
+  const backBtn = document.getElementById('readmeBackBtn');
+  if (backBtn) {
+    backBtn.style.display = 'block';
+    backBtn.removeAttribute('data-i18n');
+    backBtn.innerText = '← Information';
+  }
+  // readmePageから戻る時はinformationPageに戻るよう設定
+  window._readmeReturnTo = 'informationPage';
 }
 
 function closeQRCodePage() {
@@ -4502,19 +4556,44 @@ document.addEventListener("focusin", function(e) {
 let _readmeHoldTimer = null;
 
 function showReadmePage() {
-  if (typeof gtag === 'function') { gtag('event', 'view_Copyright_info'); }
+  // イベントは呼び出し元で発火させるため、ここでは発火しない
   document.getElementById('lockScreen').style.display = 'none';
   const page = document.getElementById('readmePage');
   page.style.display = 'block';
 
+  // 戻るボタンはデフォルト非表示（呼び出し元が制御する）
+  const backBtn = document.getElementById('readmeBackBtn');
+  if (backBtn) {
+    backBtn.style.display = 'block';
+    backBtn.setAttribute('data-i18n', 'back_to_lock');
+    if (typeof t === 'function') {
+      backBtn.innerText = t('back_to_lock');
+    } else {
+      backBtn.innerText = '← 初期画面に戻る';
+    }
+    window._readmeReturnTo = 'lockScreen';
+  }
+
   const select = document.getElementById('readmeCountrySelect');
   if (select && select.options.length > 0) {
-    select.selectedIndex = 0;
+    // 選択中の言語（currentLang）に合わせたセクションを自動選択
+    const targetValue = typeof currentLang !== 'undefined' ? `sec-${currentLang}` : 'sec-ja';
+    let foundIndex = 0;
+    for (let i = 0; i < select.options.length; i++) {
+      if (select.options[i].value === targetValue) {
+        foundIndex = i;
+        break;
+      }
+    }
+    select.selectedIndex = foundIndex;
     jumpToReadmeSection(select.value);
   }
 }
 
 function returnToLockScreenFromHold() {
+  const returnTo = window._readmeReturnTo || null;
+  window._readmeReturnTo = null;
+
   const pagesToHide = ['readmePage', 'informationPage', 'qrCodePage', 'modeSelect'];
   pagesToHide.forEach(id => {
     const el = document.getElementById(id);
@@ -4522,6 +4601,12 @@ function returnToLockScreenFromHold() {
   });
   const resetConfirm = document.getElementById('resetConfirmContainer');
   if (resetConfirm) resetConfirm.style.display = 'none';
+
+  // informationPageから開いた場合はそこに戻る
+  if (returnTo === 'informationPage') {
+    document.getElementById('informationPage').style.display = 'block';
+    return;
+  }
 
   // ★ 暗証番号入力枠をクリアする
   const passcode = document.getElementById('passcode');
@@ -4717,3 +4802,8 @@ if (document.readyState === 'loading') {
   if (typeof generateKeypad === 'function') generateKeypad();
   initHoldToReturn();
 }
+
+
+
+
+

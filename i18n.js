@@ -1,4 +1,4 @@
-const i18n_translations = {
+﻿const i18n_translations = {
   ja: {
     "app_title": "Time Regulus",
     "app_subtitle": "タイム　レグルス　v3.3.0",
@@ -11,7 +11,7 @@ const i18n_translations = {
     "calc_error": "誤差の計算",
     "calc_correction": "補正時刻の計算",
     "time_calculator": "時間電卓",
-    "time_calculator_etc": "時間電卓等",
+    "time_calculator_etc": "マルチ電卓",
     "precision_calculator": "精密電卓",
     "standard_calculator": "電卓",
     "split_calculator": "割り勘",
@@ -133,7 +133,7 @@ const i18n_translations = {
     "calc_error": "Calculate Error",
     "calc_correction": "Calculate Correction Time",
     "time_calculator": "Time Calculator",
-    "time_calculator_etc": "Time Calc etc.",
+    "time_calculator_etc": "Multi Calc",
     "precision_calculator": "Precision Calc",
     "standard_calculator": "Calculator",
     "split_calculator": "Split Bill",
@@ -1267,9 +1267,6 @@ const i18n_translations = {
 };
 
 let currentLang = localStorage.getItem("regulus_lang") || "ja";
-if (!i18n_translations[currentLang]) {
-  currentLang = "ja";
-}
 
 function t(key, ...args) {
   const cur = i18n_translations[currentLang];

@@ -3701,7 +3701,8 @@ body.input-helper-off-mode #reverseDisplayDateGroup_direct {
 /* 多言語特有の文字被り防止（レイアウトを維持したまま、特定の長いラベルだけを縮小する） */
 body.lang-de label[data-i18n="display_time"],
 body.lang-uk label[data-i18n="display_time"],
-body.lang-uk label[data-i18n="standard_time"] {
+body.lang-uk label[data-i18n="standard_time"],
+body.lang-ru label[data-i18n="standard_time"] {
   font-size: 13px !important;
   letter-spacing: -0.5px !important;
 }
@@ -3743,22 +3744,24 @@ body.lang-uk label[data-i18n="standard_time"] {
 /* --- 15. 多言語化対応（フォントサイズの最適化） --- */
 /* 日本語など、短くて太い文字の場合は大きめに表示し、入力枠とのセット感を強調 */
 body.lang-ja .input-group > label,
+body.lang-zh .input-group > label,
 body.lang-ko .input-group > label,
 body.lang-ja #reverseTimeLabel,
+body.lang-zh #reverseTimeLabel,
 body.lang-ko #reverseTimeLabel {
   font-size: 14.5px !important;
 }
 
 /* 欧州言語など、横に長くなりやすい言語の場合はフォントサイズを縮小し、重なりを防止 */
-body:not(.lang-ja):not(.lang-ko) .input-group > label,
-body:not(.lang-ja):not(.lang-ko) #reverseTimeLabel {
+body:not(.lang-ja):not(.lang-zh):not(.lang-ko) .input-group > label,
+body:not(.lang-ja):not(.lang-zh):not(.lang-ko) #reverseTimeLabel {
   font-size: 11.5px !important;
   letter-spacing: -0.5px !important;
 }
 
 
 /* 長すぎる黄色のエラーメッセージを1行に収めるための多言語対応 */
-body:not(.lang-ja):not(.lang-ko) .warning-msg {
+body:not(.lang-ja):not(.lang-zh):not(.lang-ko) .warning-msg {
   font-size: 10.5px !important;
   letter-spacing: -0.5px !important;
   white-space: nowrap !important;
@@ -4454,15 +4457,6 @@ body:not(.lang-ja):not(.lang-ko) .warning-msg {
 }
 
 /* 3. Eclipse */
-.clock-eclipse {
-  position: absolute;
-  width: 300px;
-  height: 300px;
-  border-radius: 50%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
 .clock-eclipse .clock-face {
   background: #000;
   /* 光彩（コロナ外枠）削除 */
@@ -4490,7 +4484,7 @@ body:not(.lang-ja):not(.lang-ko) .warning-msg {
     box-shadow: 0 0 calc(45px * var(--analog-glow, 1.0)) rgba(255,255,255,0.35), inset 0 0 15px rgba(0,0,0,1);
   }
   50% {
-    box-shadow: 0 0 calc(25px * var(--analog-glow, 1.0)) rgba(255,255,255,0.15), inset 0 0 15px rgba(0,0,0,1);
+    box-shadow: 0 0 calc(25px * var(--analog-glow, 1.0)) rgba(255,255,255,0.18), inset 0 0 15px rgba(0,0,0,1);
   }
 }
 
@@ -4501,7 +4495,7 @@ body:not(.lang-ja):not(.lang-ko) .warning-msg {
   width: 140px; height: 140px;
   background: #000;
   border-radius: 50%;
-  box-shadow: 0 0 calc(45px * var(--analog-glow, 1.0)) rgba(255,255,255,0.3), inset 0 0 15px rgba(0,0,0,1);
+  box-shadow: 0 0 calc(45px * var(--analog-glow, 1.0)) rgba(255,255,255,0.35), inset 0 0 15px rgba(0,0,0,1);
   animation: coronaBreathe 16s ease-in-out infinite;
   z-index: 10;
 }
@@ -5030,6 +5024,253 @@ body:not(.lang-ja):not(.lang-ko) .warning-msg {
   text-align: right;
   overflow-x: auto;
   white-space: nowrap;
+  /* デフォルトはスクロールバー非表示 */
+  scrollbar-width: none;
+}
+.time-calc-sub-display::-webkit-scrollbar {
+  display: none;
+}
+
+/* 割り勘モード時はサブディスプレイにスクロールバーを表示 */
+.split-mode-active .time-calc-sub-display {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 0, 170, 0.6) rgba(255, 255, 255, 0.05);
+  padding-bottom: 4px;
+}
+.split-mode-active .time-calc-sub-display::-webkit-scrollbar {
+  display: block;
+  height: 5px;
+  border-radius: 3px;
+}
+.split-mode-active .time-calc-sub-display::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 3px;
+}
+.split-mode-active .time-calc-sub-display::-webkit-scrollbar-thumb {
+  background: rgba(255, 0, 170, 0.6);
+  border-radius: 3px;
+}
+
+/* レートクリック可能スタイル */
+.currency-rate-clickable {
+  cursor: pointer;
+  border-bottom: 1px dashed rgba(255, 0, 170, 0.5);
+  transition: all 0.2s;
+  user-select: none;
+}
+.currency-rate-clickable:hover {
+  color: #ff44cc;
+  text-shadow: 0 0 12px rgba(255, 0, 170, 0.8);
+  border-bottom-color: #ff44cc;
+}
+.currency-rate-clickable:active {
+  transform: scale(0.98);
+}
+
+/* カスタムレート入力モーダル */
+#customRateModal {
+  display: none;
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  z-index: 9999;
+  background: rgba(0, 0, 0, 0.75);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  align-items: center;
+  justify-content: center;
+}
+#customRateModal.active {
+  display: flex;
+}
+.custom-rate-modal-box {
+  background: linear-gradient(135deg, #0f1624 0%, #151d2a 100%);
+  border: 1.5px solid rgba(255, 0, 170, 0.6);
+  border-radius: 16px;
+  padding: 24px 20px 20px;
+  min-width: 280px;
+  max-width: 340px;
+  width: 90%;
+  box-shadow: 0 0 30px rgba(255, 0, 170, 0.3), 0 20px 40px rgba(0, 0, 0, 0.7);
+  animation: riseInShort 0.25s ease-out;
+  position: relative;
+}
+.custom-rate-modal-title {
+  font-size: 14px;
+  font-weight: bold;
+  color: #ff00aa;
+  text-shadow: 0 0 8px rgba(255, 0, 170, 0.5);
+  margin-bottom: 14px;
+  text-align: center;
+  letter-spacing: 0.5px;
+}
+.custom-rate-modal-label {
+  font-size: 12px;
+  color: rgba(224, 224, 255, 0.7);
+  margin-bottom: 6px;
+  display: block;
+}
+.custom-rate-modal-input-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 16px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 0, 170, 0.4);
+  border-radius: 8px;
+  padding: 4px 10px;
+}
+.custom-rate-modal-input-row span {
+  font-size: 12px;
+  color: rgba(224, 224, 255, 0.5);
+  white-space: nowrap;
+}
+#customRateInput {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: #ff00aa;
+  font-size: 20px;
+  font-family: 'Consolas', 'Courier New', monospace;
+  font-weight: bold;
+  text-align: right;
+  padding: 6px 0;
+  min-width: 0;
+}
+#customRateInput::placeholder {
+  color: rgba(255, 0, 170, 0.3);
+}
+.custom-rate-modal-btns {
+  display: flex;
+  gap: 10px;
+}
+.custom-rate-modal-cancel {
+  flex: 1;
+  padding: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: transparent;
+  color: rgba(224, 224, 255, 0.7);
+  border-radius: 8px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.custom-rate-modal-cancel:active {
+  background: rgba(255, 255, 255, 0.1);
+}
+.custom-rate-modal-ok {
+  flex: 1.5;
+  padding: 10px;
+  border: 1px solid rgba(255, 0, 170, 0.7);
+  background: rgba(255, 0, 170, 0.15);
+  color: #ff00aa;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 0 10px rgba(255, 0, 170, 0.25);
+}
+.custom-rate-modal-ok:active {
+  background: rgba(255, 0, 170, 0.4);
+  transform: scale(0.97);
+}
+.custom-rate-reset-btn {
+  width: 100%;
+  margin-top: 10px;
+  padding: 7px;
+  border: 1px solid rgba(0, 255, 224, 0.3);
+  background: transparent;
+  color: rgba(0, 255, 224, 0.6);
+  border-radius: 8px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.custom-rate-reset-btn:active {
+  background: rgba(0, 255, 224, 0.1);
+}
+
+/* ライブレート取得ボタン */
+.live-rate-fetch-btn {
+  width: 100%;
+  margin-top: 12px;
+  padding: 9px 12px;
+  border: 1.5px solid rgba(0, 220, 130, 0.6);
+  background: rgba(0, 180, 100, 0.12);
+  color: #00e87a;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.22s ease;
+  box-shadow: 0 0 10px rgba(0, 220, 130, 0.18);
+  letter-spacing: 0.3px;
+}
+.live-rate-fetch-btn:hover {
+  background: rgba(0, 220, 130, 0.22);
+  border-color: rgba(0, 220, 130, 0.85);
+  box-shadow: 0 0 16px rgba(0, 220, 130, 0.35);
+  color: #33ffaa;
+}
+.live-rate-fetch-btn:active {
+  transform: scale(0.97);
+  background: rgba(0, 220, 130, 0.32);
+}
+.live-rate-fetch-btn:disabled,
+.live-rate-fetch-btn.loading {
+  opacity: 0.65;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* ライブレートステータス表示 */
+.live-rate-status {
+  min-height: 18px;
+  margin-top: 5px;
+  font-size: 11px;
+  text-align: center;
+  color: rgba(200, 200, 255, 0.5);
+  letter-spacing: 0.2px;
+  transition: color 0.3s;
+}
+.live-rate-status.loading {
+  color: rgba(100, 180, 255, 0.8);
+  animation: liverate-pulse 1.2s ease-in-out infinite;
+}
+.live-rate-status.success {
+  color: #00e87a;
+  text-shadow: 0 0 8px rgba(0, 220, 130, 0.45);
+}
+.live-rate-status.error {
+  color: #ff6060;
+  text-shadow: 0 0 8px rgba(255, 80, 80, 0.4);
+}
+@keyframes liverate-pulse {
+  0%, 100% { opacity: 0.5; }
+  50% { opacity: 1; }
+}
+
+.custom-rate-save-default-btn {
+  width: 100%;
+  margin-top: 7px;
+  padding: 7px;
+  border: 1px solid rgba(255, 190, 60, 0.45);
+  background: rgba(255, 160, 20, 0.08);
+  color: rgba(255, 200, 80, 0.85);
+  border-radius: 8px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.custom-rate-save-default-btn:hover {
+  background: rgba(255, 190, 60, 0.18);
+  border-color: rgba(255, 200, 80, 0.7);
+  color: #ffd040;
+}
+.custom-rate-save-default-btn:active {
+  background: rgba(255, 190, 60, 0.3);
+  transform: scale(0.97);
 }
 
 /* 履歴ドロワー */
@@ -5039,7 +5280,7 @@ body:not(.lang-ja):not(.lang-ko) .warning-msg {
   border-radius: 10px;
   padding: 10px 12px;
   margin-bottom: 12px;
-  max-height: 160px;
+  max-height: 320px;
   overflow-y: auto;
   box-shadow: 0 4px 14px rgba(0, 0, 0, 0.5);
   animation: riseInShort 0.3s ease-out;
@@ -5285,5 +5526,20 @@ body:not(.lang-ja):not(.lang-ko) .warning-msg {
   .time-calc-keypad {
     gap: 5px;
   }
+}
+
+/* カスタムレートモーダル: 編集済みレートバッジ */
+.custom-rate-badge {
+  display: inline-block;
+  font-size: 9px;
+  font-weight: bold;
+  background: rgba(255, 0, 170, 0.2);
+  border: 1px solid rgba(255, 0, 170, 0.5);
+  color: #ff00aa;
+  border-radius: 3px;
+  padding: 0px 4px;
+  margin-left: 4px;
+  vertical-align: middle;
+  letter-spacing: 0.5px;
 }
 

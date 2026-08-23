@@ -6483,56 +6483,6 @@ function _updateDecoyCountdown() {
 
 // （以前ここにあった重複・古い仕様の restartLockScreenAnimation は削除・統合されました）
 
-function _updateAnalogPager() {
-  const pager = document.getElementById("analogPager");
-  if (!pager) return;
-  const dots = pager.querySelectorAll(".pager-dot");
-  dots.forEach((dot, index) => {
-    if (index === _analogCurrentPage) {
-      dot.classList.add("active");
-    } else {
-      dot.classList.remove("active");
-    }
-  });
-}
-
-function _generateCoronaPath(cx, cy, baseRadius, time, speed, numPoints, maxSpike) {
-  const points = [];
-  for (let i = 0; i < numPoints; i++) {
-    const angle = (i / numPoints) * Math.PI * 2;
-    const noise1 = Math.sin(angle * 3 + time * speed);
-    const noise2 = Math.cos(angle * 5 - time * speed * 0.7);
-    const noise3 = Math.sin(angle * 7 + time * speed * 1.3);
-    const r = baseRadius + (noise1 * 0.45 + noise2 * 0.35 + noise3 * 0.2 + 0.5) * maxSpike;
-    const x = cx + Math.cos(angle) * r;
-    const y = cy + Math.sin(angle) * r;
-    points.push({ x, y });
-  }
-  let d = `M ${points[0].x.toFixed(1)} ${points[0].y.toFixed(1)}`;
-  for (let i = 0; i < points.length; i++) {
-    const p0 = points[i];
-    const p1 = points[(i + 1) % points.length];
-    const midX = (p0.x + p1.x) / 2;
-    const midY = (p0.y + p1.y) / 2;
-    d += ` Q ${p0.x.toFixed(1)} ${p0.y.toFixed(1)}, ${midX.toFixed(1)} ${midY.toFixed(1)}`;
-  }
-  d += " Z";
-  return d;
-}
-
-function _updateCorona() {
-  const l1 = document.querySelector(".corona-layer1");
-  const l2 = document.querySelector(".corona-layer2");
-  if (!l1 && !l2) return;
-  const nowSec = performance.now() * 0.001;
-  if (l1) {
-    l1.setAttribute("d", _generateCoronaPath(150, 150, 70, nowSec, 0.8, 36, 40));
-  }
-  if (l2) {
-    l2.setAttribute("d", _generateCoronaPath(150, 150, 70, nowSec, 0.5, 28, 68));
-  }
-}
-
 function showAnalogLockScreen() {
   if (typeof gtag === 'function') {
     gtag('event', 'view_Analog_clock_screen_triggerd', {
@@ -6554,7 +6504,7 @@ function showAnalogLockScreen() {
   if (regulusFace && regulusFace.querySelectorAll('.regulus-tick').length === 0) {
     for (let i = 0; i < 60; i++) {
       const tick = document.createElement("div");
-      tick.className = "regulus-tick"; // ぼかし無しの専用クラス
+      tick.className = "regulus-tick";
       tick.style.position = "absolute";
       tick.style.top = "50%";
       tick.style.left = "50%";
@@ -6582,7 +6532,7 @@ function showAnalogLockScreen() {
   if (radarFace && radarFace.querySelectorAll('.star-marker').length === 0) {
     for (let i = 0; i < 60; i++) {
       const dot = document.createElement("div");
-      dot.className = "star-marker"; // クラス名を流用して二重生成を防止
+      dot.className = "star-marker";
       dot.style.position = "absolute";
       dot.style.top = "50%";
       dot.style.left = "50%";
@@ -6610,9 +6560,6 @@ function showAnalogLockScreen() {
     }
   }
 
-  // カレンダー初期化
-  _renderCalendar();
-
   // Wake Lockを適用 (既存の関数を呼び出し)
   if (typeof _acquireWakeLock === "function") {
     _acquireWakeLock();
@@ -6621,7 +6568,7 @@ function showAnalogLockScreen() {
   // 描画ループ開始
   _startAnalogClock();
   
-  // スワイプイベント・長押しイベント登録 (1度だけ)
+  // スワイプイベント登録 (1度だけ)
   if (!analogScreen.dataset.swipeInited) {
     initAnalogSwipe();
     initAnalogHold();
@@ -6648,6 +6595,51 @@ function showAnalogLockScreen() {
   }
 }
 
+function hideAnalogLockScreen() {
+  if (_analogAnimFrameId) {
+    cancelAnimationFrame(_analogAnimFrameId);
+    _analogAnimFrameId = null;
+  }
+  if (_analogHoldTimer) {
+    clearTimeout(_analogHoldTimer);
+    _analogHoldTimer = null;
+  }
+  
+  if (typeof _releaseWakeLock === "function") {
+    _releaseWakeLock();
+  }
+  
+  const ring = document.getElementById("analogHoldRing");
+  const circle = document.getElementById("analogRingCircle");
+  if (ring) ring.style.opacity = "0";
+  if (circle) {
+    circle.style.transition = "none";
+    circle.style.strokeDashoffset = "164";
+  }
+  
+  const analogScreen = document.getElementById("analogLockScreen");
+  if (analogScreen) {
+    analogScreen.style.display = "none";
+  }
+  
+  const lockScreen = document.getElementById("lockScreen");
+  if (lockScreen) {
+    lockScreen.style.display = "block";
+  }
+  
+  const inputField = document.getElementById("passcode");
+  if (inputField) {
+    inputField.value = "";
+    inputField.style.border = "";
+  }
+  const errorMessage = document.getElementById("error");
+  if (errorMessage) {
+    errorMessage.innerText = "";
+  }
+  
+  restartLockScreenAnimation();
+}
+
 /* ============================================================
    アナログ時計画面 (analogLockScreen) ロジック
    ============================================================ */
@@ -6661,19 +6653,24 @@ let _analogIsDragging = false;
 let _analogSwipeDirection = null;
 let _analogContainerWidth = 0;
 
-// 長押し用
+// 長押し & タップ用
 let _analogPressStartTime = 0;
 let _analogIsLongPressSuccess = false;
 let _analogHoldTimer = null;
+let _analogLastTapTime = 0;
+let _analogTapCount = 0;
+let _analogSingleTapTimer = null;
 
 let _analogLastMinute = -1;
 let _analogShiftX = 0;
 let _analogShiftY = 0;
 
-let _analogInfoState = 0;
+let _analogInfoState = 0; // 0: なし, 1: デジタル, 2: カレンダー+デジタル
 let _analogLastCalendarDate = "";
 let _analogGlowIntensity = 1.0;
 let _analogShowSecondHand = true;
+
+let _analogCalendarMonthOffset = 0;
 
 let _analogIsSwapped = false;
 let _analogIs2FingerDragging = false;
@@ -6692,14 +6689,49 @@ const _jp_holidays = new Set([
   "2027-01-01", "2027-01-11", "2027-02-11", "2027-02-23", "2027-03-21", "2027-03-22", "2027-04-29", "2027-05-03", "2027-05-04", "2027-05-05", "2027-07-19", "2027-08-11", "2027-09-20", "2027-09-23", "2027-10-11", "2027-11-03", "2027-11-23"
 ]);
 
-function _renderCalendar() {
-  const rail = document.getElementById("analogCalendarRail");
-  if (!rail) return;
-  const now = new Date();
-  const year = now.getFullYear();
-  const month = now.getMonth();
-  
-  rail.innerHTML = "";
+// コロナ時計（Eclipse）用の動的SVGパス生成（有機的に波打つ太陽光冠）
+function _generateCoronaPath(cx, cy, baseRadius, timeMs, seed) {
+  const points = [];
+  const count = 64;
+  for (let i = 0; i < count; i++) {
+    const angle = (i / count) * Math.PI * 2;
+    const wave1 = Math.sin(angle * 3 + timeMs * 0.0018 + seed) * 14;
+    const wave2 = Math.sin(angle * 7 - timeMs * 0.0026 + seed * 2.5) * 9;
+    const wave3 = Math.cos(angle * 13 + timeMs * 0.0034) * 6;
+    const wave4 = Math.sin(angle * 5 + timeMs * 0.0012 + seed * 1.2) * 11;
+    const r = baseRadius + Math.max(2, wave1 + wave2 + wave3 + wave4);
+    const x = cx + Math.cos(angle) * r;
+    const y = cy + Math.sin(angle) * r;
+    points.push({ x, y });
+  }
+  let d = `M ${points[0].x.toFixed(2)} ${points[0].y.toFixed(2)}`;
+  for (let i = 0; i < count; i++) {
+    const p0 = points[(i - 1 + count) % count];
+    const p1 = points[i];
+    const p2 = points[(i + 1) % count];
+    const p3 = points[(i + 2) % count];
+    const cp1x = p1.x + (p2.x - p0.x) / 6;
+    const cp1y = p1.y + (p2.y - p0.y) / 6;
+    const cp2x = p2.x - (p3.x - p1.x) / 6;
+    const cp2y = p2.y - (p3.y - p1.y) / 6;
+    d += ` C ${cp1x.toFixed(2)} ${cp1y.toFixed(2)}, ${cp2x.toFixed(2)} ${cp2y.toFixed(2)}, ${p2.x.toFixed(2)} ${p2.y.toFixed(2)}`;
+  }
+  d += " Z";
+  return d;
+}
+
+function _updateAnalogPager() {
+  const dots = document.querySelectorAll("#analogPager .pager-dot");
+  dots.forEach((dot, index) => {
+    if (index === _analogCurrentPage) {
+      dot.classList.add("active");
+    } else {
+      dot.classList.remove("active");
+    }
+  });
+}
+
+function _generateCalendarBlock(year, month) {
   const block = document.createElement("div");
   block.className = "analog-calendar-block";
   
@@ -6724,6 +6756,7 @@ function _renderCalendar() {
   const firstDay = new Date(year, month, 1).getDay();
   const startOffset = firstDay === 0 ? 6 : firstDay - 1;
   const lastDate = new Date(year, month + 1, 0).getDate();
+  const today = new Date();
   
   for (let i = 0; i < startOffset; i++) {
     grid.appendChild(document.createElement("div"));
@@ -6734,10 +6767,11 @@ function _renderCalendar() {
     el.className = "day-cell";
     const dateStr = `${year}-${monthStr}-${d.toString().padStart(2, '0')}`;
     const colIndex = (startOffset + d - 1) % 7;
+    
     if (colIndex === 5) el.classList.add("day-blue");
     if (colIndex === 6 || _jp_holidays.has(dateStr)) el.classList.add("day-red");
     
-    if (d === now.getDate()) {
+    if (year === today.getFullYear() && month === today.getMonth() && d === today.getDate()) {
       const span = document.createElement("span");
       span.className = "today-circle";
       span.textContent = d;
@@ -6748,13 +6782,64 @@ function _renderCalendar() {
     grid.appendChild(el);
   }
   block.appendChild(grid);
-  rail.appendChild(block);
+  return block;
+}
+
+function _renderCalendar() {
+  const rail = document.getElementById("analogCalendarRail");
+  if (!rail) return;
+  rail.innerHTML = "";
+  
+  const now = new Date();
+  for (let offset = -1; offset <= 1; offset++) {
+    const d = new Date(now.getFullYear(), now.getMonth() + offset + _analogCalendarMonthOffset, 1);
+    const block = _generateCalendarBlock(d.getFullYear(), d.getMonth());
+    rail.appendChild(block);
+  }
+  
+  const blockWidth = 192;
+  const gap = 12;
+  const totalBlockWidth = blockWidth + gap;
+  const viewport = document.getElementById("analogCalendarViewport");
+  if (viewport) {
+    viewport.style.width = `${blockWidth}px`;
+  }
+  rail.style.transform = `translateX(-${totalBlockWidth}px)`;
+}
+
+function initAnalogCalendarTouch() {
+  const viewport = document.getElementById("analogCalendarViewport");
+  if (!viewport) return;
+  
+  let startX = 0;
+  let isDragging = false;
+  
+  viewport.addEventListener("touchstart", (e) => {
+    if (e.touches.length === 1) {
+      startX = e.touches[0].clientX;
+      isDragging = true;
+    }
+  }, { passive: true });
+  
+  viewport.addEventListener("touchend", (e) => {
+    if (!isDragging) return;
+    isDragging = false;
+    const endX = e.changedTouches[0].clientX;
+    const diff = endX - startX;
+    if (diff > 40) {
+      _analogCalendarMonthOffset--;
+      _renderCalendar();
+    } else if (diff < -40) {
+      _analogCalendarMonthOffset++;
+      _renderCalendar();
+    }
+  }, { passive: true });
 }
 
 function _applyBurnInShift() {
   const isLandscape = window.innerWidth > window.innerHeight;
   const min = new Date().getMinutes();
-  const shiftPattern = [-4, -2, 0, 2, 4, 2, 0, -2]; // シフトするピクセル量
+  const shiftPattern = [-4, -2, 0, 2, 4, 2, 0, -2];
   const shiftVal = shiftPattern[min % shiftPattern.length];
   
   if (isLandscape) {
@@ -6770,12 +6855,10 @@ function _applyBurnInShift() {
     if (typeof _analogIsDragging !== 'undefined' && !_analogIsDragging) {
       container.style.transition = "transform 2s ease-in-out";
     }
-    const pageWidth = window.innerWidth;
-    const baseTranslate = -(_analogCurrentPage * pageWidth);
+    const baseTranslate = -(_analogCurrentPage * _analogContainerWidth);
     container.style.transform = `translate(${baseTranslate + _analogShiftX}px, ${_analogShiftY}px)`;
   }
   
-  // デジタル情報コンテナ用にもCSS変数を更新
   document.documentElement.style.setProperty('--burn-shift-x', _analogShiftX + 'px');
   document.documentElement.style.setProperty('--burn-shift-y', _analogShiftY + 'px');
 }
@@ -6783,12 +6866,15 @@ function _applyBurnInShift() {
 function _startAnalogClock() {
   if (_analogAnimFrameId) cancelAnimationFrame(_analogAnimFrameId);
   
+  _renderCalendar();
+  
   const updateHands = () => {
     const now = new Date();
     const ms = now.getMilliseconds();
     const s = now.getSeconds();
     const m = now.getMinutes();
     const h = now.getHours();
+    const timeMs = performance.now();
 
     // デジタル時計の更新
     const digitalClock = document.getElementById("analogDigitalClock");
@@ -6850,8 +6936,15 @@ function _startAnalogClock() {
       eS.style.transition = "opacity 0.3s ease";
     }
 
-    // コロナ炎の動的変形アニメーション
-    _updateCorona();
+    // コロナSVGパスのアニメーション更新
+    const c1 = document.querySelector(".corona-layer1");
+    const c2 = document.querySelector(".corona-layer2");
+    if (c1) {
+      c1.setAttribute("d", _generateCoronaPath(150, 150, 74, timeMs, 0));
+    }
+    if (c2) {
+      c2.setAttribute("d", _generateCoronaPath(150, 150, 80, timeMs, 35));
+    }
 
     _analogAnimFrameId = requestAnimationFrame(updateHands);
   };
@@ -6859,34 +6952,159 @@ function _startAnalogClock() {
   _analogAnimFrameId = requestAnimationFrame(updateHands);
 }
 
-function initAnalogSwipe() {
+function _setAnalogPage(pageIndex) {
+  _analogCurrentPage = Math.max(0, Math.min(2, pageIndex));
   const container = document.getElementById("analogSwipeContainer");
-  const analogScreen = document.getElementById("analogLockScreen");
-  const pager = document.getElementById("analogPager");
-  
-  // ページャードットクリック対応
-  if (pager) {
-    const dots = pager.querySelectorAll(".pager-dot");
-    dots.forEach((dot, index) => {
+  if (container) {
+    container.style.transition = "transform 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94)";
+    const containerWidth = _analogContainerWidth || window.innerWidth;
+    const baseTranslate = -(_analogCurrentPage * containerWidth);
+    container.style.transform = `translate(${baseTranslate}px, ${_analogShiftY}px)`;
+  }
+  _updateAnalogPager();
+}
+
+function _updateAnalogPager() {
+  const dots = document.querySelectorAll("#analogPager .pager-dot");
+  dots.forEach((dot, index) => {
+    if (index === _analogCurrentPage) {
+      dot.classList.add("active");
+    } else {
+      dot.classList.remove("active");
+    }
+    if (!dot.dataset.inited) {
+      dot.dataset.inited = "true";
       dot.style.cursor = "pointer";
       dot.addEventListener("click", (e) => {
         e.stopPropagation();
-        _analogCurrentPage = index;
-        if (container) {
-          const pageWidth = window.innerWidth;
-          container.style.transition = "transform 0.3s ease-out";
-          const baseTranslate = -(_analogCurrentPage * pageWidth);
-          container.style.transform = `translate(${baseTranslate}px, ${_analogShiftY}px)`;
-        }
-        _updateAnalogPager();
+        _setAnalogPage(index);
       });
-    });
-  }
+    }
+  });
+}
 
+function initAnalogHold() {
+  const analogScreen = document.getElementById("analogLockScreen");
+  if (!analogScreen) return;
+  
+  const ring = document.getElementById("analogHoldRing");
+  const circle = document.getElementById("analogRingCircle");
+  
+  const cancelHold = () => {
+    if (_analogHoldTimer) {
+      clearTimeout(_analogHoldTimer);
+      _analogHoldTimer = null;
+    }
+    if (ring) ring.style.opacity = "0";
+    if (circle) {
+      circle.style.transition = "stroke-dashoffset 0.1s linear";
+      circle.style.strokeDashoffset = "164";
+    }
+  };
+
+  const onHoldStart = (e) => {
+    if (e.touches && e.touches.length > 1) return;
+    
+    _analogPressStartTime = Date.now();
+    _analogIsLongPressSuccess = false;
+    
+    const touch = e.touches ? e.touches[0] : e;
+    _analogStartX = touch.clientX;
+    _analogStartY = touch.clientY;
+    
+    if (ring) {
+      ring.style.left = touch.clientX + "px";
+      ring.style.top = touch.clientY + "px";
+      ring.style.opacity = "1";
+    }
+    if (circle) {
+      circle.style.transition = "stroke-dashoffset 1s linear";
+      requestAnimationFrame(() => { circle.style.strokeDashoffset = "0"; });
+    }
+    
+    if (_analogHoldTimer) clearTimeout(_analogHoldTimer);
+    _analogHoldTimer = setTimeout(() => {
+      _analogIsLongPressSuccess = true;
+      hideAnalogLockScreen();
+    }, 1000);
+  };
+  
+  const onHoldMove = (e) => {
+    if (!_analogPressStartTime) return;
+    const touch = e.touches ? e.touches[0] : e;
+    const diffX = touch.clientX - _analogStartX;
+    const diffY = touch.clientY - _analogStartY;
+    // 10px以上移動したら長押しを即座にキャンセル
+    if (Math.abs(diffX) > 10 || Math.abs(diffY) > 10) {
+      cancelHold();
+    }
+  };
+
+  const onHoldEnd = (e) => {
+    cancelHold();
+    
+    if (_analogIsLongPressSuccess) return;
+    
+    const elapsed = Date.now() - _analogPressStartTime;
+    _analogPressStartTime = 0;
+    
+    // タップ判定（350ms以内でドラッグ移動なし）
+    if (elapsed < 350 && !_analogSwipeDirection && !_analogIs2FingerDragging) {
+      const now = Date.now();
+      if (_analogLastTapTime > 0 && now - _analogLastTapTime > 400) {
+        _analogTapCount = 0;
+      }
+      _analogLastTapTime = now;
+      _analogTapCount++;
+      
+      if (_analogSingleTapTimer) {
+        clearTimeout(_analogSingleTapTimer);
+        _analogSingleTapTimer = null;
+      }
+      
+      if (_analogTapCount === 2) {
+        // ダブルタップ: 上下/左右入れ替え
+        _analogTapCount = 0;
+        _analogLastTapTime = 0;
+        _analogIsSwapped = !_analogIsSwapped;
+        if (_analogIsSwapped) {
+          analogScreen.classList.add("analog-layout-swapped");
+        } else {
+          analogScreen.classList.remove("analog-layout-swapped");
+        }
+      } else {
+        _analogSingleTapTimer = setTimeout(() => {
+          const count = _analogTapCount;
+          _analogTapCount = 0;
+          _analogLastTapTime = 0;
+          if (count === 1) {
+            // シングルタップ: 情報ステート切替 (0:なし -> 1:デジタル -> 2:カレンダー+デジタル -> 0)
+            _analogInfoState = (_analogInfoState + 1) % 3;
+            analogScreen.classList.remove("info-state-0", "info-state-1", "info-state-2");
+            analogScreen.classList.add(`info-state-${_analogInfoState}`);
+          }
+        }, 350);
+      }
+    }
+  };
+  
+  analogScreen.addEventListener("touchstart", onHoldStart, { passive: true });
+  analogScreen.addEventListener("touchmove", onHoldMove, { passive: true });
+  analogScreen.addEventListener("touchend", onHoldEnd, { passive: true });
+  analogScreen.addEventListener("touchcancel", onHoldEnd, { passive: true });
+  analogScreen.addEventListener("mousedown", onHoldStart);
+  window.addEventListener("mousemove", onHoldMove);
+  window.addEventListener("mouseup", onHoldEnd);
+}
+
+function initAnalogSwipe() {
+  const container = document.getElementById("analogSwipeContainer");
+  const analogScreen = document.getElementById("analogLockScreen");
+  
   const onStart = (e) => {
     if (e.touches && e.touches.length === 2) {
       _analogIs2FingerDragging = true;
-      _analogIsDragging = false; // 1本指キャンセル
+      _analogIsDragging = false;
       
       const t1 = e.touches[0];
       const t2 = e.touches[1];
@@ -6898,7 +7116,6 @@ function initAnalogSwipe() {
       const isLandscape = window.innerWidth > window.innerHeight;
       let target = null;
       
-      // タッチ開始位置で、どちらを掴んだか判定
       if (isLandscape) {
         target = (midX < window.innerWidth / 2) ? (_analogIsSwapped ? 'info' : 'analog') : (_analogIsSwapped ? 'analog' : 'info');
       } else {
@@ -6920,23 +7137,15 @@ function initAnalogSwipe() {
     
     _analogIs2FingerDragging = false;
     _analogIsDragging = true;
-    _analogSwipeDirection = null; // 方向をリセット
+    _analogSwipeDirection = null;
     _analogStartX = e.touches ? e.touches[0].clientX : e.clientX;
     _analogStartY = e.touches ? e.touches[0].clientY : e.clientY;
-    container.style.transition = "none";
+    _analogContainerWidth = window.innerWidth;
+    if (container) container.style.transition = "none";
   };
   
   const onMove = (e) => {
     if (_analogIs2FingerDragging && e.touches && e.touches.length === 2) {
-      if (_analogHoldTimer) {
-        cancelAnimationFrame(_analogHoldTimer);
-        _analogHoldTimer = null;
-        const ring = document.getElementById("analogHoldRing");
-        const circle = document.getElementById("analogRingCircle");
-        if(ring) ring.style.opacity = "0";
-        if(circle) circle.style.strokeDashoffset = "164";
-      }
-
       const t1 = e.touches[0];
       const t2 = e.touches[1];
       const midX = (t1.clientX + t2.clientX) / 2;
@@ -6950,7 +7159,7 @@ function initAnalogSwipe() {
       
       const currentDist = Math.hypot(t2.clientX - t1.clientX, t2.clientY - t1.clientY);
       let newScale = _analogTargetBaseScale * (currentDist / _analog2FingerStartDist);
-      newScale = Math.min(Math.max(newScale, 0.5), 3.0); // 0.5倍～3.0倍に制限
+      newScale = Math.min(Math.max(newScale, 0.5), 3.0);
       
       document.documentElement.style.setProperty(`--drag-${_analogDragTarget}-x`, newX + 'px');
       document.documentElement.style.setProperty(`--drag-${_analogDragTarget}-y`, newY + 'px');
@@ -6964,23 +7173,12 @@ function initAnalogSwipe() {
     const diffX = currentX - _analogStartX;
     const diffY = currentY - _analogStartY;
 
-    // 方向を確定（10px移動で一度だけロック）
     if (!_analogSwipeDirection) {
       if (Math.abs(diffX) > 10 || Math.abs(diffY) > 10) {
         _analogSwipeDirection = Math.abs(diffX) >= Math.abs(diffY) ? "horizontal" : "vertical";
       } else {
-        return; // 方向が確定するまで何もしない
+        return;
       }
-    }
-
-    // スワイプが開始されたらホールドをキャンセルする
-    if (_analogHoldTimer) {
-      cancelAnimationFrame(_analogHoldTimer);
-      _analogHoldTimer = null;
-      const ring = document.getElementById("analogHoldRing");
-      const circle = document.getElementById("analogRingCircle");
-      if(ring) ring.style.opacity = "0";
-      if(circle) circle.style.strokeDashoffset = "164";
     }
 
     if (_analogSwipeDirection) {
@@ -6988,19 +7186,18 @@ function initAnalogSwipe() {
     }
 
     if (_analogSwipeDirection === "horizontal") {
-      // 横スワイプ: ページを水平スライド（1ページの幅はwindow.innerWidth）
-      const pageWidth = window.innerWidth;
-      const baseTranslate = -(_analogCurrentPage * pageWidth);
-      container.style.transform = `translate(${baseTranslate + diffX}px, ${_analogShiftY}px)`;
+      const baseTranslate = -(_analogCurrentPage * _analogContainerWidth);
+      if (container) {
+        container.style.transform = `translate(${baseTranslate + diffX}px, ${_analogShiftY}px)`;
+      }
     } else {
-      // 縦スワイプ: ネオン輝度リアルタイム調整
       const step = 0.05;
       if (diffY < 0) {
         _analogGlowIntensity = Math.min(5.0, _analogGlowIntensity + step);
       } else {
         _analogGlowIntensity = Math.max(0.2, _analogGlowIntensity - step);
       }
-      _analogStartY = currentY; // 連続変化のため更新
+      _analogStartY = currentY;
       document.documentElement.style.setProperty("--analog-glow", _analogGlowIntensity);
       document.documentElement.style.setProperty("--glow-2px",  (2  * _analogGlowIntensity) + "px");
       document.documentElement.style.setProperty("--glow-4px",  (4  * _analogGlowIntensity) + "px");
@@ -7026,18 +7223,19 @@ function initAnalogSwipe() {
     if (_analogSwipeDirection === "horizontal" && container) {
       const currentX = e.changedTouches ? e.changedTouches[0].clientX : e.clientX;
       const diffX = currentX - _analogStartX;
-      const pageWidth = window.innerWidth;
-      const threshold = pageWidth * 0.15;
+      const containerWidth = container.offsetWidth || window.innerWidth;
+      const threshold = containerWidth * 0.15;
 
-      if (diffX < -threshold && _analogCurrentPage < 2) {
-        _analogCurrentPage++;
-      } else if (diffX > threshold && _analogCurrentPage > 0) {
-        _analogCurrentPage--;
+      if (diffX < -threshold) {
+        if (_analogCurrentPage < 2) {
+          _analogCurrentPage++;
+        }
+      } else if (diffX > threshold) {
+        if (_analogCurrentPage > 0) {
+          _analogCurrentPage--;
+        }
       }
-      container.style.transition = "transform 0.3s ease-out";
-      const baseTranslate = -(_analogCurrentPage * pageWidth);
-      container.style.transform = `translate(${baseTranslate}px, ${_analogShiftY}px)`;
-      _updateAnalogPager();
+      _setAnalogPage(_analogCurrentPage);
     }
     _analogSwipeDirection = null;
   };
@@ -7052,92 +7250,23 @@ function initAnalogSwipe() {
     window.addEventListener("mousemove", onMove);
     window.addEventListener("mouseup", onEnd);
   }
-}
 
-function initAnalogHold() {
-  const analogScreen = document.getElementById("analogLockScreen");
-  if (!analogScreen) return;
-  const ring = document.getElementById("analogHoldRing");
-  const circle = document.getElementById("analogRingCircle");
-  
-  let holdStart = 0;
-  let holdTimer = null;
-  const HOLD_DURATION = 1500;
-  
-  const onStart = (e) => {
-    if (e.touches && e.touches.length > 1) return;
-    holdStart = Date.now();
-    _analogIsLongPressSuccess = false;
-    
-    const x = e.touches ? e.touches[0].clientX : e.clientX;
-    const y = e.touches ? e.touches[0].clientY : e.clientY;
-    
-    if (ring) {
-      ring.style.left = (x - 30) + "px";
-      ring.style.top = (y - 30) + "px";
-      ring.style.opacity = "1";
-    }
-    if (circle) {
-      circle.style.transition = "none";
-      circle.style.strokeDashoffset = "164";
-    }
-    
-    const animateRing = () => {
-      const elapsed = Date.now() - holdStart;
-      const progress = Math.min(1, elapsed / HOLD_DURATION);
-      if (circle) {
-        circle.style.strokeDashoffset = (164 * (1 - progress)).toString();
+  // キーボード操作サポート (左右矢印キーでページ切替)
+  window.addEventListener("keydown", (e) => {
+    if (analogScreen && analogScreen.style.display !== "none") {
+      if (e.key === "ArrowRight") {
+        if (_analogCurrentPage < 2) _setAnalogPage(_analogCurrentPage + 1);
+      } else if (e.key === "ArrowLeft") {
+        if (_analogCurrentPage > 0) _setAnalogPage(_analogCurrentPage - 1);
       }
-      if (progress >= 1) {
-        _analogIsLongPressSuccess = true;
-        if (ring) ring.style.opacity = "0";
-        // ロック画面に戻る
-        if (_analogAnimFrameId) {
-          cancelAnimationFrame(_analogAnimFrameId);
-          _analogAnimFrameId = null;
-        }
-        analogScreen.style.display = "none";
-        document.getElementById("lockScreen").style.display = "block";
-        if (typeof restartLockScreenAnimation === "function") {
-          restartLockScreenAnimation();
-        }
-        return;
-      }
-      holdTimer = requestAnimationFrame(animateRing);
-      _analogHoldTimer = holdTimer;
-    };
-    holdTimer = requestAnimationFrame(animateRing);
-    _analogHoldTimer = holdTimer;
-  };
-  
-  const onEnd = () => {
-    if (holdTimer) {
-      cancelAnimationFrame(holdTimer);
-      holdTimer = null;
-      _analogHoldTimer = null;
     }
-    if (ring) ring.style.opacity = "0";
-    if (circle) circle.style.strokeDashoffset = "164";
-  };
-  
-  analogScreen.addEventListener("touchstart", onStart, { passive: true });
-  analogScreen.addEventListener("touchend", onEnd, { passive: true });
-  analogScreen.addEventListener("touchcancel", onEnd, { passive: true });
-  analogScreen.addEventListener("mousedown", onStart);
-  window.addEventListener("mouseup", onEnd);
-}
+  });
 
-function initAnalogCalendarTouch() {
-  const infoContainer = document.getElementById("analogInfoContainer");
-  const analogScreen = document.getElementById("analogLockScreen");
-  if (!analogScreen || !infoContainer) return;
-  
-  infoContainer.addEventListener("click", (e) => {
-    e.stopPropagation();
-    _analogInfoState = (_analogInfoState + 1) % 3;
-    analogScreen.className = `analog-lock-screen info-state-${_analogInfoState}`;
-    if (_analogInfoState === 2) {
-      _renderCalendar();
+  // リサイズ時の幅更新
+  window.addEventListener("resize", () => {
+    if (analogScreen && analogScreen.style.display !== "none") {
+      _analogContainerWidth = window.innerWidth;
+      _setAnalogPage(_analogCurrentPage);
     }
   });
 }
@@ -7188,6 +7317,26 @@ const TimeCalc = {
     AUD: 'A$'
   },
 
+  // カスタムレート管理
+  // キー: 'FROM_TO' (例: 'GBP_JPY')  値: 上書きレート数値 (fromあたりのto)
+  customRates: {},
+
+  // デフォルトレート (変更しない基準値)
+  defaultCurrencyRates: {
+    USD: 1.0,
+    JPY: 155.0,
+    EUR: 0.92,
+    GBP: 0.79,
+    CNY: 7.24,
+    KRW: 1380.0,
+    AUD: 1.52
+  },
+
+  // ライブレートキャッシュ (Frankfurter API, ECBデータ)
+  // キー: 'FROM'  値: { rates: {TO: value, ...}, fetchedAt: timestamp }
+  _liveRateCache: {},
+  _liveRateCacheMs: 5 * 60 * 1000, // 5分間キャッシュ
+
   init() {
     this.syncEngineUI();
     this.updateDisplay();
@@ -7226,6 +7375,13 @@ const TimeCalc = {
     if (splitCtrl) splitCtrl.style.display = isSplit ? 'flex' : 'none';
     if (currCtrl) currCtrl.style.display = isCurr ? 'block' : 'none';
     if (formatBadge) formatBadge.style.display = isTime ? 'inline-block' : 'none';
+
+    // 割り勘モード時にスクリーンにクラスを付与（スクロールバー表示制御）
+    const screen = document.querySelector('.time-calc-screen');
+    if (screen) {
+      if (isSplit) screen.classList.add('split-mode-active');
+      else screen.classList.remove('split-mode-active');
+    }
 
     // 2. 3つの専用キーパッドの表示切替
     const kpTime = document.getElementById('keypadTime');
@@ -7632,12 +7788,16 @@ const TimeCalc = {
       this.currencyInputStr = '0';
       this.isNewInput = true;
     } else if (key === '=') {
+      const pairKey = `${this.currencyFrom}_${this.currencyTo}`;
       const fromRate = this.currencyRates[this.currencyFrom] || 1;
       const toRate = this.currencyRates[this.currencyTo] || 1;
-      const rate = toRate / fromRate;
+      const rate = (pairKey in this.customRates)
+        ? this.customRates[pairKey]
+        : (toRate / fromRate);
       const converted = this.currencyAmount * rate;
       const sym = this.currencySymbols[this.currencyTo] || '';
-      const formula = `${this.currencyAmount.toLocaleString()} ${this.currencyFrom} ➔ ${this.currencyTo}`;
+      const isCustom = pairKey in this.customRates;
+      const formula = `${this.currencyAmount.toLocaleString()} ${this.currencyFrom} ➔ ${this.currencyTo}${isCustom ? ' (手動レート)' : ''}`;
       const result = `${sym}${converted.toLocaleString(undefined, { maximumFractionDigits: 2 })}`;
       this.addHistory(formula, result, 'currency', {
         currencyFrom: this.currencyFrom,
@@ -7995,11 +8155,15 @@ const TimeCalc = {
     if (this.engineMode === 'currency') {
       const fromRate = this.currencyRates[this.currencyFrom] || 1;
       const toRate = this.currencyRates[this.currencyTo] || 1;
-      const rate = toRate / fromRate;
+      const pairKey = `${this.currencyFrom}_${this.currencyTo}`;
+      const rate = (pairKey in this.customRates)
+        ? this.customRates[pairKey]
+        : (toRate / fromRate);
       const amt = this.currencyAmount || 0;
       const converted = amt * rate;
       const toSym = this.currencySymbols[this.currencyTo] || '';
       const fromSym = this.currencySymbols[this.currencyFrom] || '';
+      const isCustomRate = pairKey in this.customRates;
 
       if (formulaEl) formulaEl.textContent = `${fromSym}${amt.toLocaleString()} (${this.currencyFrom}) ➔ ${this.currencyTo}`;
       if (opEl) opEl.textContent = '💱';
@@ -8008,7 +8172,8 @@ const TimeCalc = {
         mainEl.textContent = `${toSym}${converted.toLocaleString(undefined, { minimumFractionDigits: decimals, maximumFractionDigits: 4 })}`;
       }
       if (subEl) {
-        subEl.textContent = `1 ${this.currencyFrom} = ${rate.toFixed(4)} ${this.currencyTo}`;
+        const customBadge = isCustomRate ? '<span class="custom-rate-badge">手動</span>' : '';
+        subEl.innerHTML = `<span class="currency-rate-clickable" onclick="TimeCalc.openCustomRateModal()" title="タップしてレートを変更">1 ${this.currencyFrom} = ${rate.toFixed(4)} ${this.currencyTo}</span>${customBadge}`;
       }
       if (memEl) memEl.style.visibility = 'hidden';
       return;
@@ -8192,6 +8357,216 @@ const TimeCalc = {
     if (item.formula) this.formula = item.formula;
     this.isNewInput = true;
     this.updateDisplay();
+  },
+
+  // ===== カスタムレート入力モーダル =====
+
+  openCustomRateModal() {
+    const modal = document.getElementById('customRateModal');
+    if (!modal) return;
+    // ラベル更新
+    const fromLabel = document.getElementById('customRateFromLabel');
+    const toLabel = document.getElementById('customRateToLabel');
+    const titleEl = document.getElementById('customRateModalTitle');
+    if (fromLabel) fromLabel.textContent = `1 ${this.currencyFrom} =`;
+    if (toLabel) toLabel.textContent = this.currencyTo;
+    if (titleEl) titleEl.textContent = `💱 ${this.currencyFrom} → ${this.currencyTo} レートを入力`;
+
+    // 現在のレートを初期値として表示
+    const pairKey = `${this.currencyFrom}_${this.currencyTo}`;
+    const fromRate = this.currencyRates[this.currencyFrom] || 1;
+    const toRate = this.currencyRates[this.currencyTo] || 1;
+    const currentRate = (pairKey in this.customRates)
+      ? this.customRates[pairKey]
+      : (toRate / fromRate);
+
+    const input = document.getElementById('customRateInput');
+    if (input) {
+      input.value = currentRate.toFixed(4);
+      input.select();
+    }
+
+    // ライブレートボタンの状態リセット
+    this._setLiveRateStatus('idle');
+
+    modal.classList.add('active');
+    if (input) setTimeout(() => input.focus(), 100);
+  },
+
+  closeCustomRateModal() {
+    const modal = document.getElementById('customRateModal');
+    if (modal) modal.classList.remove('active');
+  },
+
+  applyCustomRate() {
+    const input = document.getElementById('customRateInput');
+    if (!input) return;
+    const val = parseFloat(input.value);
+    if (!isNaN(val) && val > 0) {
+      const pairKey = `${this.currencyFrom}_${this.currencyTo}`;
+      this.customRates[pairKey] = val;
+      this.updateDisplay();
+    }
+    this.closeCustomRateModal();
+  },
+
+  resetCustomRate() {
+    const pairKey = `${this.currencyFrom}_${this.currencyTo}`;
+    delete this.customRates[pairKey];
+    this.updateDisplay();
+    this.closeCustomRateModal();
+  },
+
+  // 入力欄のレートを FROM 通貨のデフォルト基準値として永続保存
+  // currencyRates と defaultCurrencyRates の両方を再計算して上書き
+  saveAsDefaultRate() {
+    const input = document.getElementById('customRateInput');
+    if (!input) return;
+    const val = parseFloat(input.value);
+    if (isNaN(val) || val <= 0) return;
+
+    const from = this.currencyFrom;
+    const to = this.currencyTo;
+
+    // 現在の FROM→USD レートを基準に全通貨レートを再計算
+    // val = 1 FROM あたりの TO 量
+    // currencyRates は USD=1 を基準とした各通貨の対USD量
+    // 新しい FROM の対USDレート = (TO の対USDレート) / val
+    const toUsd = this.currencyRates[to] || 1;  // 1 USD = toUsd [to]
+    // 1 FROM = val [to]  →  1 FROM = val/toUsd USD  →  1 USD = toUsd/val [from]
+    const newFromRate = toUsd / val;
+
+    this.currencyRates[from] = newFromRate;
+    this.defaultCurrencyRates[from] = newFromRate;
+
+    // customRates からこのペアを削除（デフォルト値で計算するように）
+    const pairKey = `${from}_${to}`;
+    delete this.customRates[pairKey];
+
+    // ライブレートキャッシュも無効化（staleになるため）
+    delete this._liveRateCache[from];
+
+    this.updateDisplay();
+
+    // 保存完了フィードバック
+    const btn = document.querySelector('.custom-rate-save-default-btn');
+    if (btn) {
+      const orig = btn.textContent;
+      btn.textContent = '✓ 保存しました';
+      btn.style.color = '#00e87a';
+      btn.style.borderColor = 'rgba(0, 220, 130, 0.6)';
+      setTimeout(() => {
+        btn.textContent = orig;
+        btn.style.color = '';
+        btn.style.borderColor = '';
+        this.closeCustomRateModal();
+      }, 900);
+    } else {
+      this.closeCustomRateModal();
+    }
+  },
+
+  // ライブレートステータス表示の更新
+  // state: 'idle' | 'loading' | 'success' | 'error'
+  _setLiveRateStatus(state, message) {
+    const btn = document.getElementById('liveRateBtn');
+    const status = document.getElementById('liveRateStatus');
+    if (!btn || !status) return;
+
+    btn.disabled = (state === 'loading');
+    btn.classList.toggle('loading', state === 'loading');
+
+    switch (state) {
+      case 'idle':
+        status.textContent = '';
+        status.className = 'live-rate-status';
+        btn.textContent = '🌐 現在のレートを取得';
+        break;
+      case 'loading':
+        status.textContent = '取得中...';
+        status.className = 'live-rate-status loading';
+        btn.textContent = '⏳ 取得中...';
+        break;
+      case 'success':
+        status.textContent = message || '✓ 取得完了';
+        status.className = 'live-rate-status success';
+        btn.textContent = '🌐 現在のレートを取得';
+        break;
+      case 'error':
+        status.textContent = message || '✗ 取得失敗';
+        status.className = 'live-rate-status error';
+        btn.textContent = '🌐 現在のレートを取得';
+        break;
+    }
+  },
+
+  // Frankfurter API (ECBデータ) でライブレートを取得してモーダルの入力欄へ設定
+  async fetchLiveRate() {
+    const from = this.currencyFrom;
+    const to = this.currencyTo;
+
+    // 同一通貨ペアはレート1
+    if (from === to) {
+      const input = document.getElementById('customRateInput');
+      if (input) { input.value = '1.0000'; input.select(); }
+      this._setLiveRateStatus('success', '✓ 同一通貨 (レート: 1)');
+      return;
+    }
+
+    this._setLiveRateStatus('loading');
+
+    try {
+      // キャッシュ確認 (5分以内ならAPIを叩かない)
+      const now = Date.now();
+      const cache = this._liveRateCache[from];
+      let rates;
+
+      if (cache && (now - cache.fetchedAt) < this._liveRateCacheMs) {
+        rates = cache.rates;
+      } else {
+        // ① まず Frankfurter API (ECB・無料・APIキー不要) を試みる
+        // KRWも含む主要通貨に対応 (USD/JPY/EUR/GBP/CNY/KRW/AUD)
+        try {
+          const resp = await fetch(`https://api.frankfurter.app/latest?from=${from}`);
+          if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+          const data = await resp.json();
+          rates = data.rates || {};
+        } catch (_) {
+          rates = {};
+        }
+
+        // ② Frankfurterでtoが取れなかった場合は open.er-api.com にフォールバック
+        if (rates[to] === undefined || rates[to] === null) {
+          const fbResp = await fetch(`https://open.er-api.com/v6/latest/${from}`);
+          if (!fbResp.ok) throw new Error(`HTTP ${fbResp.status}`);
+          const fbData = await fbResp.json();
+          rates = fbData.rates || {};
+        }
+
+        // キャッシュに保存
+        this._liveRateCache[from] = { rates, fetchedAt: now };
+      }
+
+      const liveRate = rates[to];
+      if (!liveRate) throw new Error('レートデータなし');
+
+      const input = document.getElementById('customRateInput');
+      if (input) {
+        input.value = liveRate.toFixed(4);
+        input.select();
+      }
+
+      // 取得日時を表示
+      const cacheEntry = this._liveRateCache[from];
+      const dateStr = cacheEntry
+        ? new Date(cacheEntry.fetchedAt).toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' })
+        : '';
+      this._setLiveRateStatus('success', `✓ 取得完了 (${dateStr} 時点)`);
+
+    } catch (err) {
+      console.warn('[TimeCalc] ライブレート取得失敗:', err);
+      this._setLiveRateStatus('error', '✗ 取得失敗 (接続を確認)');
+    }
   }
 };
 

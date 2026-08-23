@@ -13,7 +13,7 @@
   </script>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <link rel="manifest" href="manifest.json">
-  <meta name="apple-mobile-web-app-title" content="TimeRegulus🌟">
+  <meta name="apple-mobile-web-app-title" content="TimeRegulus🦖">
   <link rel="apple-touch-icon" href="icon-192.png">
   <!-- ★【起動高速化】ロック画面用CSS（小・ブロッキング）→ 先に読み込んで即表示 -->
   <link rel="stylesheet" href="style-lock.css?c=31">
@@ -127,11 +127,7 @@
           <option value="sec-it">IT Italiano</option>
           <option value="sec-de">DE Deutsch</option>
           <option value="sec-uk">UA Українська</option>
-          <option value="sec-hi">HI हिन्दी</option>
-          <option value="sec-ar">AR العربية</option>
-          <option value="sec-ru">RU Русский</option>
           <option value="sec-id">ID Bahasa Indonesia</option>
-          <option value="sec-zh">ZH 中文</option>
           <option value="sec-ko">KO 한국어</option>
           <option value="sec-tr">TR Türkçe</option>
         </select>
@@ -295,7 +291,7 @@
     <div style="display: flex; flex-direction: column; align-items: center; gap: 20px; margin-top: 40px;">
       <button class="action-btn" onclick="showErrorMode()" tabindex="3" data-i18n="calc_error">誤差の計算</button>
       <button class="action-btn" onclick="showCorrectionMode()" tabindex="4" data-i18n="calc_correction">補正時刻の計算</button>
-      <button class="action-btn" onclick="showTimeCalcMode()" tabindex="5" data-i18n="time_calculator_etc">時間電卓等</button>
+      <button class="action-btn" onclick="showTimeCalcMode()" tabindex="5" data-i18n="time_calculator_etc">マルチ電卓</button>
     </div><br><br>
     <a href="#" onclick="showResetConfirmation(); return false;" id="resetLink" class="mode-select-link" data-i18n="reset_inputs_link">入力情報のリセット</a>
     <div id="resetConfirmContainer" style="display:none; margin-top: 15px;">
@@ -867,13 +863,36 @@
       </div>
     </div>
   </div>
+  <!-- カスタムレート入力モーダル -->
+  <div id="customRateModal" role="dialog" aria-modal="true" onclick="if(event.target===this)TimeCalc.closeCustomRateModal()">
+    <div class="custom-rate-modal-box">
+      <div class="custom-rate-modal-title" id="customRateModalTitle">💱 レートを手動入力</div>
+      <label class="custom-rate-modal-label" id="customRateModalLabel">1 GBP = ? JPY</label>
+      <div class="custom-rate-modal-input-row">
+        <span id="customRateFromLabel">1 GBP =</span>
+        <input type="number" id="customRateInput" placeholder="0.0000" inputmode="decimal" step="any" min="0"
+          onkeydown="if(event.key==='Enter')TimeCalc.applyCustomRate();if(event.key==='Escape')TimeCalc.closeCustomRateModal()">
+        <span id="customRateToLabel">JPY</span>
+      </div>
+      <!-- ライブレート取得ボタン -->
+      <button id="liveRateBtn" class="live-rate-fetch-btn" onclick="TimeCalc.fetchLiveRate()">🌐 現在のレートを取得</button>
+      <div id="liveRateStatus" class="live-rate-status"></div>
+      <div class="custom-rate-modal-btns">
+        <button class="custom-rate-modal-cancel" onclick="TimeCalc.closeCustomRateModal()">キャンセル</button>
+        <button class="custom-rate-modal-ok" onclick="TimeCalc.applyCustomRate()">✓ 適用</button>
+      </div>
+      <button class="custom-rate-reset-btn" onclick="TimeCalc.resetCustomRate()">↺ デフォルトレートに戻す</button>
+      <button class="custom-rate-save-default-btn" onclick="TimeCalc.saveAsDefaultRate()">💾 このレートをデフォルトとして保存</button>
+    </div>
+  </div>
   <script src="i18n.js?v=3" defer></script>
-  <script src="script.js?c=40" defer></script>
+  <script src="script.js?c=36" defer></script>
   <script>
     if ('serviceWorker' in navigator) { window.addEventListener('load', () => { navigator.serviceWorker.getRegistrations().then(r => r.forEach(reg => reg.unregister())); }); }
   </script>
 </body>
 </html>
+
 
 
 

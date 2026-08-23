@@ -4612,6 +4612,13 @@ document.addEventListener("focusin", function(e) {
       return;
     }
 
+    // 電卓液晶画面（.time-calc-screen）内のタッチは横スクロールを優先するため画面切り替えスワイプを除外
+    if (e.target && e.target.closest && e.target.closest('.time-calc-screen')) {
+      isSwiping = false;
+      fromEl = null;
+      return;
+    }
+
     isSwiping  = true;
     axisLocked = null;
     toEl = null;

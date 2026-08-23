@@ -4999,12 +4999,15 @@ body:not(.lang-ja):not(.lang-zh):not(.lang-ko) .warning-msg {
 
 .time-calc-formula {
   flex: 1;
+  min-width: 0;
   text-align: right;
   font-size: 13px;
   color: rgba(224, 224, 255, 0.7);
   font-family: 'Consolas', 'Courier New', monospace;
   overflow-x: auto;
   white-space: nowrap;
+  touch-action: pan-x;
+  -webkit-overflow-scrolling: touch;
   scrollbar-width: none;
 }
 .time-calc-formula::-webkit-scrollbar {
@@ -5023,6 +5026,8 @@ body:not(.lang-ja):not(.lang-zh):not(.lang-ko) .warning-msg {
   margin: 6px 0;
   overflow-x: auto;
   white-space: nowrap;
+  touch-action: pan-x;
+  -webkit-overflow-scrolling: touch;
   scrollbar-width: none;
 }
 .time-calc-main-display::-webkit-scrollbar {
@@ -5047,6 +5052,7 @@ body:not(.lang-ja):not(.lang-zh):not(.lang-ko) .warning-msg {
   cursor: pointer;
   transition: all 0.2s ease;
   user-select: none;
+  flex-shrink: 0;
 }
 .time-calc-badge:active {
   background: var(--accent);
@@ -5054,6 +5060,8 @@ body:not(.lang-ja):not(.lang-zh):not(.lang-ko) .warning-msg {
 }
 
 .time-calc-sub-display {
+  flex: 1;
+  min-width: 0;
   font-size: 13px;
   color: #ff00aa;
   text-shadow: 0 0 8px rgba(255, 0, 170, 0.5);
@@ -5062,6 +5070,8 @@ body:not(.lang-ja):not(.lang-zh):not(.lang-ko) .warning-msg {
   text-align: right;
   overflow-x: auto;
   white-space: nowrap;
+  touch-action: pan-x;
+  -webkit-overflow-scrolling: touch;
   /* デフォルトはスクロールバー非表示 */
   scrollbar-width: none;
 }

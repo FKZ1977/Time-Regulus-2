@@ -1,7 +1,7 @@
-﻿{
+{
   "name": "TimeRegulus✨",
   "short_name": "TimeRegulus✨",
-  "version": "3.2.0",
+  "version": "3.3.0",
   "start_url": "./index.html",
   "display": "standalone", 
   "background_color": "#0e0f11",

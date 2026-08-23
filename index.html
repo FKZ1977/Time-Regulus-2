@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <title>Time Regulus v3.2.0</title>
+  <title>Time Regulus v3.3.0</title>
   <!-- Google tag (gtag.js) -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-R7PW7DY4GF"></script>
   <script>
@@ -13,14 +13,14 @@
   </script>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <link rel="manifest" href="manifest.json">
-  <meta name="apple-mobile-web-app-title" content="TimeRegulus✨">
+  <meta name="apple-mobile-web-app-title" content="TimeRegulus🦖">
   <link rel="apple-touch-icon" href="icon-192.png">
   <!-- ★【起動高速化】ロック画面用CSS（小・ブロッキング）→ 先に読み込んで即表示 -->
-  <link rel="stylesheet" href="style-lock.css?c=30">
+  <link rel="stylesheet" href="style-lock.css?c=31">
   <!-- ★【起動高速化】メインCSS（大・非ブロッキング）→ ロック画面表示後に裏で読み込む -->
-  <link rel="stylesheet" href="style-main.css?c=30" media="print" onload="this.media='all'">
+  <link rel="stylesheet" href="style-main.css?c=31" media="print" onload="this.media='all'">
   <noscript>
-    <link rel="stylesheet" href="style-main.css?c=30">
+    <link rel="stylesheet" href="style-main.css?c=31">
   </noscript>
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -87,12 +87,14 @@
         <option value="fr">FR Français</option>
         <option value="it">IT Italiano</option>
         <option value="de">DE Deutsch</option>
+        <option value="uk">UK Українська</option>
+        <option value="id">ID Indonesia</option>
         <option value="ko">KO 한국어</option>
         <option value="tr">TR Türkçe</option>
       </select>
     </div>
     <h1 class="fkz anim-title-rise" id="lockTitle" data-i18n="app_title">Time Regulus</h1>
-    <p class="subtitle anim-slow-fade" id="lockSubtitle" data-i18n="app_subtitle">タイム　レグルス　v3.2.0</p>
+    <p class="subtitle anim-slow-fade" id="lockSubtitle" data-i18n="app_subtitle">タイム　レグルス　v3.3.0</p>
     <div class="passcode-row anim-slow-fade">
       <label for="passcode" class="passcode-label" data-i18n="passcode">暗証番号：</label>
       <input type="password" id="passcode" placeholder="例：12345" data-i18n-placeholder="passcode_placeholder" tabindex="1" readonly class="passcode-input">
@@ -111,7 +113,7 @@
         onclick="returnToLockScreenFromHold()"
         style="display:none; position:absolute; top:10px; left:10px; z-index:10; font-size:13px; padding:4px 10px;">
         ← Information
-      </button><br>
+      </button>
       <h1 class="fkz" id="readmeTitle">Copyright Info</h1>
       <div id="readmeCountryBar" style="display: flex; align-items: center; justify-content: center; gap: 8px;">
         <span style="font-size: 18px;">🌐</span>
@@ -156,6 +158,119 @@
   </div>
   <svg id="readmeHoldRing" viewBox="0 0 60 60"><circle cx="30" cy="30" r="26" id="readmeRingCircle"/></svg>
   <p id="readmeHoldHint"></p>
+  <!-- ダミー画面 (囮パスワード用デジタル時計) -->
+  <div id="decoyScreen" style="display:none;">
+    <h1 class="fkz decoy-title anim-title-rise">Time Regulus</h1>
+    <br>
+    <div class="decoy-clock-wrap anim-slow-fade">
+      <div class="decoy-date" id="decoyDate">----年--月--日</div>
+      <div class="decoy-time" id="decoyTime">--:--:--.--</div>
+    </div>
+    
+    <!-- カウントダウンタイマー -->
+    <div class="decoy-timer-container anim-slow-fade">
+      <div class="decoy-timer-top">
+        <div id="decoyCountdown" class="decoy-countdown" style="visibility: hidden;">00:00.0</div>
+        <button id="decoyPauseBtn" class="decoy-pause-btn" style="visibility: hidden;" onclick="toggleDecoyTimer()">❚❚</button>
+      </div>
+      <div class="decoy-timer-buttons">
+        <button onclick="startDecoyTimer(1)">1分</button>
+        <button onclick="startDecoyTimer(3)">3分</button>
+        <button onclick="startDecoyTimer(5)">5分</button>
+      </div>
+      <div class="decoy-timer-cancel">
+        <button onclick="cancelDecoyTimer()">解除</button>
+      </div>
+    </div>
+
+    <p class="decoy-hint anim-slow-fade" id="decoyHint"></p>
+    <!-- 長押しプログレスリング -->
+    <svg id="decoyHoldRing" viewBox="0 0 60 60">
+      <circle cx="30" cy="30" r="26" id="decoyRingCircle"/>
+    </svg>
+  </div>
+
+  <!-- 第2のおとり画面 (view_lock_screen) -->
+  <div id="viewLockScreen" style="display:none;">
+    <!-- ネオン時計 -->
+    <div class="view-lock-clock-wrap" style="flex-direction: column;">
+      <div id="viewLockDate" class="view-lock-date" style="display:none;"></div>
+      <div id="viewLockClock" class="view-lock-clock">--:--:--</div>
+    </div>
+    
+    <!-- 長押しプログレスリング -->
+    <svg id="viewLockHoldRing" class="hold-ring" viewBox="0 0 60 60">
+      <circle cx="30" cy="30" r="26" id="viewLockRingCircle"/>
+    </svg>
+  </div>
+
+  <!-- アナログ時計隠し画面 (analogLockScreen) -->
+  <div id="analogLockScreen" style="display:none;" class="analog-lock-screen info-state-0">
+    <div id="analogInfoContainer" class="analog-info-container">
+      <div id="analogDigitalClock" class="analog-digital-clock">00:00</div>
+      <div id="analogCalendarViewport" class="analog-calendar-viewport"><div id="analogCalendarRail" class="analog-calendar-rail"></div></div>
+    </div>
+    <div class="analog-swipe-container" id="analogSwipeContainer">
+      <!-- 1. Regulus Core -->
+      <div class="analog-page">
+        <div class="clock-regulus">
+          <div class="clock-face" id="regulusFace">
+            <!-- JavaScriptで星の目盛りを動的に生成します -->
+            <div class="clock-hand hour-hand" id="regulusHour"></div>
+            <div class="clock-hand minute-hand" id="regulusMinute"></div>
+            <div class="clock-hand second-hand sweep-tail" id="regulusSecond"></div>
+            <div class="clock-center"></div>
+          </div>
+        </div>
+      </div>
+      <!-- 2. Neon Radar -->
+      <div class="analog-page">
+        <div class="clock-radar">
+          <div class="radar-grid"></div>
+          <div class="clock-face" id="radarFace">
+            <div class="clock-hand hour-hand" id="radarHour"></div>
+            <div class="clock-hand minute-hand" id="radarMinute"></div>
+            <div class="clock-hand second-hand sweep-radar" id="radarSecond"></div>
+            <div class="clock-center"></div>
+          </div>
+        </div>
+      </div>
+      <!-- 3. Eclipse -->
+      <div class="analog-page">
+        <div class="clock-eclipse">
+          <div class="clock-face" id="eclipseFace">
+            <div class="clock-hand hour-hand" id="eclipseHour"></div>
+            <div class="clock-hand minute-hand" id="eclipseMinute"></div>
+            <div class="clock-hand second-hand sweep-corona" id="eclipseSecond"></div>
+            <svg class="eclipse-corona-svg" viewBox="0 0 300 300">
+              <defs>
+                <filter id="coronaBlur1" x="-50%" y="-50%" width="200%" height="200%">
+                  <feGaussianBlur stdDeviation="8" />
+                </filter>
+                <filter id="coronaBlur2" x="-50%" y="-50%" width="200%" height="200%">
+                  <feGaussianBlur stdDeviation="15" />
+                </filter>
+              </defs>
+              <path class="corona-layer corona-layer1" filter="url(#coronaBlur1)"></path>
+              <path class="corona-layer corona-layer2" filter="url(#coronaBlur2)"></path>
+            </svg>
+            <div class="eclipse-center"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="analog-pager" id="analogPager">
+      <span class="pager-dot active"></span>
+      <span class="pager-dot"></span>
+      <span class="pager-dot"></span>
+    </div>
+
+    <!-- 長押しプログレスリング -->
+    <svg id="analogHoldRing" class="hold-ring" viewBox="0 0 60 60">
+      <circle cx="30" cy="30" r="26" id="analogRingCircle"/>
+    </svg>
+  </div>
   <div id="modeSelect" style="display:none; text-align:center;">
     <div style="position: absolute; top: 10px; right: 10px; display: flex; align-items: center; gap: 4px;">
       <span style="font-size: 16px;">🌐</span>
@@ -168,6 +283,8 @@
         <option value="fr">FR Français</option>
         <option value="it">IT Italiano</option>
         <option value="de">DE Deutsch</option>
+        <option value="uk">UK Українська</option>
+        <option value="id">ID Indonesia</option>
         <option value="ko">KO 한국어</option>
         <option value="tr">TR Türkçe</option>
       </select>
@@ -178,6 +295,7 @@
     <div style="display: flex; flex-direction: column; align-items: center; gap: 20px; margin-top: 40px;">
       <button class="action-btn" onclick="showErrorMode()" tabindex="3" data-i18n="calc_error">誤差の計算</button>
       <button class="action-btn" onclick="showCorrectionMode()" tabindex="4" data-i18n="calc_correction">補正時刻の計算</button>
+      <button class="action-btn" onclick="showTimeCalcMode()" tabindex="5" data-i18n="time_calculator_etc">時間電卓等</button>
     </div><br><br>
     <a href="#" onclick="showResetConfirmation(); return false;" id="resetLink" class="mode-select-link" data-i18n="reset_inputs_link">入力情報のリセット</a>
     <div id="resetConfirmContainer" style="display:none; margin-top: 15px;">
@@ -319,37 +437,41 @@
     </div>
     <label data-i18n="error_for_correction">補正に使う誤差：</label>
     <!-- ON/OFF切り替え用日数と、共通時分秒 -->
-    <div class="flex-wrap" style="height: 38px !important; align-items: center !important;">
+    <div class="flex-wrap" style="align-items: center !important; overflow: visible !important; padding: 4px 2px;">
       <!-- 【入力補助 ON 時の日数入力欄】 -->
       <div class="unit-input input-helper-on error-days-wrapper"
-        style="display: none; flex: 1.0; height: 32px !important; align-items: center !important;">
-        <input type="number" id="errorDays" min="0" step="1" placeholder="d" tabindex="13" inputmode="numeric"
-          pattern="[0-9]*">
-        <span class="unit-label" data-i18n="days_unit">日</span>
+        style="display: none; flex: 1 1 auto; min-width: 110px !important; align-items: center !important; overflow: visible !important; padding: 4px 4px; margin-left: 2px;">
+        <div class="direct-group-error-days" style="flex: 1; width: 100%;">
+          <input type="number" id="errorDays" min="0" step="1" placeholder="d" tabindex="13" inputmode="numeric"
+            pattern="[0-9]*">
+        </div>
+        <span class="unit-label" data-i18n="days_unit" style="margin-left: 4px; margin-right: 4px;">日</span>
       </div>
       <!-- 【入力補助 OFF 時の日数入力欄】 -->
       <div class="unit-input input-helper-off error-days-wrapper"
-        style="flex: 1.0; height: 32px !important; align-items: center !important;">
-        <input type="tel" id="errorDays_direct" placeholder="d" tabindex="13" inputmode="numeric" pattern="[0-9]*"
-          class="direct-error-val">
-        <span class="unit-label" data-i18n="days_unit">日</span>
+        style="flex: 1 1 auto; min-width: 110px !important; align-items: center !important; overflow: visible !important; padding: 4px 4px; margin-left: 2px;">
+        <div class="direct-group-error-days" style="flex: 1; width: 100%;">
+          <input type="tel" id="errorDays_direct" placeholder="d" tabindex="13" inputmode="numeric" pattern="[0-9]*"
+            class="direct-error-val">
+        </div>
+        <span class="unit-label" data-i18n="days_unit" style="margin-left: 4px; margin-right: 4px;">日</span>
       </div>
       <!-- 【共通の時分秒入力欄 (常にテンキー用直接入力枠を表示 - 三分割均等幅)】 -->
-      <div class="unit-capsule-wrapper" style="flex: 3.0; display: flex; align-items: center; gap: 4px;">
+      <div class="unit-capsule-wrapper" style="flex: none; width: auto; display: flex; align-items: center; gap: 2px;">
         <div class="direct-group-error-time" id="errorHoursGroup_direct"
-          style="flex: 1; justify-content: center; height: 32px !important; border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 6px; background-color: #1f1f2f; display: flex; align-items: center;">
+          style="width: 34px !important; min-width: 32px !important; justify-content: center; height: 32px !important; border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 6px; background-color: #1f1f2f; display: flex; align-items: center;">
           <input type="tel" id="errorHours_direct" placeholder="hh" maxlength="2" tabindex="14"
             style="text-align: center; background: transparent; border: none; color: var(--text-main); width: 100%; outline: none; height: 100%;">
         </div>
-        <span class="direct-colon" style="margin: 0 2px;">:</span>
+        <span class="direct-colon" style="margin: 0 1px;">:</span>
         <div class="direct-group-error-time" id="errorMinutesGroup_direct"
-          style="flex: 1; justify-content: center; height: 32px !important; border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 6px; background-color: #1f1f2f; display: flex; align-items: center;">
+          style="width: 34px !important; min-width: 32px !important; justify-content: center; height: 32px !important; border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 6px; background-color: #1f1f2f; display: flex; align-items: center;">
           <input type="tel" id="errorMinutes_direct" placeholder="mm" maxlength="2" tabindex="15"
             style="text-align: center; background: transparent; border: none; color: var(--text-main); width: 100%; outline: none; height: 100%;">
         </div>
-        <span class="direct-colon" style="margin: 0 2px;">:</span>
+        <span class="direct-colon" style="margin: 0 1px;">:</span>
         <div class="direct-group-error-time" id="errorSecondsGroup_direct"
-          style="flex: 1; justify-content: center; height: 32px !important; border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 6px; background-color: #1f1f2f; display: flex; align-items: center;">
+          style="width: 34px !important; min-width: 32px !important; justify-content: center; height: 32px !important; border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 6px; background-color: #1f1f2f; display: flex; align-items: center;">
           <input type="tel" id="errorSeconds_direct" placeholder="ss" maxlength="2" tabindex="16"
             class="direct-error-val error-sec-direct"
             style="text-align: center; background: transparent; border: none; color: var(--text-main); width: 100%; outline: none; height: 100%;">
@@ -446,6 +568,225 @@
     <h1 class="fkz" style="margin-top: 4px;" data-i18n="result_list">結果一覧</h1>
     <div id="resultListContainer" style="margin-top: 10px;"></div>
   </div>
+  <!-- 電卓総合画面 (timeCalcMode) -->
+  <div id="timeCalcMode" class="mode-card time-calc-card" style="display:none;">
+    <div class="time-calc-topbar">
+      <button class="back-btn" onclick="backToModeSelect()" data-i18n="back_mode_select_right" style="margin:0;">モード選択に戻る →</button>
+    </div>
+
+    <!-- 4連常設ナビゲーションタブ (⏰ 🔢 💸 💱) -->
+    <div class="calc-nav-tabs">
+      <button type="button" class="calc-nav-tab active" id="calcTab_time" onclick="TimeCalc.setEngineMode('time')">
+        <span class="calc-nav-icon">⏰</span>
+        <span class="calc-nav-text" data-i18n="time_calculator">時間電卓</span>
+      </button>
+      <button type="button" class="calc-nav-tab" id="calcTab_precision" onclick="TimeCalc.setEngineMode('precision')">
+        <span class="calc-nav-icon">🔢</span>
+        <span class="calc-nav-text" data-i18n="standard_calculator">電卓</span>
+      </button>
+      <button type="button" class="calc-nav-tab" id="calcTab_split" onclick="TimeCalc.setEngineMode('split')">
+        <span class="calc-nav-icon">💸</span>
+        <span class="calc-nav-text" data-i18n="split_calculator">割り勘</span>
+      </button>
+      <button type="button" class="calc-nav-tab" id="calcTab_currency" onclick="TimeCalc.setEngineMode('currency')">
+        <span class="calc-nav-icon">💱</span>
+        <span class="calc-nav-text" data-i18n="currency_calculator">レート</span>
+      </button>
+    </div>
+
+    <!-- 割り勘用入力セレクター (💸モード時のみ表示) -->
+    <div id="splitControls" class="split-controls" style="display:none;">
+      <div style="display: flex; gap: 6px;">
+        <div id="splitFieldTotal" class="split-field-row active-field" style="flex: 1.3;" onclick="TimeCalc.setSplitActiveField('total')">
+          <span class="split-field-label" data-i18n="split_total">総額</span>
+          <span id="splitValTotal" class="split-field-val">¥0</span>
+        </div>
+        <div id="splitFieldPeople" class="split-field-row" style="flex: 1;" onclick="TimeCalc.setSplitActiveField('people')">
+          <span class="split-field-label" data-i18n="split_people">人数</span>
+          <span id="splitValPeople" class="split-field-val">2人</span>
+        </div>
+      </div>
+      <div class="split-round-pills">
+        <button type="button" class="split-pill" id="splitRound_1" onclick="TimeCalc.setSplitRounding(1)">1円単位</button>
+        <button type="button" class="split-pill" id="splitRound_10" onclick="TimeCalc.setSplitRounding(10)">10円</button>
+        <button type="button" class="split-pill" id="splitRound_100" onclick="TimeCalc.setSplitRounding(100)">100円</button>
+        <button type="button" class="split-pill active" id="splitRound_1000" onclick="TimeCalc.setSplitRounding(1000)">1000円</button>
+      </div>
+    </div>
+
+    <!-- レート変換用セレクター (💱モード時のみ表示) -->
+    <div id="currencyControls" class="currency-controls" style="display:none;">
+      <div class="currency-select-row">
+        <select id="currencyFromSelect" class="currency-select" onchange="TimeCalc.onCurrencyChange()">
+          <option value="GBP" selected>GBP (英ポンド £)</option>
+          <option value="JPY">JPY (日本円 ¥)</option>
+          <option value="USD">USD (米ドル $)</option>
+          <option value="EUR">EUR (ユーロ €)</option>
+          <option value="CNY">CNY (人民元 ¥)</option>
+          <option value="KRW">KRW (ウォン ₩)</option>
+          <option value="AUD">AUD (豪ドル $)</option>
+        </select>
+        <button type="button" class="currency-swap-btn" onclick="TimeCalc.swapCurrencies()">⇄</button>
+        <select id="currencyToSelect" class="currency-select" onchange="TimeCalc.onCurrencyChange()">
+          <option value="JPY" selected>JPY (日本円 ¥)</option>
+          <option value="USD">USD (米ドル $)</option>
+          <option value="EUR">EUR (ユーロ €)</option>
+          <option value="GBP">GBP (英ポンド £)</option>
+          <option value="CNY">CNY (人民元 ¥)</option>
+          <option value="KRW">KRW (ウォン ₩)</option>
+          <option value="AUD">AUD (豪ドル $)</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- 電卓液晶風ディスプレイ -->
+    <div class="time-calc-screen">
+      <div class="time-calc-screen-top">
+        <span id="timeCalcMemIndicator" class="time-calc-indicator" style="visibility: hidden;">M</span>
+        <span id="timeCalcOpIndicator" class="time-calc-indicator time-calc-op-indicator" style="display:none;"></span>
+        <div id="timeCalcFormula" class="time-calc-formula"></div>
+      </div>
+      <div id="timeCalcMainDisplay" class="time-calc-main-display">00:00:00</div>
+      <div class="time-calc-screen-bottom">
+        <span id="timeCalcFormatBadge" class="time-calc-badge" onclick="TimeCalc.toggleFormatMode()">時分秒 ⇆ HH:MM:SS</span>
+        <div id="timeCalcSubDisplay" class="time-calc-sub-display">= 0.0000 h</div>
+      </div>
+    </div>
+
+    <!-- 1. 時間電卓 & 電卓用キーパッド (5列) -->
+    <div id="keypadTime" class="time-calc-keypad">
+      <!-- 1行目 -->
+      <button type="button" id="calcKeyMC" class="calc-btn calc-btn-mem" onclick="TimeCalc.pressKey('MC')">MC</button>
+      <button type="button" id="calcKeyMR" class="calc-btn calc-btn-mem" onclick="TimeCalc.pressKey('MR')">MR</button>
+      <button type="button" id="calcKeyMM" class="calc-btn calc-btn-mem" onclick="TimeCalc.pressKey('M-')">M-</button>
+      <button type="button" id="calcKeyMP" class="calc-btn calc-btn-mem" onclick="TimeCalc.pressKey('M+')">M+</button>
+      <button type="button" id="calcKeyDel" class="calc-btn calc-btn-del" onclick="TimeCalc.pressKey('BS')">⌫</button>
+
+      <!-- 2行目 -->
+      <button type="button" id="calcKeyUnitH" class="calc-btn calc-btn-unit" onclick="TimeCalc.pressKey('UNIT_H')" data-i18n="calc_unit_h">時間</button>
+      <button type="button" id="calcKeyUnitM" class="calc-btn calc-btn-unit" onclick="TimeCalc.pressKey('UNIT_M')" data-i18n="calc_unit_m">分</button>
+      <button type="button" id="calcKeyUnitS" class="calc-btn calc-btn-unit" onclick="TimeCalc.pressKey('UNIT_S')" data-i18n="calc_unit_s">秒</button>
+      <button type="button" id="calcKeyClear" class="calc-btn calc-btn-clear" onclick="TimeCalc.pressKey('C')">C</button>
+      <button type="button" id="calcKeyAC" class="calc-btn calc-btn-allclear" onclick="TimeCalc.pressKey('AC')">AC</button>
+
+      <!-- 3行目 -->
+      <button type="button" class="calc-btn calc-btn-num" onclick="TimeCalc.pressKey('7')">7</button>
+      <button type="button" class="calc-btn calc-btn-num" onclick="TimeCalc.pressKey('8')">8</button>
+      <button type="button" class="calc-btn calc-btn-num" onclick="TimeCalc.pressKey('9')">9</button>
+      <button type="button" id="calcKeyDiv" class="calc-btn calc-btn-op" onclick="TimeCalc.pressKey('/')">÷</button>
+      <button type="button" id="calcKeyMod" class="calc-btn calc-btn-op" onclick="TimeCalc.pressKey('%')">%</button>
+
+      <!-- 4行目 -->
+      <button type="button" class="calc-btn calc-btn-num" onclick="TimeCalc.pressKey('4')">4</button>
+      <button type="button" class="calc-btn calc-btn-num" onclick="TimeCalc.pressKey('5')">5</button>
+      <button type="button" class="calc-btn calc-btn-num" onclick="TimeCalc.pressKey('6')">6</button>
+      <button type="button" id="calcKeyMul" class="calc-btn calc-btn-op" onclick="TimeCalc.pressKey('*')">×</button>
+      <button type="button" id="calcKeyNeg" class="calc-btn calc-btn-op" onclick="TimeCalc.pressKey('NEG')">±</button>
+
+      <!-- 5行目 -->
+      <button type="button" class="calc-btn calc-btn-num" onclick="TimeCalc.pressKey('1')">1</button>
+      <button type="button" class="calc-btn calc-btn-num" onclick="TimeCalc.pressKey('2')">2</button>
+      <button type="button" class="calc-btn calc-btn-num" onclick="TimeCalc.pressKey('3')">3</button>
+      <button type="button" id="calcKeySub" class="calc-btn calc-btn-op" onclick="TimeCalc.pressKey('-')">−</button>
+      <button type="button" id="calcKeyColon" class="calc-btn calc-btn-unit" onclick="TimeCalc.pressKey(':')">:</button>
+
+      <!-- 6行目 -->
+      <button type="button" class="calc-btn calc-btn-num" onclick="TimeCalc.pressKey('0')">0</button>
+      <button type="button" class="calc-btn calc-btn-num" onclick="TimeCalc.pressKey('00')">00</button>
+      <button type="button" id="calcKeyDot" class="calc-btn calc-btn-num" onclick="TimeCalc.pressKey('.')">.</button>
+      <button type="button" id="calcKeyAdd" class="calc-btn calc-btn-op" onclick="TimeCalc.pressKey('+')">+</button>
+      <button type="button" id="calcKeyEq" class="calc-btn calc-btn-eq" onclick="TimeCalc.pressKey('=')">=</button>
+    </div>
+
+    <!-- 2. 割り勘用キーパッド (画像1に完全準拠) -->
+    <div id="keypadSplit" class="time-calc-keypad" style="display:none;">
+      <!-- 1行目: 総額 / 人数 / 端数単位 / 差額 / ⌫ -->
+      <button type="button" id="splitKeyTotal" class="calc-btn calc-btn-unit calc-btn-active-field" onclick="TimeCalc.setSplitActiveField('total')">総額</button>
+      <button type="button" id="splitKeyPeople" class="calc-btn calc-btn-unit" onclick="TimeCalc.setSplitActiveField('people')">人数</button>
+      <button type="button" id="splitKeyRounding" class="calc-btn calc-btn-unit" onclick="TimeCalc.cycleSplitRounding()">¥1,000</button>
+      <button type="button" id="splitKeyTierGap" class="calc-btn calc-btn-unit" style="font-size: 11px; line-height: 1.2;" onclick="TimeCalc.cycleSplitTierGap()">差:<br>¥1,000</button>
+      <button type="button" class="calc-btn calc-btn-del" onclick="TimeCalc.pressKey('BS')">⌫</button>
+
+      <!-- 2行目: 7 8 9 C AC -->
+      <button type="button" class="calc-btn calc-btn-num" onclick="TimeCalc.pressKey('7')">7</button>
+      <button type="button" class="calc-btn calc-btn-num" onclick="TimeCalc.pressKey('8')">8</button>
+      <button type="button" class="calc-btn calc-btn-num" onclick="TimeCalc.pressKey('9')">9</button>
+      <button type="button" class="calc-btn calc-btn-clear" onclick="TimeCalc.pressKey('C')">C</button>
+      <button type="button" class="calc-btn calc-btn-allclear" onclick="TimeCalc.pressKey('AC')">AC</button>
+
+      <!-- 3行目: 4 5 6 ▲多 ▼少 -->
+      <button type="button" class="calc-btn calc-btn-num" onclick="TimeCalc.pressKey('4')">4</button>
+      <button type="button" class="calc-btn calc-btn-num" onclick="TimeCalc.pressKey('5')">5</button>
+      <button type="button" class="calc-btn calc-btn-num" onclick="TimeCalc.pressKey('6')">6</button>
+      <button type="button" id="splitKeyMore" class="calc-btn calc-btn-unit" style="font-size: 11px; line-height: 1.2;" onclick="TimeCalc.cycleSplitMoreCount()">▲ 多:<br>0人</button>
+      <button type="button" id="splitKeyLess" class="calc-btn calc-btn-unit" style="font-size: 11px; line-height: 1.2;" onclick="TimeCalc.cycleSplitLessCount()">▼ 少:<br>0人</button>
+
+      <!-- 4行目: 1 2 3 (空き2マス) -->
+      <button type="button" class="calc-btn calc-btn-num" onclick="TimeCalc.pressKey('1')">1</button>
+      <button type="button" class="calc-btn calc-btn-num" onclick="TimeCalc.pressKey('2')">2</button>
+      <button type="button" class="calc-btn calc-btn-num" onclick="TimeCalc.pressKey('3')">3</button>
+      <div style="visibility:hidden;"></div>
+      <div style="visibility:hidden;"></div>
+
+      <!-- 5行目: 00 0 ＝記録(3マス分) -->
+      <button type="button" class="calc-btn calc-btn-num" onclick="TimeCalc.pressKey('00')">00</button>
+      <button type="button" class="calc-btn calc-btn-num" onclick="TimeCalc.pressKey('0')">0</button>
+      <button type="button" class="calc-btn calc-btn-eq" style="grid-column: span 3; font-size: 18px;" onclick="TimeCalc.pressKey('=')">＝記録</button>
+    </div>
+
+    <!-- 3. レート変換用キーパッド (画像2に完全準拠) -->
+    <div id="keypadCurrency" class="time-calc-keypad" style="display:none;">
+      <!-- 1行目: 7 8 9 ⇄切替 ⌫ -->
+      <button type="button" class="calc-btn calc-btn-num" onclick="TimeCalc.pressKey('7')">7</button>
+      <button type="button" class="calc-btn calc-btn-num" onclick="TimeCalc.pressKey('8')">8</button>
+      <button type="button" class="calc-btn calc-btn-num" onclick="TimeCalc.pressKey('9')">9</button>
+      <button type="button" class="calc-btn calc-btn-unit" style="font-size: 12px;" onclick="TimeCalc.swapCurrencies()">⇄ 切替</button>
+      <button type="button" class="calc-btn calc-btn-del" onclick="TimeCalc.pressKey('BS')">⌫</button>
+
+      <!-- 2行目: 4 5 6 C AC -->
+      <button type="button" class="calc-btn calc-btn-num" onclick="TimeCalc.pressKey('4')">4</button>
+      <button type="button" class="calc-btn calc-btn-num" onclick="TimeCalc.pressKey('5')">5</button>
+      <button type="button" class="calc-btn calc-btn-num" onclick="TimeCalc.pressKey('6')">6</button>
+      <button type="button" class="calc-btn calc-btn-clear" onclick="TimeCalc.pressKey('C')">C</button>
+      <button type="button" class="calc-btn calc-btn-allclear" onclick="TimeCalc.pressKey('AC')">AC</button>
+
+      <!-- 3行目: 1 2 3 USD EUR -->
+      <button type="button" class="calc-btn calc-btn-num" onclick="TimeCalc.pressKey('1')">1</button>
+      <button type="button" class="calc-btn calc-btn-num" onclick="TimeCalc.pressKey('2')">2</button>
+      <button type="button" class="calc-btn calc-btn-num" onclick="TimeCalc.pressKey('3')">3</button>
+      <button type="button" id="currKey_USD" class="calc-btn calc-btn-unit" onclick="TimeCalc.selectCurrencyTo('USD')">USD</button>
+      <button type="button" id="currKey_EUR" class="calc-btn calc-btn-unit" onclick="TimeCalc.selectCurrencyTo('EUR')">EUR</button>
+
+      <!-- 4行目: 00 0 . GBP AUD -->
+      <button type="button" class="calc-btn calc-btn-num" onclick="TimeCalc.pressKey('00')">00</button>
+      <button type="button" class="calc-btn calc-btn-num" onclick="TimeCalc.pressKey('0')">0</button>
+      <button type="button" class="calc-btn calc-btn-num" onclick="TimeCalc.pressKey('.')">.</button>
+      <button type="button" id="currKey_GBP" class="calc-btn calc-btn-unit" onclick="TimeCalc.selectCurrencyTo('GBP')">GBP</button>
+      <button type="button" id="currKey_AUD" class="calc-btn calc-btn-unit" onclick="TimeCalc.selectCurrencyTo('AUD')">AUD</button>
+
+      <!-- 5行目: ＝記録(2マス) JPY CNY KRW -->
+      <button type="button" class="calc-btn calc-btn-eq" style="grid-column: span 2; font-size: 16px;" onclick="TimeCalc.pressKey('=')">＝記録</button>
+      <button type="button" id="currKey_JPY" class="calc-btn calc-btn-unit calc-btn-active-field" onclick="TimeCalc.selectCurrencyTo('JPY')">JPY</button>
+      <button type="button" id="currKey_CNY" class="calc-btn calc-btn-unit" onclick="TimeCalc.selectCurrencyTo('CNY')">CNY</button>
+      <button type="button" id="currKey_KRW" class="calc-btn calc-btn-unit" onclick="TimeCalc.selectCurrencyTo('KRW')">KRW</button>
+    </div>
+
+    <!-- 計算履歴ボタン（下部中央） -->
+    <div style="text-align: center; margin-top: 14px;">
+      <button type="button" class="time-calc-history-toggle-btn" onclick="TimeCalc.toggleHistoryDrawer()" data-i18n="time_calc_history" style="font-size: 13px; padding: 7px 22px;">📜 計算履歴</button>
+    </div>
+
+    <!-- 履歴ドロワー（折りたたみ式） -->
+    <div id="timeCalcHistoryDrawer" class="time-calc-history-drawer" style="display:none; margin-top: 12px;">
+      <div class="time-calc-history-header">
+        <span data-i18n="time_calc_history">計算履歴</span>
+        <button class="time-calc-history-clear-btn" onclick="TimeCalc.clearHistory()" data-i18n="clear_history">履歴クリア</button>
+      </div>
+      <div id="timeCalcHistoryList" class="time-calc-history-list">
+        <div class="time-calc-history-empty" data-i18n="no_records">記録された結果はありません。</div>
+      </div>
+    </div>
+  </div>
   <div id="informationPage" style="display:none; position:relative; text-align:center; padding: 40px 16px; min-height: 100vh; width: 100%; box-sizing: border-box;"><br>
     <div style="position: absolute; top: 10px; right: 10px; display: flex; align-items: center; gap: 4px;">
       <span style="font-size: 16px;">🌐</span>
@@ -458,6 +799,8 @@
         <option value="fr">FR Français</option>
         <option value="it">IT Italiano</option>
         <option value="de">DE Deutsch</option>
+        <option value="uk">UK Українська</option>
+        <option value="id">ID Indonesia</option>
         <option value="ko">KO 한국어</option>
         <option value="tr">TR Türkçe</option>
       </select>
@@ -467,7 +810,7 @@
     <div id="informationContent"
       style="margin-top: 30px; text-align: left; max-width: 500px; margin-left: auto; margin-right: auto;">
       <p style="margin-bottom: 8px;" id="infoCreatedBy">このアプリは <strong>H.Fukazu</strong> によって制作されました。</p>
-      <p style="margin-bottom: 24px;"><span data-i18n="info_version">バージョン：</span><strong>v3.2.0</strong></p>
+      <p style="margin-bottom: 24px;"><span data-i18n="info_version">バージョン：</span><strong>v3.3.0</strong></p>
 
       <!-- 著作権情報ボタン -->
       <div style="text-align: center; margin: 28px 0;">
@@ -524,23 +867,10 @@
       </div>
     </div>
   </div>
-  <script src="i18n.js?v=1" defer></script>
-  <script src="script.js?c=30" defer></script>
+  <script src="i18n.js?v=3" defer></script>
+  <script src="script.js?c=40" defer></script>
   <script>
-    if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
-        // Service Worker自体にもキャッシュバスティングを適用し、更新を強制
-        navigator.serviceWorker.register('./service-worker.js?v=3.2.0')
-          .then(registration => {
-            console.log('Service Worker 登録成功:', registration.scope);
-            // 起動時に明示的にアップデートを確認
-            registration.update();
-          })
-          .catch(error => {
-            console.log('Service Worker 登録失敗:', error);
-          });
-      });
-    }
+    if ('serviceWorker' in navigator) { window.addEventListener('load', () => { navigator.serviceWorker.getRegistrations().then(r => r.forEach(reg => reg.unregister())); }); }
   </script>
 </body>
 </html>

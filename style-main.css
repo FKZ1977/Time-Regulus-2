@@ -1,4 +1,4 @@
-﻿
+
 
 
 
@@ -1045,6 +1045,7 @@ input:checked + .switch-slider:before {
 #correctionMode {
   padding: 10px 12px 14px 12px !important;
   margin-top: 10px !important;
+  overflow: visible !important;
 }
 #correctionMode h2 {
   margin-top: 4px !important;
@@ -1082,15 +1083,44 @@ input:checked + .switch-slider:before {
 #correctionMode .flex-wrap {
   margin-bottom: 6px !important;
   gap: 4px !important;
-  height: 32px !important; /* 誤差行コンテナの高さを32pxに完全強制固定 */
-  overflow: hidden !important; /* iOSでのインプット膨らみによる縦伸びを強制遮断 */
+  min-height: 32px !important;
+  height: auto !important;
+  overflow: visible !important; /* Changed to visible */
   align-items: center !important;
   box-sizing: border-box !important;
+  padding: 4px 2px !important;
 }
 #correctionMode .unit-input {
-  gap: 1px !important;
-  height: 32px !important;
+  gap: 2px !important;
+  min-height: 32px !important;
+  height: auto !important;
   align-items: center !important;
+  overflow: visible !important;
+}
+#correctionMode .error-days-wrapper {
+  flex: 2 1 0% !important;
+  min-width: 110px !important;
+  width: auto !important;
+}
+#correctionMode .direct-group-error-days {
+  flex: 1 1 auto !important;
+  width: 100% !important;
+  min-width: 70px !important;
+}
+#correctionMode .direct-group-error-days input {
+  width: 100% !important;
+  min-width: 60px !important;
+  font-size: 15px !important;
+}
+#correctionMode .unit-capsule-wrapper {
+  flex: 0 0 auto !important;
+  width: auto !important;
+}
+#correctionMode .direct-group-error-time {
+  width: 30px !important;
+  max-width: 32px !important;
+  min-width: 26px !important;
+  padding: 0 1px !important;
 }
 #correctionMode .unit-input input,
 #correctionMode .unit-input select {
@@ -1135,8 +1165,9 @@ input:checked + .switch-slider:before {
   font-size: 12px !important;
 }
 
-/* 補正誤差・手入力用の時分繋がりグループ */
-.direct-group-error-time {
+/* 補正誤差・手入力用の時分繋がりグループおよび日数枠グループ */
+.direct-group-error-time,
+.direct-group-error-days {
   display: flex;
   align-items: center;
   width: 100%;
@@ -1148,20 +1179,31 @@ input:checked + .switch-slider:before {
   box-sizing: border-box;
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
-.direct-group-error-time:focus-within {
-  border-color: var(--accent);
-  box-shadow: 0 0 6px var(--accent);
+.direct-group-error-time:focus-within,
+.direct-group-error-days:focus-within {
+  border-color: var(--accent) !important;
+  box-shadow: 0 0 8px var(--accent), 0 0 2px var(--accent) !important;
 }
-.direct-group-error-time input {
+.direct-group-error-time input,
+.direct-group-error-days input {
   background: transparent !important;
   border: none !important;
   box-shadow: none !important;
+  outline: none !important;
   width: 100%;
   text-align: center;
   padding: 0 !important;
   height: 100% !important;
   color: var(--text-main);
   font-size: 14px !important;
+}
+
+.direct-group-error-time input:focus,
+.direct-group-error-days input:focus {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  outline: none !important;
 }
 .direct-group-error-time .delimiter {
   color: var(--text-sub);
@@ -1211,7 +1253,7 @@ input:checked + .switch-slider:before {
   margin-right: auto !important;
   padding: 0 !important;
   height: 38px !important; /* コンテナの高さを38pxに完全強制固定 */
-  overflow: hidden !important; /* iOSインプット膨らみによる縦伸びを強制遮断 */
+  overflow: visible !important; /* Changed to visible */
   max-width: 310px !important; /* 横幅を310pxに統一！ */
   align-items: center !important; /* 子要素を縦中央に揃える */
   box-sizing: border-box !important;
@@ -1348,8 +1390,9 @@ input:checked + .switch-slider:before {
   border-radius: 3px !important;
 }
 
-/* 補正誤差のhh, mm個別インプットのフォーカス時発光を排除し、外側のグループ全体だけが光るようにする設定 */
-#correctionMode .direct-group-error-time input:focus {
+/* 補正誤差のd, hh, mm個別インプットのフォーカス時発光を排除し、外側のグループ全体だけが光るようにする設定 */
+#correctionMode .direct-group-error-time input:focus,
+#correctionMode .direct-group-error-days input:focus {
   border: none !important;
   box-shadow: none !important;
   outline: none !important;
@@ -3658,8 +3701,7 @@ body.input-helper-off-mode #reverseDisplayDateGroup_direct {
 /* 多言語特有の文字被り防止（レイアウトを維持したまま、特定の長いラベルだけを縮小する） */
 body.lang-de label[data-i18n="display_time"],
 body.lang-uk label[data-i18n="display_time"],
-body.lang-uk label[data-i18n="standard_time"],
-body.lang-ru label[data-i18n="standard_time"] {
+body.lang-uk label[data-i18n="standard_time"] {
   font-size: 13px !important;
   letter-spacing: -0.5px !important;
 }
@@ -3701,27 +3743,1547 @@ body.lang-ru label[data-i18n="standard_time"] {
 /* --- 15. 多言語化対応（フォントサイズの最適化） --- */
 /* 日本語など、短くて太い文字の場合は大きめに表示し、入力枠とのセット感を強調 */
 body.lang-ja .input-group > label,
-body.lang-zh .input-group > label,
 body.lang-ko .input-group > label,
 body.lang-ja #reverseTimeLabel,
-body.lang-zh #reverseTimeLabel,
 body.lang-ko #reverseTimeLabel {
   font-size: 14.5px !important;
 }
 
 /* 欧州言語など、横に長くなりやすい言語の場合はフォントサイズを縮小し、重なりを防止 */
-body:not(.lang-ja):not(.lang-zh):not(.lang-ko) .input-group > label,
-body:not(.lang-ja):not(.lang-zh):not(.lang-ko) #reverseTimeLabel {
+body:not(.lang-ja):not(.lang-ko) .input-group > label,
+body:not(.lang-ja):not(.lang-ko) #reverseTimeLabel {
   font-size: 11.5px !important;
   letter-spacing: -0.5px !important;
 }
 
 
 /* 長すぎる黄色のエラーメッセージを1行に収めるための多言語対応 */
-body:not(.lang-ja):not(.lang-zh):not(.lang-ko) .warning-msg {
+body:not(.lang-ja):not(.lang-ko) .warning-msg {
   font-size: 10.5px !important;
   letter-spacing: -0.5px !important;
   white-space: nowrap !important;
   transform: scale(0.9) !important;
+}
+
+   ============================================================ */
+#decoyScreen {
+  text-align: center;
+  padding-top: 30px;
+  min-height: 100vh;
+  background: var(--bg-dark);
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+#decoyScreen .decoy-title {
+  font-size: 36px;
+  letter-spacing: 4px;
+  margin-top: 10px;
+}
+
+.decoy-subtitle {
+  color: var(--text-sub);
+  font-size: 13px;
+  letter-spacing: 4px;
+  margin-top: -10px;
+  margin-bottom: 40px;
+}
+
+.decoy-clock-wrap {
+  display: inline-block;
+  padding: 30px 20px;
+  border: 1px solid rgba(0, 255, 224, 0.25);
+  border-radius: 20px;
+  background: rgba(0, 255, 224, 0.04);
+  box-shadow: 0 0 40px rgba(0, 255, 224, 0.08), inset 0 0 30px rgba(0, 255, 224, 0.04);
+}
+
+.decoy-date {
+  font-family: 'Courier New', 'Share Tech Mono', monospace;
+  font-size: 28px;
+  color: var(--accent);
+  text-shadow: 0 0 16px var(--accent), 0 0 32px rgba(0, 255, 224, 0.4);
+  letter-spacing: 4px;
+  margin-bottom: 16px;
+}
+
+.decoy-time {
+  font-family: 'Courier New', 'Share Tech Mono', monospace;
+  font-size: 40px;
+  white-space: nowrap;
+  font-weight: bold;
+  color: var(--accent);
+  text-shadow: 0 0 20px var(--accent), 0 0 50px rgba(0, 255, 224, 0.5);
+  letter-spacing: 4px;
+  line-height: 1;
+}
+
+.decoy-hint {
+  margin-top: 60px;
+  font-size: 12px;
+  color: rgba(255,255,255,0.15);
+  letter-spacing: 1px;
+  min-height: 20px;
+  transition: color 0.5s ease;
+}
+
+.decoy-hint.visible {
+  color: rgba(255,255,255,0.4);
+}
+
+/* 長押しプログレスリング */
+#decoyHoldRing {
+  display: none;
+  position: fixed;
+  bottom: 60px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 60px;
+  height: 60px;
+}
+
+#decoyHoldRing circle {
+  fill: none;
+  stroke: var(--accent);
+  stroke-width: 4;
+  stroke-dasharray: 163; /* 2*π*26 ≈ 163 */
+  stroke-dashoffset: 163;
+  stroke-linecap: round;
+  transform: rotate(-90deg);
+  transform-origin: 50% 50%;
+  transition: stroke-dashoffset 3s linear;
+  filter: drop-shadow(0 0 6px var(--accent));
+}
+
+/* ============================================================
+   ダミー画面用タイマー・アラーム
+   ============================================================ */
+.decoy-timer-container {
+  margin-top: 30px;
+}
+.decoy-timer-top {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+.decoy-pause-btn {
+  background: transparent;
+  border: 1px solid rgba(0, 255, 224, 0.4);
+  color: var(--accent);
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  font-size: 14px;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  transition: all 0.3s ease;
+  line-height: 1;
+}
+.decoy-pause-btn:active {
+  background: rgba(0, 255, 224, 0.2);
+}
+.decoy-timer-cancel {
+  margin-top: 16px;
+}
+.decoy-timer-cancel button {
+  background: transparent;
+  border: 1px solid rgba(255, 0, 170, 0.4);
+  color: var(--text-sub);
+  padding: 6px 20px;
+  border-radius: 6px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+.decoy-countdown {
+  font-family: 'Courier New', 'Share Tech Mono', monospace;
+  font-size: 28px;
+  color: var(--accent);
+  text-shadow: 0 0 10px var(--accent);
+  margin-bottom: 0;
+  letter-spacing: 2px;
+}
+.decoy-timer-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+}
+.decoy-timer-buttons button {
+  background: transparent;
+  border: 1px solid rgba(0, 255, 224, 0.4);
+  color: var(--accent);
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+.decoy-timer-buttons button:active {
+  background: rgba(0, 255, 224, 0.2);
+}
+
+/* アラーム発動時 (水色→ピンク) */
+#decoyScreen.decoy-alarm .decoy-title,
+#decoyScreen.decoy-alarm .decoy-date,
+#decoyScreen.decoy-alarm .decoy-time,
+#decoyScreen.decoy-alarm .decoy-countdown,
+#decoyScreen.decoy-alarm .decoy-pause-btn,
+#decoyScreen.decoy-alarm .decoy-timer-buttons button,
+#decoyScreen.decoy-alarm .decoy-timer-cancel button {
+  color: var(--toggle-bg) !important;
+  text-shadow: 0 0 16px var(--toggle-bg), 0 0 32px rgba(255, 0, 170, 0.5) !important;
+  border-color: rgba(255, 0, 170, 0.4) !important;
+}
+#decoyScreen.decoy-alarm .decoy-timer-buttons button:active,
+#decoyScreen.decoy-alarm .decoy-pause-btn:active,
+#decoyScreen.decoy-alarm .decoy-timer-cancel button:active {
+  background: rgba(255, 0, 170, 0.2) !important;
+}
+#decoyScreen.decoy-alarm .decoy-clock-wrap {
+  border-color: rgba(255, 0, 170, 0.4) !important;
+  box-shadow: 0 0 40px rgba(255, 0, 170, 0.15), inset 0 0 30px rgba(255, 0, 170, 0.1) !important;
+}
+#decoyHoldRing.decoy-alarm circle {
+  stroke: var(--toggle-bg) !important;
+  filter: drop-shadow(0 0 6px var(--toggle-bg)) !important;
+}
+
+/* ダミー画面の横向き（landscape）用スタイル */
+@media screen and (orientation: landscape) {
+  #decoyScreen .decoy-title,
+  #decoyScreen .decoy-subtitle,
+  #decoyScreen .decoy-timer-container,
+  #decoyScreen .decoy-hint {
+    display: none !important;
+  }
+  
+  #decoyScreen:not([style*="none"]) {
+    padding-top: 0;
+    display: flex !important;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+  }
+
+  #decoyScreen .decoy-clock-wrap {
+    padding: 0;
+    width: 100%;
+    border: none;
+    background: transparent;
+    box-shadow: none;
+  }
+
+  #decoyScreen .decoy-date {
+    font-size: 6vw;
+    margin-bottom: 2vh;
+  }
+
+  #decoyScreen .decoy-time {
+    font-size: 13vw;
+    white-space: nowrap;
+  }
+}
+
+/* ============================================================
+   第2のおとり画面 (view_lock_screen)
+   ============================================================ */
+#viewLockScreen {
+  background: var(--bg-color);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+
+/* ネオン時計 */
+.view-lock-clock-wrap {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  width: 100%;
+  overflow: visible; /* hiddenにすると文字が左右でスッパリ切れてしまうため visible に変更 */
+}
+.view-lock-clock {
+  font-family: 'Orbitron', 'Courier New', monospace;
+  /* フォントサイズはJSで動的に上書きされます */
+  font-size: 30px;
+  font-weight: 700;
+  color: #fff;
+  white-space: nowrap;
+  flex-shrink: 0; /* Flexbox内で要素が勝手に縮み、はみ出した文字が描画レイヤーの端で切れるのを防ぐ */
+  padding: 0 10px;
+  box-sizing: border-box;
+  text-shadow: 
+    0 0 10px rgba(0, 255, 240, 0.8),
+    0 0 20px rgba(0, 255, 240, 0.6),
+    0 0 40px rgba(0, 255, 240, 0.4),
+    0 0 80px rgba(0, 255, 240, 0.2);
+  letter-spacing: 2px;
+  transition: transform 1s ease-in-out, color 0.3s, text-shadow 0.3s, font-size 0.3s;
+}
+.view-lock-date {
+  font-family: 'Orbitron', 'Courier New', monospace;
+  font-size: 20px;
+  font-weight: 700;
+  color: #fff;
+  white-space: nowrap;
+  margin-bottom: 2vh;
+  text-shadow: 
+    0 0 10px rgba(0, 255, 240, 0.8),
+    0 0 20px rgba(0, 255, 240, 0.6),
+    0 0 40px rgba(0, 255, 240, 0.4),
+    0 0 80px rgba(0, 255, 240, 0.2);
+  letter-spacing: 2px;
+  transition: color 0.3s, text-shadow 0.3s, font-size 0.3s;
+}
+
+/* 長押しプログレスリング */
+#viewLockHoldRing {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) rotate(-90deg);
+  width: 120px;
+  height: 120px;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.3s;
+  z-index: 9999;
+}
+#viewLockHoldRing circle {
+  fill: none;
+  stroke: var(--accent);
+  stroke-width: 4;
+  stroke-dasharray: 164;
+  stroke-dashoffset: 164;
+  filter: drop-shadow(0 0 8px var(--accent));
+  transition: stroke-dashoffset 0.1s linear;
+}
+
+/* ============================================================
+   アナログ時計画面 (analogLockScreen)
+   ============================================================ */
+#analogLockScreen {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100vw; height: 100vh;
+  background-color: #000;
+  z-index: 1000;
+  overflow: hidden;
+  touch-action: none; /* スワイプ操作によるブラウザのデフォルト挙動を無効化 */
+}
+
+/* --- アナログ情報（デジタル・カレンダー）レイアウト --- */
+.analog-info-container {
+  position: absolute;
+  font-family: 'Courier New', Courier, monospace;
+  color: #fff;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.5s ease, top 0.5s ease, bottom 0.5s ease, left 0.5s ease, right 0.5s ease, gap 0.5s ease, transform 2s ease-in-out;
+  z-index: 1005;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0;
+  
+  /* 縦置き時 (デフォルト): デジタルは下へ、アナログに寄せる */
+  bottom: 80px;
+  left: 50%;
+  transform: translate(calc(-50% + var(--burn-shift-x, 0px) + var(--drag-info-x, 0px)), calc(var(--burn-shift-y, 0px) + var(--drag-info-y, 0px))) scale(var(--scale-info, 1));
+}
+
+.info-state-1 .analog-info-container,
+.info-state-2 .analog-info-container {
+  opacity: var(--analog-base-opacity, 1.0);
+}
+.info-state-1 .analog-info-container {
+  bottom: auto;
+  top: 60vh; /* アナログ時計と重ならないよう、画面中央寄りの位置に配置 */
+  transform: translate(calc(-50% + var(--burn-shift-x, 0px) + var(--drag-info-x, 0px)), calc(-50% + var(--burn-shift-y, 0px) + var(--drag-info-y, 0px))) scale(var(--scale-info, 1));
+}
+
+.info-state-2 .analog-info-container {
+  bottom: auto;
+  top: 65vh; /* アナログ時計に被らないギリギリまで中央に寄せる（少し下げました） */
+  transform: translate(calc(-50% + var(--burn-shift-x, 0px) + var(--drag-info-x, 0px)), calc(-50% + var(--burn-shift-y, 0px) + var(--drag-info-y, 0px))) scale(var(--scale-info, 1));
+  gap: 0; /* カレンダーの年月とグリッドの隙間をなくす */
+}
+
+.analog-layout-swapped.info-state-1 .analog-info-container,
+.analog-layout-swapped.info-state-2 .analog-info-container {
+  bottom: auto;
+  top: 25vh; /* カレンダーを少し上に上げて、時計とくっつきすぎないように調整 */
+  transform: translate(calc(-50% + var(--burn-shift-x, 0px) + var(--drag-info-x, 0px)), calc(-50% + var(--burn-shift-y, 0px) + var(--drag-info-y, 0px))) scale(var(--scale-info, 1));
+}
+
+/* ドラッグ中のみトランジションを無効化して指に追従させる */
+.analog-dragging-2finger .analog-page > div,
+.analog-dragging-2finger .analog-info-container {
+  transition: none !important;
+}
+
+.analog-digital-clock {
+  font-size: 54px;
+  text-shadow: 0 0 calc(10px * var(--analog-glow, 1.0)) rgba(0,255,128,0.8), 0 0 calc(20px * var(--analog-glow, 1.0)) rgba(0,255,128,0.5);
+  transition: font-size 0.5s ease, margin-bottom 0.5s ease;
+  margin-bottom: 0;
+}
+
+.info-state-2 .analog-digital-clock {
+  font-size: 32px;
+  margin-bottom: 3vh; /* アナログとカレンダーの間にだけ隙間を作る */
+}
+
+.analog-calendar-header {
+  font-size: 14px;
+  text-shadow: 0 0 calc(4px * var(--analog-glow, 1.0)) rgba(0,255,128,0.4);
+  margin-top: 0;
+  margin-bottom: 4px;
+  display: none;
+  font-weight: bold;
+}
+.analog-calendar-grid {
+  display: none;
+  grid-template-columns: repeat(7, 24px);
+  gap: 4px;
+  text-shadow: 0 0 4px rgba(0,255,128,0.4);
+  font-size: 12px;
+  line-height: 24px;
+}
+.info-state-2 .analog-calendar-header {
+  display: block;
+}
+.info-state-2 .analog-calendar-grid {
+  display: grid;
+}
+
+/* カレンダーの色指定 */
+.analog-calendar-grid .day-blue { color: #00ffff; }
+.analog-calendar-grid .day-red { color: #ff3366; }
+.analog-calendar-grid .today-circle {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  line-height: 20px;
+  border: 1px solid rgba(255,255,255,0.8);
+  border-radius: 50%;
+  background-color: rgba(255,255,255,0.2);
+}
+
+/* アナログ時計のスライド・アニメーション */
+.analog-page > div {
+  transition: transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  transform: translate(var(--drag-analog-x, 0px), var(--drag-analog-y, 0px)) scale(var(--scale-analog, 1));
+}
+
+.info-state-1 .analog-page > div {
+  transform: translate(var(--drag-analog-x, 0px), calc(-20vh + var(--drag-analog-y, 0px))) scale(var(--scale-analog, 1)); /* デジタルのみ */
+}
+.info-state-2 .analog-page > div {
+  transform: translate(var(--drag-analog-x, 0px), calc(-25vh + var(--drag-analog-y, 0px))) scale(var(--scale-analog, 1)); /* カレンダー表示時はさらに上に避ける */
+}
+
+/* Portrait Swapped (縦置きの入れ替え状態) */
+.analog-layout-swapped.info-state-1 .analog-page > div {
+  transform: translate(var(--drag-analog-x, 0px), calc(15vh + var(--drag-analog-y, 0px))) scale(var(--scale-analog, 1)); /* 移動量をマイルドに */
+}
+.analog-layout-swapped.info-state-2 .analog-page > div {
+  transform: translate(var(--drag-analog-x, 0px), calc(18vh + var(--drag-analog-y, 0px))) scale(var(--scale-analog, 1));
+}
+
+/* 横置き時のレイアウト変更 */
+@media (orientation: landscape) {
+  .analog-info-container {
+    bottom: auto;
+    left: auto;
+    right: 15vw;
+    top: 50%;
+    transform: translate(calc(var(--burn-shift-x, 0px) + var(--drag-info-x, 0px)), calc(-50% + var(--burn-shift-y, 0px) + var(--drag-info-y, 0px))) scale(var(--scale-info, 1));
+  }
+  .info-state-2 .analog-info-container {
+    left: auto;
+    right: 8vw; /* 以前の横の位置に戻す */
+    top: 45%; /* デジタル時計の大きさで視覚的に下がるため、少し上に引き上げて中央に見せる */
+    transform: translate(calc(var(--burn-shift-x, 0px) + var(--drag-info-x, 0px)), calc(-50% + var(--burn-shift-y, 0px) + var(--drag-info-y, 0px))) scale(var(--scale-info, 1));
+    gap: 0;
+  }
+  /* Landscape Swapped (横置きの入れ替え状態) */
+  .analog-layout-swapped.info-state-1 .analog-info-container,
+  .analog-layout-swapped.info-state-2 .analog-info-container {
+    right: auto;
+    left: 12vw; /* 少し中央に寄せて、はみ出しを防止 */
+    top: 45%; /* 同様に少し上に引き上げる */
+    transform: translate(calc(var(--burn-shift-x, 0px) + var(--drag-info-x, 0px)), calc(-50% + var(--burn-shift-y, 0px) + var(--drag-info-y, 0px))) scale(var(--scale-info, 1));
+  }
+  .info-state-2 .analog-digital-clock {
+    margin-bottom: 3vw;
+  }
+  .info-state-1 .analog-page > div {
+    transform: translate(calc(-20vw + var(--drag-analog-x, 0px)), var(--drag-analog-y, 0px)) scale(var(--scale-analog, 1));
+  }
+  .info-state-2 .analog-page > div {
+    transform: translate(calc(-25vw + var(--drag-analog-x, 0px)), var(--drag-analog-y, 0px)) scale(var(--scale-analog, 1)); /* さらに左へ避ける */
+  }
+  
+  /* Landscape Swapped (横置きの入れ替え状態) */
+  .analog-layout-swapped.info-state-1 .analog-page > div {
+    transform: translate(calc(15vw + var(--drag-analog-x, 0px)), var(--drag-analog-y, 0px)) scale(var(--scale-analog, 1)); /* 移動量をマイルドに */
+  }
+  .analog-layout-swapped.info-state-2 .analog-page > div {
+    transform: translate(calc(20vw + var(--drag-analog-x, 0px)), var(--drag-analog-y, 0px)) scale(var(--scale-analog, 1));
+  }
+}
+
+/* スワイプコンテナ */
+.analog-swipe-container {
+  display: flex;
+  width: 300vw;
+  height: 100%;
+  transition: transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94), opacity 0.3s ease;
+  opacity: var(--analog-base-opacity, 1.0);
+}
+
+.analog-page {
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+}
+
+/* --- ページインジケーター --- */
+.analog-pager {
+  position: absolute;
+  bottom: 40px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 12px;
+  z-index: 1010;
+  transition: opacity 1s ease;
+  opacity: var(--analog-base-opacity, 1.0);
+}
+.analog-pager.fade-out {
+  opacity: 0;
+  pointer-events: none;
+}
+.pager-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: rgba(255, 255, 255, 0.3);
+  transition: background-color 0.3s, transform 0.3s;
+}
+.pager-dot.active {
+  background-color: var(--accent);
+  box-shadow: 0 0 calc(8px * min(var(--analog-glow, 1.0), 2.0)) var(--accent);
+  transform: scale(1.5);
+}
+
+/* --- 長押しプログレスリング --- */
+#analogHoldRing {
+  position: fixed;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%) rotate(-90deg);
+  width: 120px; height: 120px;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.3s;
+  z-index: 9999;
+}
+#analogHoldRing circle {
+  fill: none;
+  stroke: var(--accent);
+  stroke-width: 4;
+  stroke-dasharray: 164;
+  stroke-dashoffset: 164;
+  filter: drop-shadow(0 0 8px var(--accent));
+  transition: stroke-dashoffset 0.1s linear;
+}
+
+/* --- 共通の時計盤・針設定 --- */
+.clock-face {
+  position: relative;
+  width: 280px;
+  height: 280px;
+  border-radius: 50%;
+}
+.clock-hand {
+  position: absolute;
+  bottom: 50%;
+  left: 50%;
+  transform-origin: bottom center;
+  will-change: transform;
+}
+.clock-center {
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+}
+
+/* 1. Regulus Core */
+.clock-regulus .clock-face {
+  /* 縁取り削除 */
+}
+.clock-regulus .star-marker {
+  position: absolute;
+  width: 4px; height: 4px;
+  background: #fff;
+  border-radius: 50%;
+  box-shadow: 0 0 calc(6px * var(--analog-glow, 1.0)) #fff;
+  top: 50%; left: 50%;
+  margin: -2px 0 0 -2px;
+}
+.clock-regulus .hour-hand {
+  width: 160px; height: 90px;
+  background: transparent;
+  margin-left: -80px;
+  -webkit-mask-image: linear-gradient(to top, transparent 0%, transparent 30%, black 50%);
+  mask-image: linear-gradient(to top, transparent 0%, transparent 30%, black 50%);
+}
+.clock-regulus .hour-hand::after {
+  content: "";
+  position: absolute;
+  bottom: 0; left: 78px;
+  width: 4px; height: 70px;
+  background: var(--toggle-bg);
+  box-shadow: 0 0 calc(8px * var(--analog-glow, 1.0)) var(--toggle-bg);
+  border-radius: 2px;
+}
+.clock-regulus .minute-hand {
+  width: 160px; height: 120px;
+  background: transparent;
+  margin-left: -80px;
+  -webkit-mask-image: linear-gradient(to top, transparent 0%, transparent 25%, black 40%);
+  mask-image: linear-gradient(to top, transparent 0%, transparent 25%, black 40%);
+}
+.clock-regulus .minute-hand::after {
+  content: "";
+  position: absolute;
+  bottom: 0; left: 79px;
+  width: 2px; height: 100px;
+  background: var(--accent);
+  box-shadow: 0 0 calc(8px * var(--analog-glow, 1.0)) var(--accent);
+  border-radius: 1px;
+}
+.clock-regulus .sweep-tail {
+  width: 161px; height: 150px; /* 先端の発光切り取りを防ぐため20px高く */
+  background: transparent;
+  margin-left: -80.5px;
+  overflow: visible;
+  /* 元の透明度フェードを再現 */
+  -webkit-mask-image: linear-gradient(to top, transparent 0%, transparent 22%, black 70%);
+  mask-image: linear-gradient(to top, transparent 0%, transparent 22%, black 70%);
+}
+.clock-regulus .sweep-tail::after {
+  content: "";
+  position: absolute;
+  bottom: 0; left: 80px;
+  width: 1px; height: 130px;
+  background: #fff;
+  /* box-shadowのXオフセットをマイナスにすることで、時計回りの「後方」にのみ影を落とす。
+     オフセットの絶対値とぼかし幅の半分を一致させる(-2pxに対して4pxぼかし)ことで、前方への光漏れを完全にゼロにする。 */
+  box-shadow: 
+    calc(-2px * var(--analog-glow, 1.0)) 0 calc(4px * var(--analog-glow, 1.0)) #fff,
+    calc(-6px * var(--analog-glow, 1.0)) 0 calc(12px * var(--analog-glow, 1.0)) rgba(255, 255, 255, 0.5);
+}
+
+
+.clock-regulus .clock-center {
+  display: none;
+}
+
+/* 2. Neon Radar */
+@keyframes neonBreathe {
+  0%, 100% {
+    opacity: 1;
+    filter: drop-shadow(0 0 calc(8px * var(--analog-glow, 1.0)) rgba(0,255,128,0.5));
+  }
+  50% {
+    opacity: 0.6;
+    filter: drop-shadow(0 0 calc(2px * var(--analog-glow, 1.0)) rgba(0,255,128,0.1));
+  }
+}
+
+.clock-radar {
+  position: absolute;
+  width: 300px; height: 300px;
+  border-radius: 50%;
+  /* 背景と縁取り削除 */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  animation: neonBreathe 10s ease-in-out infinite;
+}
+.clock-radar .radar-grid {
+  display: none; /* グリッド線と外縁の非表示 */
+}
+
+.clock-radar .hour-hand {
+  width: 6px; height: 60px;
+  background: rgba(0,255,128,0.8);
+  margin-left: -3px;
+}
+.clock-radar .minute-hand {
+  width: 4px; height: 90px;
+  background: rgba(0,255,128,0.6);
+  margin-left: -2px;
+}
+.clock-radar .sweep-radar {
+  width: 2px; height: 140px;
+  background: #00ff80;
+  margin-left: -1px;
+  box-shadow: calc(-6px * var(--analog-glow, 1.0)) 0 calc(12px * var(--analog-glow, 1.0)) rgba(0,255,128,0.5); /* 疑似的な残像 */
+}
+.clock-radar .clock-center {
+  width: 8px; height: 8px;
+  background: #00ff80;
+  box-shadow: 0 0 calc(10px * var(--analog-glow, 1.0)) #00ff80;
+}
+
+/* 3. Eclipse */
+.clock-eclipse {
+  position: absolute;
+  width: 300px;
+  height: 300px;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.clock-eclipse .clock-face {
+  background: #000;
+  /* 光彩（コロナ外枠）削除 */
+}
+.clock-eclipse .hour-hand {
+  width: 4px; height: 100px;
+  background: linear-gradient(to top, transparent 70px, rgba(255,255,255,0.4) 70px);
+  margin-left: -2px;
+}
+.clock-eclipse .minute-hand {
+  width: 2px; height: 125px;
+  background: linear-gradient(to top, transparent 70px, rgba(255,255,255,0.6) 70px);
+  margin-left: -1px;
+}
+.clock-eclipse .sweep-corona {
+  width: 1px; height: 145px;
+  background: linear-gradient(to top, transparent 70px, rgba(255,255,255,0.9) 70px);
+  margin-left: -0.5px;
+  overflow: visible;
+}
+
+
+@keyframes coronaBreathe {
+  0%, 100% {
+    box-shadow: 0 0 calc(45px * var(--analog-glow, 1.0)) rgba(255,255,255,0.35), inset 0 0 15px rgba(0,0,0,1);
+  }
+  50% {
+    box-shadow: 0 0 calc(25px * var(--analog-glow, 1.0)) rgba(255,255,255,0.15), inset 0 0 15px rgba(0,0,0,1);
+  }
+}
+
+.clock-eclipse .eclipse-center {
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  width: 140px; height: 140px;
+  background: #000;
+  border-radius: 50%;
+  box-shadow: 0 0 calc(45px * var(--analog-glow, 1.0)) rgba(255,255,255,0.3), inset 0 0 15px rgba(0,0,0,1);
+  animation: coronaBreathe 16s ease-in-out infinite;
+  z-index: 10;
+}
+.clock-eclipse .hour-hand,
+.clock-eclipse .minute-hand,
+.clock-eclipse .sweep-corona {
+  z-index: 5;
+}
+
+.eclipse-corona-svg {
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  width: 300px; height: 300px;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.corona-layer1 {
+  fill: rgba(255, 255, 255, 0.45);
+}
+.corona-layer2 {
+  fill: rgba(255, 255, 255, 0.25);
+}
+/* ============================================================
+   カレンダーカルーセル構造 (Calendar Carousel)
+   ============================================================ */
+.analog-calendar-viewport {
+  display: none;
+  overflow: hidden;
+  position: relative;
+  /* 幅はJSで動的に設定 */
+}
+.info-state-2 .analog-calendar-viewport {
+  display: block;
+  pointer-events: auto; /* マウスやタッチのイベントを受け取るために必須 */
+}
+.analog-calendar-rail {
+  display: flex;
+  flex-direction: row;
+  gap: 12px;
+  transition: transform 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  will-change: transform;
+  user-select: none;
+}
+/* 1カ月分のブロック */
+.analog-calendar-block {
+  flex-shrink: 0;
+}
+.analog-calendar-block .analog-calendar-header {
+  display: block;
+  font-size: 14px;
+  font-weight: bold;
+  text-shadow: 0 0 calc(4px * var(--analog-glow, 1.0)) rgba(0,255,128,0.4);
+  margin-bottom: 4px;
+}
+.analog-calendar-block .analog-calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 24px);
+  gap: 4px;
+  text-shadow: 0 0 4px rgba(0,255,128,0.4);
+  font-size: 12px;
+  line-height: 24px;
+}
+
+
+
+
+
+
+
+
+
+/* ============================================================
+   著作権情報ページ（readmePage）スタイル
+   ============================================================ */
+#readmePage {
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: var(--bg-dark, #0a0a12);
+  z-index: 9000;
+  flex-direction: column;
+  overflow: hidden;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+#readmePage[style*="block"],
+#readmePage[style*="flex"] {
+  display: flex !important;
+}
+
+/* ヘッダー固定 */
+#readmeHeader {
+  flex-shrink: 0;
+  padding: 18px 16px 10px;
+  background: var(--bg-dark, #0a0a12);
+  border-bottom: 1px solid rgba(0, 255, 224, 0.15);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+#readmeTitle {
+  font-size: 20px;
+  letter-spacing: 3px;
+  color: var(--accent, #00ffe0);
+  text-shadow: 0 0 12px rgba(0, 255, 224, 0.5);
+  margin: 0;
+}
+
+/* 国選択ドロップダウン */
+#readmeCountryBar {
+  width: 100%;
+  max-width: 340px;
+}
+#readmeCountrySelect {
+  width: 100%;
+  background-color: rgba(0, 255, 224, 0.06);
+  background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23ffffff'%3E%3Cpath d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 24px;
+  border: 1px solid rgba(0, 255, 224, 0.3);
+  border-radius: 10px;
+  color: var(--text-main, #e0e0ff);
+  font-size: 16px;
+  padding: 10px 36px 10px 16px;
+  -webkit-appearance: none;
+  appearance: none;
+  text-align: left;
+  cursor: pointer;
+  outline: none;
+  transition: box-shadow 0.2s, border-color 0.2s;
+}
+#readmeCountrySelect:focus {
+  border-color: var(--accent, #00ffe0);
+  box-shadow: 0 0 8px rgba(0, 255, 224, 0.3);
+}
+
+/* スクロール本文 */
+#readmeBody {
+  flex: 1;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: 16px;
+}
+
+/* 各言語セクション */
+.readme-section {
+  margin-bottom: 40px;
+  padding: 20px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(0, 255, 224, 0.1);
+  border-radius: 14px;
+  scroll-margin-top: 20px;
+}
+.readme-section[dir="rtl"] {
+  text-align: right;
+}
+.readme-flag {
+  font-size: 28px;
+  margin-bottom: 6px;
+}
+.readme-lang-title {
+  font-size: 16px;
+  color: var(--accent, #00ffe0);
+  text-shadow: 0 0 8px rgba(0, 255, 224, 0.4);
+  letter-spacing: 2px;
+  margin: 0 0 12px;
+  font-weight: bold;
+}
+.readme-section p {
+  font-size: 13px;
+  line-height: 1.7;
+  color: var(--text-main, #e0e0ff);
+  margin: 0 0 10px;
+}
+.readme-section ul {
+  margin: 4px 0 10px;
+  padding-left: 1.4em;
+}
+.readme-section[dir="rtl"] ul {
+  padding-left: 0;
+  padding-right: 1.4em;
+}
+.readme-section li {
+  font-size: 13px;
+  line-height: 1.7;
+  color: rgba(224, 224, 255, 0.85);
+  margin-bottom: 4px;
+}
+
+/* 長押しプログレスリング */
+#readmeHoldRing {
+  display: none;
+  pointer-events: none;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 100px;
+  height: 100px;
+  z-index: 9100;
+}
+#readmeHoldRing circle {
+  fill: none;
+  stroke: var(--accent, #00ffe0);
+  stroke-width: 4;
+  stroke-dasharray: 163.4;
+  stroke-dashoffset: 163.4;
+  stroke-linecap: butt;
+  transform: rotate(-90deg);
+  transform-origin: 50% 50%;
+  filter: drop-shadow(0 0 6px var(--accent));
+  transition: stroke-dashoffset 1.5s linear;
+}
+#readmeHoldHint {
+  position: fixed;
+  display: none;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  font-size: 16px; font-weight: bold; text-shadow: 0 0 4px rgba(0,0,0,0.8);;
+  color: rgba(255, 255, 255, 0);
+  letter-spacing: 1px;
+  pointer-events: none;
+  z-index: 9100;
+  transition: color 0.2s;
+  white-space: nowrap;
+}
+
+/* ==========================================================================
+   時間電卓 / 精密電卓 / 割り勘 / レート (4-in-1 Multi Calculator) - Time Regulus Neon UI
+   ========================================================================== */
+.time-calc-card {
+  width: 94%;
+  max-width: 393px;
+  margin: 20px auto 0;
+  padding: 16px 14px 20px;
+}
+
+.time-calc-topbar {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+/* 4連常設ナビゲーションタブ (⏰ 🔢 💸 💱) */
+.calc-nav-tabs {
+  display: flex;
+  justify-content: space-between;
+  gap: 6px;
+  margin-bottom: 12px;
+  background: rgba(10, 15, 25, 0.75);
+  padding: 4px;
+  border-radius: 10px;
+  border: 1px solid rgba(0, 255, 224, 0.2);
+}
+
+.calc-nav-tab {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--text-sub, #8899aa);
+  border-radius: 8px;
+  padding: 6px 2px;
+  font-size: 12px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.calc-nav-icon {
+  font-size: 15px;
+  line-height: 1;
+}
+
+.calc-nav-text {
+  font-size: 11px;
+}
+
+.calc-nav-tab:hover {
+  color: var(--text-main, #ffffff);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.calc-nav-tab.active {
+  background: rgba(0, 255, 224, 0.18);
+  border-color: var(--accent);
+  color: var(--accent);
+  box-shadow: 0 0 10px rgba(0, 255, 224, 0.35);
+}
+
+.calc-nav-tab:active {
+  transform: scale(0.95);
+}
+
+/* 割り勘・レート変換用コントロール */
+.split-controls, .currency-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.split-field-row, .currency-field-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: rgba(15, 22, 36, 0.8);
+  border: 1.5px solid rgba(0, 255, 224, 0.25);
+  border-radius: 8px;
+  padding: 6px 10px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.split-field-row.active-field, .currency-field-row.active-field {
+  border-color: var(--accent);
+  background: rgba(0, 255, 224, 0.08);
+  box-shadow: 0 0 8px rgba(0, 255, 224, 0.35);
+}
+
+.split-field-label, .currency-field-label {
+  font-size: 12px;
+  color: var(--text-sub);
+  font-weight: bold;
+}
+
+.split-field-val, .currency-field-val {
+  font-size: 15px;
+  font-weight: bold;
+  color: #fff;
+  font-family: 'Share Tech Mono', monospace;
+}
+
+.split-round-pills {
+  display: flex;
+  gap: 4px;
+  justify-content: center;
+  margin-top: 2px;
+}
+
+.split-pill {
+  flex: 1;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: var(--text-sub);
+  border-radius: 6px;
+  padding: 4px 2px;
+  font-size: 11px;
+  font-weight: bold;
+  cursor: pointer;
+  text-align: center;
+  transition: all 0.2s;
+}
+
+.split-pill.active {
+  background: rgba(0, 255, 224, 0.2);
+  border-color: var(--accent);
+  color: var(--accent);
+  box-shadow: 0 0 6px rgba(0, 255, 224, 0.3);
+}
+
+.currency-select-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.currency-select {
+  flex: 1;
+  background: #0f1624;
+  border: 1px solid var(--accent);
+  color: #fff;
+  border-radius: 6px;
+  padding: 5px 8px;
+  font-size: 13px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.currency-swap-btn {
+  background: rgba(0, 255, 224, 0.15);
+  border: 1px solid var(--accent);
+  color: var(--accent);
+  border-radius: 6px;
+  padding: 4px 10px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.currency-swap-btn:active {
+  transform: scale(0.9) rotate(180deg);
+  background: var(--accent);
+  color: #000;
+}
+
+.calc-engine-badge {
+  font-size: 11px;
+  font-weight: bold;
+  color: rgba(224, 224, 255, 0.85);
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 6px;
+  padding: 3px 8px;
+  letter-spacing: 0.5px;
+}
+
+/* 電卓スクリーン */
+.time-calc-screen {
+  background: radial-gradient(circle at 50% 30%, #151d2a 0%, #0c1018 100%);
+  border: 1.5px solid rgba(0, 255, 224, 0.4);
+  border-radius: 12px;
+  padding: 12px 14px;
+  box-shadow: inset 0 0 18px rgba(0, 255, 224, 0.12), 0 6px 20px rgba(0, 0, 0, 0.6);
+  margin-bottom: 12px;
+  position: relative;
+  overflow: hidden;
+}
+
+.time-calc-screen-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-height: 22px;
+  margin-bottom: 4px;
+}
+
+.time-calc-indicator {
+  font-size: 11px;
+  font-weight: 800;
+  padding: 1px 6px;
+  border-radius: 3px;
+  background: rgba(0, 255, 224, 0.2);
+  color: var(--accent);
+  border: 1px solid var(--accent);
+  box-shadow: 0 0 6px var(--accent);
+}
+
+.time-calc-op-indicator {
+  background: rgba(255, 0, 170, 0.2);
+  color: var(--toggle-bg);
+  border-color: var(--toggle-bg);
+  box-shadow: 0 0 6px var(--toggle-bg);
+  font-size: 13px;
+  padding: 0 6px;
+}
+
+.time-calc-formula {
+  flex: 1;
+  text-align: right;
+  font-size: 13px;
+  color: rgba(224, 224, 255, 0.7);
+  font-family: 'Consolas', 'Courier New', monospace;
+  overflow-x: auto;
+  white-space: nowrap;
+  scrollbar-width: none;
+}
+.time-calc-formula::-webkit-scrollbar {
+  display: none;
+}
+
+.time-calc-main-display {
+  font-size: 32px;
+  font-weight: 700;
+  color: #ffffff;
+  text-shadow: 0 0 12px rgba(0, 255, 224, 0.7), 0 0 24px rgba(0, 255, 224, 0.3);
+  font-family: 'Consolas', 'Courier New', monospace;
+  text-align: right;
+  letter-spacing: 1px;
+  line-height: 1.2;
+  margin: 6px 0;
+  overflow-x: auto;
+  white-space: nowrap;
+  scrollbar-width: none;
+}
+.time-calc-main-display::-webkit-scrollbar {
+  display: none;
+}
+
+.time-calc-screen-bottom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.time-calc-badge {
+  font-size: 11px;
+  padding: 3px 8px;
+  border-radius: 4px;
+  background: rgba(0, 255, 224, 0.12);
+  border: 1px solid rgba(0, 255, 224, 0.5);
+  color: var(--accent);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  user-select: none;
+}
+.time-calc-badge:active {
+  background: var(--accent);
+  color: #000;
+}
+
+.time-calc-sub-display {
+  font-size: 13px;
+  color: #ff00aa;
+  text-shadow: 0 0 8px rgba(255, 0, 170, 0.5);
+  font-family: 'Consolas', 'Courier New', monospace;
+  font-weight: bold;
+  text-align: right;
+  overflow-x: auto;
+  white-space: nowrap;
+}
+
+/* 履歴ドロワー */
+.time-calc-history-drawer {
+  background: rgba(14, 18, 28, 0.95);
+  border: 1.5px solid rgba(0, 255, 224, 0.35);
+  border-radius: 10px;
+  padding: 10px 12px;
+  margin-bottom: 12px;
+  max-height: 160px;
+  overflow-y: auto;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.5);
+  animation: riseInShort 0.3s ease-out;
+}
+
+.time-calc-history-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 12px;
+  font-weight: bold;
+  color: var(--accent);
+  border-bottom: 1px solid rgba(0, 255, 224, 0.2);
+  padding-bottom: 6px;
+  margin-bottom: 8px;
+}
+
+.time-calc-history-clear-btn {
+  background: transparent;
+  border: 1px solid rgba(255, 77, 77, 0.6);
+  color: #ff6666;
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+.time-calc-history-clear-btn:active {
+  background: #ff4d4d;
+  color: #fff;
+}
+
+.time-calc-history-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.time-calc-history-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 8px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(0, 255, 224, 0.12);
+  font-size: 12px;
+  font-family: 'Consolas', 'Courier New', monospace;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.time-calc-history-item:hover {
+  background: rgba(0, 255, 224, 0.1);
+  border-color: var(--accent);
+}
+.time-calc-history-item .hist-content {
+  flex: 1;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  overflow: hidden;
+}
+.time-calc-history-item .hist-formula {
+  color: #a0aec0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 60%;
+}
+.time-calc-history-item .hist-result {
+  color: #00ffe0;
+  font-weight: bold;
+  white-space: nowrap;
+}
+.time-calc-history-item .hist-del-btn {
+  background: transparent;
+  border: none;
+  color: #ff5577;
+  font-size: 16px;
+  line-height: 1;
+  padding: 4px 6px;
+  margin-left: 8px;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: all 0.15s ease;
+  user-select: none;
+}
+.time-calc-history-item .hist-del-btn:hover {
+  background: rgba(255, 85, 119, 0.25);
+  color: #ff0044;
+  transform: scale(1.2);
+}
+.time-calc-history-empty {
+  text-align: center;
+  color: #667;
+  font-size: 12px;
+  padding: 10px 0;
+}
+
+/* ボタングリッド */
+.time-calc-keypad {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 8px;
+  margin-top: 6px;
+}
+
+.calc-btn-active-field {
+  background: rgba(0, 255, 224, 0.28) !important;
+  border-color: var(--accent) !important;
+  box-shadow: 0 0 12px rgba(0, 255, 224, 0.5) !important;
+  color: #fff !important;
+}
+
+.calc-btn {
+  height: 48px;
+  border-radius: 10px;
+  font-size: 16px;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  outline: none;
+  transition: all 0.15s ease;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: manipulation;
+}
+
+.calc-btn:active {
+  transform: scale(0.93);
+}
+
+/* 各種ボタンスタイル */
+.calc-btn-num {
+  background: rgba(30, 36, 52, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #f0f4f8;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+}
+.calc-btn-num:active {
+  background: rgba(255, 255, 255, 0.25);
+  border-color: #fff;
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+}
+
+.calc-btn-unit {
+  background: rgba(0, 255, 224, 0.12);
+  border: 1px solid rgba(0, 255, 224, 0.6);
+  color: #00ffe0;
+  box-shadow: 0 0 8px rgba(0, 255, 224, 0.2);
+}
+.calc-btn-unit:active {
+  background: var(--accent);
+  color: #050b14;
+  box-shadow: 0 0 16px var(--accent);
+}
+
+.calc-btn-op {
+  background: rgba(255, 0, 170, 0.12);
+  border: 1px solid rgba(255, 0, 170, 0.6);
+  color: #ff00aa;
+  font-size: 18px;
+  box-shadow: 0 0 8px rgba(255, 0, 170, 0.2);
+}
+.calc-btn-op:active {
+  background: #ff00aa;
+  color: #fff;
+  box-shadow: 0 0 16px #ff00aa;
+}
+
+.calc-btn-mem {
+  background: rgba(138, 92, 246, 0.15);
+  border: 1px solid rgba(167, 139, 250, 0.5);
+  color: #c4b5fd;
+  font-size: 13px;
+  box-shadow: 0 0 6px rgba(138, 92, 246, 0.15);
+}
+.calc-btn-mem:active {
+  background: #a78bfa;
+  color: #0f0a1e;
+  box-shadow: 0 0 12px #a78bfa;
+}
+
+.calc-btn-clear {
+  background: rgba(245, 158, 11, 0.15);
+  border: 1px solid rgba(245, 158, 11, 0.6);
+  color: #fbbf24;
+  box-shadow: 0 0 6px rgba(245, 158, 11, 0.2);
+}
+.calc-btn-clear:active {
+  background: #fbbf24;
+  color: #000;
+  box-shadow: 0 0 14px #fbbf24;
+}
+
+.calc-btn-allclear {
+  background: rgba(239, 68, 68, 0.2);
+  border: 1.5px solid rgba(239, 68, 68, 0.7);
+  color: #f87171;
+  font-weight: 800;
+  box-shadow: 0 0 8px rgba(239, 68, 68, 0.25);
+}
+.calc-btn-allclear:active {
+  background: #ef4444;
+  color: #fff;
+  box-shadow: 0 0 16px #ef4444;
+}
+
+.calc-btn-del {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  color: #e2e8f0;
+  font-size: 16px;
+}
+.calc-btn-del:active {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.calc-btn-eq {
+  background: linear-gradient(135deg, #00ffe0 0%, #00b4d8 100%);
+  border: none;
+  color: #041018;
+  font-size: 22px;
+  font-weight: 900;
+  box-shadow: 0 0 14px rgba(0, 255, 224, 0.5);
+}
+.calc-btn-eq:active {
+  box-shadow: 0 0 24px rgba(0, 255, 224, 0.9);
+  transform: scale(0.94);
+}
+
+/* レスポンシブ微調整 */
+@media (max-width: 360px) {
+  .calc-btn {
+    height: 42px;
+    font-size: 14px;
+  }
+  .time-calc-main-display {
+    font-size: 26px;
+  }
+  .time-calc-keypad {
+    gap: 5px;
+  }
 }
 

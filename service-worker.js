@@ -1,10 +1,10 @@
-﻿const CACHE_NAME = "time-regulus-v3.2.0-c30";
+const CACHE_NAME = "time-regulus-v3.3.0-c36";
 const urlsToCache = [
   "./",
   "./index.html",
-  "./style-lock.css?c=30",
-  "./style-main.css?c=30",
-  "./script.js?c=30",
+  "./style-lock.css?c=31",
+  "./style-main.css?c=31",
+  "./script.js?c=31",
   "./manifest.json",
   "./icon-192.png",
   "./icon-512.png",
@@ -13,7 +13,7 @@ const urlsToCache = [
 
 // インストール時に必要なアセットをキャッシュ
 self.addEventListener("install", event => {
-  // ★ self.skipWaiting() は使わない（controllerchange → reload の無限ループを防ぐため）
+  self.skipWaiting();
   event.waitUntil(
     caches.open(CACHE_NAME).then(cache => {
       // 指定されたすべてのファイルをキャッシュに追加

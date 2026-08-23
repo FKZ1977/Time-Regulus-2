@@ -613,25 +613,31 @@
     <!-- レート変換用セレクター (💱モード時のみ表示) -->
     <div id="currencyControls" class="currency-controls" style="display:none;">
       <div class="currency-select-row">
-        <select id="currencyFromSelect" class="currency-select" onchange="TimeCalc.onCurrencyChange()">
-          <option value="GBP" selected>GBP (英ポンド £)</option>
-          <option value="JPY">JPY (日本円 ¥)</option>
-          <option value="USD">USD (米ドル $)</option>
-          <option value="EUR">EUR (ユーロ €)</option>
-          <option value="CNY">CNY (人民元 ¥)</option>
-          <option value="KRW">KRW (ウォン ₩)</option>
-          <option value="AUD">AUD (豪ドル $)</option>
-        </select>
+        <div id="currencyBoxFrom" class="currency-select-box" onclick="TimeCalc.setCurrencyActiveField('from')">
+          <span class="currency-box-label">FROM</span>
+          <select id="currencyFromSelect" class="currency-select" onchange="TimeCalc.onCurrencyChange()" onfocus="TimeCalc.setCurrencyActiveField('from')">
+            <option value="USD" selected>USD (米ドル $)</option>
+            <option value="JPY">JPY (日本円 ¥)</option>
+            <option value="GBP">GBP (英ポンド £)</option>
+            <option value="EUR">EUR (ユーロ €)</option>
+            <option value="CNY">CNY (人民元 ¥)</option>
+            <option value="KRW">KRW (ウォン ₩)</option>
+            <option value="AUD">AUD (豪ドル $)</option>
+          </select>
+        </div>
         <button type="button" class="currency-swap-btn" onclick="TimeCalc.swapCurrencies()">⇄</button>
-        <select id="currencyToSelect" class="currency-select" onchange="TimeCalc.onCurrencyChange()">
-          <option value="JPY" selected>JPY (日本円 ¥)</option>
-          <option value="USD">USD (米ドル $)</option>
-          <option value="EUR">EUR (ユーロ €)</option>
-          <option value="GBP">GBP (英ポンド £)</option>
-          <option value="CNY">CNY (人民元 ¥)</option>
-          <option value="KRW">KRW (ウォン ₩)</option>
-          <option value="AUD">AUD (豪ドル $)</option>
-        </select>
+        <div id="currencyBoxTo" class="currency-select-box active-field" onclick="TimeCalc.setCurrencyActiveField('to')">
+          <span class="currency-box-label">TO</span>
+          <select id="currencyToSelect" class="currency-select" onchange="TimeCalc.onCurrencyChange()" onfocus="TimeCalc.setCurrencyActiveField('to')">
+            <option value="JPY" selected>JPY (日本円 ¥)</option>
+            <option value="USD">USD (米ドル $)</option>
+            <option value="EUR">EUR (ユーロ €)</option>
+            <option value="GBP">GBP (英ポンド £)</option>
+            <option value="CNY">CNY (人民元 ¥)</option>
+            <option value="KRW">KRW (ウォン ₩)</option>
+            <option value="AUD">AUD (豪ドル $)</option>
+          </select>
+        </div>
       </div>
     </div>
 
@@ -750,21 +756,21 @@
       <button type="button" class="calc-btn calc-btn-num" onclick="TimeCalc.pressKey('1')">1</button>
       <button type="button" class="calc-btn calc-btn-num" onclick="TimeCalc.pressKey('2')">2</button>
       <button type="button" class="calc-btn calc-btn-num" onclick="TimeCalc.pressKey('3')">3</button>
-      <button type="button" id="currKey_USD" class="calc-btn calc-btn-unit" onclick="TimeCalc.selectCurrencyTo('USD')">USD</button>
-      <button type="button" id="currKey_EUR" class="calc-btn calc-btn-unit" onclick="TimeCalc.selectCurrencyTo('EUR')">EUR</button>
+      <button type="button" id="currKey_USD" class="calc-btn calc-btn-unit" onclick="TimeCalc.selectCurrency('USD')">USD</button>
+      <button type="button" id="currKey_EUR" class="calc-btn calc-btn-unit" onclick="TimeCalc.selectCurrency('EUR')">EUR</button>
 
       <!-- 4行目: 00 0 . GBP AUD -->
       <button type="button" class="calc-btn calc-btn-num" onclick="TimeCalc.pressKey('00')">00</button>
       <button type="button" class="calc-btn calc-btn-num" onclick="TimeCalc.pressKey('0')">0</button>
       <button type="button" class="calc-btn calc-btn-num" onclick="TimeCalc.pressKey('.')">.</button>
-      <button type="button" id="currKey_GBP" class="calc-btn calc-btn-unit" onclick="TimeCalc.selectCurrencyTo('GBP')">GBP</button>
-      <button type="button" id="currKey_AUD" class="calc-btn calc-btn-unit" onclick="TimeCalc.selectCurrencyTo('AUD')">AUD</button>
+      <button type="button" id="currKey_GBP" class="calc-btn calc-btn-unit" onclick="TimeCalc.selectCurrency('GBP')">GBP</button>
+      <button type="button" id="currKey_AUD" class="calc-btn calc-btn-unit" onclick="TimeCalc.selectCurrency('AUD')">AUD</button>
 
       <!-- 5行目: ＝記録(2マス) JPY CNY KRW -->
       <button type="button" class="calc-btn calc-btn-eq" style="grid-column: span 2; font-size: 16px;" onclick="TimeCalc.pressKey('=')">＝記録</button>
-      <button type="button" id="currKey_JPY" class="calc-btn calc-btn-unit calc-btn-active-field" onclick="TimeCalc.selectCurrencyTo('JPY')">JPY</button>
-      <button type="button" id="currKey_CNY" class="calc-btn calc-btn-unit" onclick="TimeCalc.selectCurrencyTo('CNY')">CNY</button>
-      <button type="button" id="currKey_KRW" class="calc-btn calc-btn-unit" onclick="TimeCalc.selectCurrencyTo('KRW')">KRW</button>
+      <button type="button" id="currKey_JPY" class="calc-btn calc-btn-unit calc-btn-active-field" onclick="TimeCalc.selectCurrency('JPY')">JPY</button>
+      <button type="button" id="currKey_CNY" class="calc-btn calc-btn-unit" onclick="TimeCalc.selectCurrency('CNY')">CNY</button>
+      <button type="button" id="currKey_KRW" class="calc-btn calc-btn-unit" onclick="TimeCalc.selectCurrency('KRW')">KRW</button>
     </div>
 
     <!-- 計算履歴ボタン（下部中央） -->

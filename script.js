@@ -7294,8 +7294,9 @@ const TimeCalc = {
   splitTierGap: 1000,       // 傾斜配分の差額 (¥1,000)
 
   // 為替レート変換用ステート
-  currencyFrom: 'GBP',
+  currencyFrom: 'USD',
   currencyTo: 'JPY',
+  currencyActiveField: 'to',  // 'from' または 'to' : 通貨ボタンがどちらを変更するか
   currencyAmount: 0,
   currencyInputStr: '0',
   currencyRates: {
@@ -7468,7 +7469,11 @@ const TimeCalc = {
       ['JPY', 'USD', 'EUR', 'GBP', 'AUD', 'CNY', 'KRW'].forEach(c => {
         const btn = document.getElementById(`currKey_${c}`);
         if (btn) {
-          if (c === this.currencyTo) btn.classList.add('calc-btn-active-field');
+          // アクティブフィールドに応じてどちらの通貨と一致するかハイライト
+          const isActive = this.currencyActiveField === 'from'
+            ? c === this.currencyFrom
+            : c === this.currencyTo;
+          if (isActive) btn.classList.add('calc-btn-active-field');
           else btn.classList.remove('calc-btn-active-field');
         }
       });
@@ -7477,6 +7482,18 @@ const TimeCalc = {
       const toSel = document.getElementById('currencyToSelect');
       if (fromSel && fromSel.value !== this.currencyFrom) fromSel.value = this.currencyFrom;
       if (toSel && toSel.value !== this.currencyTo) toSel.value = this.currencyTo;
+
+      // From/Toボックスのアクティブ枠を視覚的に切り替え
+      const fromBox = document.getElementById('currencyBoxFrom');
+      const toBox = document.getElementById('currencyBoxTo');
+      if (fromBox) {
+        if (this.currencyActiveField === 'from') fromBox.classList.add('active-field');
+        else fromBox.classList.remove('active-field');
+      }
+      if (toBox) {
+        if (this.currencyActiveField === 'to') toBox.classList.add('active-field');
+        else toBox.classList.remove('active-field');
+      }
     }
   },
 
@@ -7553,6 +7570,51 @@ const TimeCalc = {
     if (toSel) toSel.value = curr;
     this.syncEngineUI();
     this.updateDisplay();
+  },
+
+  // 通貨ボタン: アクティブフィールド(from/to)に応じて対応する通貨を変更
+  selectCurrency(curr) {
+    if (this.currencyActiveField === 'from') {
+      // from側を変更（toと同じになる場合はスワップ）
+      if (curr === this.currencyTo) {
+        // toと同じ通貨を選んだらスワップ
+        const temp = this.currencyFrom;
+        this.currencyFrom = curr;
+        this.currencyTo = temp;
+        const fromSel = document.getElementById('currencyFromSelect');
+        const toSel = document.getElementById('currencyToSelect');
+        if (fromSel) fromSel.value = this.currencyFrom;
+        if (toSel) toSel.value = this.currencyTo;
+      } else {
+        this.currencyFrom = curr;
+        const fromSel = document.getElementById('currencyFromSelect');
+        if (fromSel) fromSel.value = curr;
+      }
+    } else {
+      // to側を変更（fromと同じになる場合はスワップ）
+      if (curr === this.currencyFrom) {
+        // fromと同じ通貨を選んだらスワップ
+        const temp = this.currencyTo;
+        this.currencyTo = curr;
+        this.currencyFrom = temp;
+        const fromSel = document.getElementById('currencyFromSelect');
+        const toSel = document.getElementById('currencyToSelect');
+        if (fromSel) fromSel.value = this.currencyFrom;
+        if (toSel) toSel.value = this.currencyTo;
+      } else {
+        this.currencyTo = curr;
+        const toSel = document.getElementById('currencyToSelect');
+        if (toSel) toSel.value = curr;
+      }
+    }
+    this.syncEngineUI();
+    this.updateDisplay();
+  },
+
+  // From側セレクターをアクティブに設定
+  setCurrencyActiveField(field) {
+    this.currencyActiveField = field;
+    this.syncEngineUI();
   },
 
   // 為替通貨切り替え
@@ -7750,13 +7812,13 @@ const TimeCalc = {
   },
 
   handleCurrencyKey(key) {
-    if (key === 'MC') { this.selectCurrencyTo('JPY'); return; }
-    if (key === 'MR') { this.selectCurrencyTo('USD'); return; }
-    if (key === 'M-') { this.selectCurrencyTo('EUR'); return; }
-    if (key === 'M+') { this.selectCurrencyTo('GBP'); return; }
-    if (key === 'UNIT_H') { this.selectCurrencyTo('CNY'); return; }
-    if (key === 'UNIT_M') { this.selectCurrencyTo('KRW'); return; }
-    if (key === 'UNIT_S') { this.selectCurrencyTo('AUD'); return; }
+    if (key === 'MC') { this.selectCurrency('JPY'); return; }
+    if (key === 'MR') { this.selectCurrency('USD'); return; }
+    if (key === 'M-') { this.selectCurrency('EUR'); return; }
+    if (key === 'M+') { this.selectCurrency('GBP'); return; }
+    if (key === 'UNIT_H') { this.selectCurrency('CNY'); return; }
+    if (key === 'UNIT_M') { this.selectCurrency('KRW'); return; }
+    if (key === 'UNIT_S') { this.selectCurrency('AUD'); return; }
     if (key === '/') { this.swapCurrencies(); return; }
 
     if (key >= '0' && key <= '9') {

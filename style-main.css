@@ -4879,16 +4879,54 @@ body:not(.lang-ja):not(.lang-zh):not(.lang-ko) .warning-msg {
   gap: 8px;
 }
 
-.currency-select {
+.currency-select-box {
   flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: rgba(15, 22, 36, 0.85);
+  border: 1.5px solid rgba(0, 255, 224, 0.25);
+  border-radius: 8px;
+  padding: 4px 6px 5px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.currency-select-box.active-field {
+  border-color: var(--accent);
+  background: rgba(0, 255, 224, 0.08);
+  box-shadow: 0 0 8px rgba(0, 255, 224, 0.35);
+}
+
+.currency-box-label {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+  color: var(--text-sub);
+  margin-bottom: 2px;
+  transition: color 0.2s ease, text-shadow 0.2s ease;
+}
+
+.currency-select-box.active-field .currency-box-label {
+  color: var(--accent);
+  text-shadow: 0 0 6px rgba(0, 255, 224, 0.5);
+}
+
+.currency-select {
+  width: 100%;
   background: #0f1624;
-  border: 1px solid var(--accent);
+  border: 1px solid rgba(255, 255, 255, 0.15);
   color: #fff;
   border-radius: 6px;
-  padding: 5px 8px;
-  font-size: 13px;
+  padding: 4px 4px;
+  font-size: 12px;
   font-weight: bold;
   cursor: pointer;
+  text-align: center;
+  text-align-last: center;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
 }
 
 .currency-swap-btn {

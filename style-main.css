@@ -4125,7 +4125,7 @@ body:not(.lang-ja):not(.lang-zh):not(.lang-ko) .warning-msg {
 .analog-layout-swapped.info-state-1 .analog-info-container,
 .analog-layout-swapped.info-state-2 .analog-info-container {
   bottom: auto;
-  top: 25vh; /* カレンダーを少し上に上げて、時計とくっつきすぎないように調整 */
+  top: 25vh; /* 上半分の中央 (25vh = 上半分の中央) */
   transform: translate(calc(-50% + var(--burn-shift-x, 0px) + var(--drag-info-x, 0px)), calc(-50% + var(--burn-shift-y, 0px) + var(--drag-info-y, 0px))) scale(var(--scale-info, 1));
 }
 
@@ -4140,6 +4140,9 @@ body:not(.lang-ja):not(.lang-zh):not(.lang-ko) .warning-msg {
   text-shadow: 0 0 calc(10px * var(--analog-glow, 1.0)) rgba(0,255,128,0.8), 0 0 calc(20px * var(--analog-glow, 1.0)) rgba(0,255,128,0.5);
   transition: font-size 0.5s ease, margin-bottom 0.5s ease;
   margin-bottom: 0;
+  pointer-events: auto;
+  cursor: grab;
+  user-select: none;
 }
 
 .info-state-2 .analog-digital-clock {
@@ -4154,6 +4157,14 @@ body:not(.lang-ja):not(.lang-zh):not(.lang-ko) .warning-msg {
   margin-bottom: 4px;
   display: none;
   font-weight: bold;
+  pointer-events: auto;
+  cursor: grab;
+  user-select: none;
+}
+
+.analog-dragging-2finger .analog-digital-clock,
+.analog-dragging-2finger .analog-calendar-header {
+  cursor: grabbing !important;
 }
 .analog-calendar-grid {
   display: none;
@@ -4190,18 +4201,18 @@ body:not(.lang-ja):not(.lang-zh):not(.lang-ko) .warning-msg {
 }
 
 .info-state-1 .analog-page > div {
-  transform: translate(var(--drag-analog-x, 0px), calc(-20vh + var(--drag-analog-y, 0px))) scale(var(--scale-analog, 1)); /* デジタルのみ */
+  transform: translate(var(--drag-analog-x, 0px), calc(-25vh + var(--drag-analog-y, 0px))) scale(var(--scale-analog, 1)); /* 上半分の中央 */
 }
 .info-state-2 .analog-page > div {
-  transform: translate(var(--drag-analog-x, 0px), calc(-25vh + var(--drag-analog-y, 0px))) scale(var(--scale-analog, 1)); /* カレンダー表示時はさらに上に避ける */
+  transform: translate(var(--drag-analog-x, 0px), calc(-25vh + var(--drag-analog-y, 0px))) scale(var(--scale-analog, 1)); /* 上半分の中央 */
 }
 
 /* Portrait Swapped (縦置きの入れ替え状態) */
 .analog-layout-swapped.info-state-1 .analog-page > div {
-  transform: translate(var(--drag-analog-x, 0px), calc(15vh + var(--drag-analog-y, 0px))) scale(var(--scale-analog, 1)); /* 移動量をマイルドに */
+  transform: translate(var(--drag-analog-x, 0px), calc(25vh + var(--drag-analog-y, 0px))) scale(var(--scale-analog, 1)); /* 下半分の中央 */
 }
 .analog-layout-swapped.info-state-2 .analog-page > div {
-  transform: translate(var(--drag-analog-x, 0px), calc(18vh + var(--drag-analog-y, 0px))) scale(var(--scale-analog, 1));
+  transform: translate(var(--drag-analog-x, 0px), calc(25vh + var(--drag-analog-y, 0px))) scale(var(--scale-analog, 1)); /* 下半分の中央 */
 }
 
 /* 横置き時のレイアウト変更 */
@@ -4209,41 +4220,41 @@ body:not(.lang-ja):not(.lang-zh):not(.lang-ko) .warning-msg {
   .analog-info-container {
     bottom: auto;
     left: auto;
-    right: 15vw;
+    right: 25vw; /* 右半分の中央 (75vwから左へ) */
     top: 50%;
-    transform: translate(calc(var(--burn-shift-x, 0px) + var(--drag-info-x, 0px)), calc(-50% + var(--burn-shift-y, 0px) + var(--drag-info-y, 0px))) scale(var(--scale-info, 1));
+    transform: translate(calc(50% + var(--burn-shift-x, 0px) + var(--drag-info-x, 0px)), calc(-50% + var(--burn-shift-y, 0px) + var(--drag-info-y, 0px))) scale(var(--scale-info, 1));
   }
   .info-state-2 .analog-info-container {
     left: auto;
-    right: 8vw; /* 以前の横の位置に戻す */
-    top: 45%; /* デジタル時計の大きさで視覚的に下がるため、少し上に引き上げて中央に見せる */
-    transform: translate(calc(var(--burn-shift-x, 0px) + var(--drag-info-x, 0px)), calc(-50% + var(--burn-shift-y, 0px) + var(--drag-info-y, 0px))) scale(var(--scale-info, 1));
+    right: 25vw; /* 右半分の中央 */
+    top: 50%;
+    transform: translate(calc(50% + var(--burn-shift-x, 0px) + var(--drag-info-x, 0px)), calc(-50% + var(--burn-shift-y, 0px) + var(--drag-info-y, 0px))) scale(var(--scale-info, 1));
     gap: 0;
   }
   /* Landscape Swapped (横置きの入れ替え状態) */
   .analog-layout-swapped.info-state-1 .analog-info-container,
   .analog-layout-swapped.info-state-2 .analog-info-container {
     right: auto;
-    left: 12vw; /* 少し中央に寄せて、はみ出しを防止 */
-    top: 45%; /* 同様に少し上に引き上げる */
-    transform: translate(calc(var(--burn-shift-x, 0px) + var(--drag-info-x, 0px)), calc(-50% + var(--burn-shift-y, 0px) + var(--drag-info-y, 0px))) scale(var(--scale-info, 1));
+    left: 25vw; /* 左半分の中央に配置 */
+    top: 50%;
+    transform: translate(calc(-50% + var(--burn-shift-x, 0px) + var(--drag-info-x, 0px)), calc(-50% + var(--burn-shift-y, 0px) + var(--drag-info-y, 0px))) scale(var(--scale-info, 1));
   }
   .info-state-2 .analog-digital-clock {
     margin-bottom: 3vw;
   }
   .info-state-1 .analog-page > div {
-    transform: translate(calc(-20vw + var(--drag-analog-x, 0px)), var(--drag-analog-y, 0px)) scale(var(--scale-analog, 1));
+    transform: translate(calc(-25vw + var(--drag-analog-x, 0px)), var(--drag-analog-y, 0px)) scale(var(--scale-analog, 1)); /* 左半分の中央 */
   }
   .info-state-2 .analog-page > div {
-    transform: translate(calc(-25vw + var(--drag-analog-x, 0px)), var(--drag-analog-y, 0px)) scale(var(--scale-analog, 1)); /* さらに左へ避ける */
+    transform: translate(calc(-25vw + var(--drag-analog-x, 0px)), var(--drag-analog-y, 0px)) scale(var(--scale-analog, 1)); /* 左半分の中央 */
   }
   
   /* Landscape Swapped (横置きの入れ替え状態) */
   .analog-layout-swapped.info-state-1 .analog-page > div {
-    transform: translate(calc(15vw + var(--drag-analog-x, 0px)), var(--drag-analog-y, 0px)) scale(var(--scale-analog, 1)); /* 移動量をマイルドに */
+    transform: translate(calc(25vw + var(--drag-analog-x, 0px)), var(--drag-analog-y, 0px)) scale(var(--scale-analog, 1)); /* 右半分の中央 */
   }
   .analog-layout-swapped.info-state-2 .analog-page > div {
-    transform: translate(calc(20vw + var(--drag-analog-x, 0px)), var(--drag-analog-y, 0px)) scale(var(--scale-analog, 1));
+    transform: translate(calc(25vw + var(--drag-analog-x, 0px)), var(--drag-analog-y, 0px)) scale(var(--scale-analog, 1)); /* 右半分の中央 */
   }
 }
 
@@ -4532,12 +4543,15 @@ body:not(.lang-ja):not(.lang-zh):not(.lang-ko) .warning-msg {
 .info-state-2 .analog-calendar-viewport {
   display: block;
   pointer-events: auto; /* マウスやタッチのイベントを受け取るために必須 */
+  cursor: grab;
+}
+.info-state-2 .analog-calendar-viewport.is-dragging {
+  cursor: grabbing;
 }
 .analog-calendar-rail {
   display: flex;
   flex-direction: row;
   gap: 12px;
-  transition: transform 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94);
   will-change: transform;
   user-select: none;
 }
@@ -4879,38 +4893,42 @@ body:not(.lang-ja):not(.lang-zh):not(.lang-ko) .warning-msg {
   gap: 8px;
 }
 
-.currency-select-box {
+.currency-field-label {
   flex: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  background: rgba(15, 22, 36, 0.85);
-  border: 1.5px solid rgba(0, 255, 224, 0.25);
+  background: rgba(15, 22, 36, 0.7);
+  border: 1.5px solid rgba(255, 255, 255, 0.15);
   border-radius: 8px;
   padding: 4px 6px 5px;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  opacity: 0.65; /* 非選択時は落ち着いたトーン */
 }
 
-.currency-select-box.active-field {
-  border-color: var(--accent);
-  background: rgba(0, 255, 224, 0.08);
-  box-shadow: 0 0 8px rgba(0, 255, 224, 0.35);
+/* 選択されている側の強烈なハイライト強調 (ヒロさん仕様) */
+.currency-field-label.active-field {
+  opacity: 1 !important;
+  border: 1.8px solid #00ffe0 !important;
+  background: rgba(0, 255, 224, 0.14) !important;
+  box-shadow: 0 0 14px rgba(0, 255, 224, 0.45), inset 0 0 8px rgba(0, 255, 224, 0.2) !important;
+  transform: scale(1.02);
 }
 
-.currency-box-label {
+.currency-field-indicator {
   font-size: 11px;
-  font-weight: 800;
+  font-weight: 900;
   letter-spacing: 1.5px;
-  color: var(--text-sub);
-  margin-bottom: 2px;
-  transition: color 0.2s ease, text-shadow 0.2s ease;
+  color: rgba(255, 255, 255, 0.6);
+  margin-bottom: 3px;
+  transition: all 0.25s ease;
 }
 
-.currency-select-box.active-field .currency-box-label {
-  color: var(--accent);
-  text-shadow: 0 0 6px rgba(0, 255, 224, 0.5);
+.currency-field-label.active-field .currency-field-indicator {
+  color: #00ffe0 !important;
+  text-shadow: 0 0 8px rgba(0, 255, 224, 0.8) !important;
 }
 
 .currency-select {
@@ -4927,6 +4945,11 @@ body:not(.lang-ja):not(.lang-zh):not(.lang-ko) .warning-msg {
   text-align-last: center;
   outline: none;
   transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.currency-field-label.active-field .currency-select {
+  border-color: rgba(0, 255, 224, 0.6) !important;
+  box-shadow: 0 0 8px rgba(0, 255, 224, 0.3) !important;
 }
 
 .currency-swap-btn {
@@ -5069,9 +5092,13 @@ body:not(.lang-ja):not(.lang-zh):not(.lang-ko) .warning-msg {
   font-weight: bold;
   text-align: right;
   overflow-x: auto;
+  overflow-y: visible; /* 上下の浮き上がりを切らさない */
   white-space: nowrap;
   touch-action: pan-x;
   -webkit-overflow-scrolling: touch;
+  /* 上下パディングを追加して歯車やピルが浮かび上がっても上端が絶対に切れないようにする */
+  padding: 6px 4px 4px 4px;
+  line-height: 1.5;
   /* デフォルトはスクロールバー非表示 */
   scrollbar-width: none;
 }
@@ -5083,7 +5110,7 @@ body:not(.lang-ja):not(.lang-zh):not(.lang-ko) .warning-msg {
 .split-mode-active .time-calc-sub-display {
   scrollbar-width: thin;
   scrollbar-color: rgba(255, 0, 170, 0.6) rgba(255, 255, 255, 0.05);
-  padding-bottom: 4px;
+  padding-bottom: 6px;
 }
 .split-mode-active .time-calc-sub-display::-webkit-scrollbar {
   display: block;
@@ -5099,20 +5126,56 @@ body:not(.lang-ja):not(.lang-zh):not(.lang-ko) .warning-msg {
   border-radius: 3px;
 }
 
-/* レートクリック可能スタイル */
+/* レートクリック可能スタイル (設定可能なことが一目でわかる歯車付きデザイン) */
 .currency-rate-clickable {
   cursor: pointer;
-  border-bottom: 1px dashed rgba(255, 0, 170, 0.5);
-  transition: all 0.2s;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 10px;
+  border-radius: 12px;
+  background: rgba(255, 0, 170, 0.12);
+  border: 1px solid rgba(255, 0, 170, 0.4);
+  color: #ff33bb;
+  text-shadow: 0 0 8px rgba(255, 0, 170, 0.6);
+  transition: all 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
   user-select: none;
+  vertical-align: middle;
+  margin: 1px 0;
 }
 .currency-rate-clickable:hover {
-  color: #ff44cc;
-  text-shadow: 0 0 12px rgba(255, 0, 170, 0.8);
-  border-bottom-color: #ff44cc;
+  color: #fff;
+  background: rgba(255, 0, 170, 0.28);
+  border-color: rgba(255, 0, 170, 0.85);
+  box-shadow: 0 0 14px rgba(255, 0, 170, 0.55);
+  transform: translateY(-2px);
 }
 .currency-rate-clickable:active {
-  transform: scale(0.98);
+  transform: translateY(1px) scale(0.97);
+}
+.currency-rate-gear {
+  display: inline-block;
+  font-size: 13px;
+  line-height: 1;
+  color: #ff66cc;
+  filter: drop-shadow(0 0 4px rgba(255, 0, 170, 0.8));
+  transition: transform 0.35s cubic-bezier(0.25, 1, 0.5, 1);
+}
+.currency-rate-clickable:hover .currency-rate-gear {
+  transform: rotate(60deg) scale(1.15);
+  color: #fff;
+}
+.custom-rate-badge {
+  display: inline-block;
+  margin-left: 6px;
+  padding: 2px 7px;
+  font-size: 10px;
+  background: rgba(255, 170, 0, 0.2);
+  border: 1px solid rgba(255, 170, 0, 0.6);
+  color: #ffaa00;
+  border-radius: 8px;
+  vertical-align: middle;
+  text-shadow: 0 0 6px rgba(255, 170, 0, 0.6);
 }
 
 /* カスタムレート入力モーダル */
@@ -5489,15 +5552,17 @@ body:not(.lang-ja):not(.lang-zh):not(.lang-ko) .warning-msg {
 }
 
 .calc-btn-op {
-  background: rgba(255, 0, 170, 0.12);
-  border: 1px solid rgba(255, 0, 170, 0.6);
-  color: #ff00aa;
-  font-size: 18px;
+  background: rgba(255, 0, 170, 0.14);
+  border: 1px solid rgba(255, 0, 170, 0.65);
+  color: #ffffff !important; /* ヒロさん仕様: 淡いピンク背景でも抜群に読みやすい白色文字 */
+  font-size: 19px;
+  font-weight: bold;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8), 0 0 8px rgba(255, 0, 170, 0.5);
   box-shadow: 0 0 8px rgba(255, 0, 170, 0.2);
 }
 .calc-btn-op:active {
   background: #ff00aa;
-  color: #fff;
+  color: #ffffff !important;
   box-shadow: 0 0 16px #ff00aa;
 }
 
@@ -5590,4 +5655,687 @@ body:not(.lang-ja):not(.lang-zh):not(.lang-ko) .warning-msg {
   vertical-align: middle;
   letter-spacing: 0.5px;
 }
+
+/* ============================================================
+   為替レート選択レイヤー & ドラッグ＆ドロップUI (ヒロさん仕様準拠)
+   ============================================================ */
+
+/* キーパッドの「レート選択」ボタン (ヒロさん仕様: 濃いダークグリーン背景 & 鮮やかな緑色テキスト) */
+.calc-btn-rate-select {
+  background: #0d3634 !important;
+  border: 1.5px solid #00ff80 !important;
+  color: #00ff80 !important;
+  font-size: 11px;
+  font-weight: bold;
+  line-height: 1.2;
+  box-shadow: 0 0 10px rgba(0, 255, 128, 0.28);
+  transition: all 0.2s ease;
+  user-select: none;
+}
+.calc-btn-rate-select:hover {
+  background: #134e4b !important;
+  border-color: #00ffaa !important;
+  box-shadow: 0 0 16px rgba(0, 255, 128, 0.6);
+  color: #fff !important;
+  transform: translateY(-1px);
+}
+.calc-btn-rate-select:active {
+  transform: translateY(1px) scale(0.96);
+  background: #19635f !important;
+}
+
+/* ドラッグ可能な通貨ボタン */
+.curr-draggable-btn {
+  cursor: grab;
+  user-select: none;
+  touch-action: none; /* スマホでのドラッグを円滑にする */
+  font-size: 12.5px !important;
+  white-space: nowrap;
+  letter-spacing: -0.4px;
+}
+.curr-draggable-btn:active {
+  cursor: grabbing;
+}
+.curr-draggable-btn.is-dragging {
+  opacity: 0.4;
+  transform: scale(0.92);
+}
+
+/* FROM / TO ドロップターゲット枠 */
+.curr-drop-target {
+  transition: all 0.25s ease;
+}
+.curr-drop-target.drag-over {
+  border-color: #00ff80 !important;
+  background: rgba(0, 255, 128, 0.25) !important;
+  box-shadow: 0 0 18px rgba(0, 255, 128, 0.7) !important;
+  transform: scale(1.04);
+}
+.curr-drop-target.drop-success {
+  animation: dropSuccessPulse 0.4s ease-out;
+}
+@keyframes dropSuccessPulse {
+  0% { transform: scale(1.08); box-shadow: 0 0 25px #00ff80; }
+  100% { transform: scale(1.0); box-shadow: none; }
+}
+
+/* 指/マウスに追従するドラッグゴーストバッジ */
+.curr-drag-ghost {
+  position: fixed;
+  z-index: 100000;
+  pointer-events: none;
+  background: linear-gradient(135deg, #00ffe0, #0077b6);
+  color: #041018;
+  font-family: 'Consolas', 'Courier New', monospace;
+  font-size: 15px;
+  font-weight: 900;
+  padding: 8px 16px;
+  border-radius: 8px;
+  box-shadow: 0 0 20px rgba(0, 255, 224, 0.8), 0 8px 16px rgba(0,0,0,0.5);
+  transform: translate(-50%, -50%);
+  letter-spacing: 1px;
+}
+
+/* レート選択モーダルレイヤー */
+.rate-select-modal {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  z-index: 9999;
+  background: rgba(4, 10, 22, 0.82);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px;
+}
+.rate-select-modal-box {
+  background: linear-gradient(145deg, #0b1325 0%, #152238 100%);
+  border: 2px solid rgba(0, 255, 128, 0.55);
+  border-radius: 20px;
+  box-shadow: 0 0 35px rgba(0, 255, 128, 0.25), 0 25px 50px rgba(0, 0, 0, 0.8);
+  width: 100%;
+  max-width: 440px;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  animation: riseInShort 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.rate-select-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 18px 10px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+.rate-select-modal-title {
+  font-size: 14px;
+  font-weight: bold;
+  color: #00ff80;
+  text-shadow: 0 0 8px rgba(0, 255, 128, 0.5);
+}
+.rate-select-close-btn {
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 18px;
+  cursor: pointer;
+  padding: 4px 8px;
+  transition: color 0.2s;
+}
+.rate-select-close-btn:hover {
+  color: #fff;
+}
+
+.rate-select-layout {
+  padding: 14px 16px;
+  display: grid;
+  grid-template-columns: 1fr 140px;
+  gap: 14px;
+  overflow-y: auto;
+  flex: 1;
+}
+@media (max-width: 380px) {
+  .rate-select-layout {
+    grid-template-columns: 1fr 120px;
+    gap: 10px;
+    padding: 10px;
+  }
+}
+
+.rate-section-label {
+  font-size: 11px;
+  font-weight: bold;
+  color: rgba(255, 255, 255, 0.7);
+  margin-bottom: 8px;
+  text-shadow: 0 0 4px rgba(255, 255, 255, 0.2);
+}
+
+/* 左側: 19通貨パレットグリッド */
+.rate-palette-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+}
+.rate-palette-item {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(0, 255, 224, 0.3);
+  color: #00ffe0;
+  border-radius: 8px;
+  padding: 8px 4px;
+  font-family: 'Consolas', 'Courier New', monospace;
+  font-size: 12px;
+  font-weight: bold;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  user-select: none;
+}
+.rate-palette-item:hover {
+  background: rgba(0, 255, 224, 0.2);
+  border-color: #00ffe0;
+  box-shadow: 0 0 10px rgba(0, 255, 224, 0.5);
+  transform: scale(1.04);
+}
+.rate-palette-item.is-selected {
+  background: #00ffe0;
+  color: #041018;
+  border-color: #fff;
+  box-shadow: 0 0 15px rgba(0, 255, 224, 0.8);
+}
+
+/* 使用中の通貨: 暗くしてダブりを防ぐ (ヒロさん仕様) */
+.rate-palette-item.is-used {
+  opacity: 0.32;
+  background: rgba(8, 14, 25, 0.7);
+  border-color: rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.35);
+  box-shadow: none;
+  filter: grayscale(0.7);
+  position: relative;
+}
+.rate-palette-item.is-used:hover {
+  opacity: 0.75;
+  border-color: rgba(0, 255, 128, 0.5);
+  transform: none;
+}
+.rate-palette-item.is-used .used-slot-badge {
+  position: absolute;
+  top: 2px;
+  right: 3px;
+  font-size: 8px;
+  font-weight: 900;
+  color: #00ff80;
+  background: rgba(0, 255, 128, 0.25);
+  border: 1px solid rgba(0, 255, 128, 0.4);
+  border-radius: 3px;
+  padding: 0 3px;
+  line-height: 1.1;
+}
+
+/* 右上: 6枠スロットグリッド (A〜F) */
+.rate-slots-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+}
+.rate-slot-card {
+  background: rgba(0, 255, 128, 0.08);
+  border: 1.5px dashed rgba(0, 255, 128, 0.5);
+  border-radius: 10px;
+  padding: 8px 4px;
+  text-align: center;
+  cursor: pointer;
+  position: relative;
+  transition: all 0.25s;
+  user-select: none;
+}
+.rate-slot-card:hover {
+  background: rgba(0, 255, 128, 0.18);
+  border-color: #00ff80;
+  transform: scale(1.03);
+}
+.rate-slot-card.is-active-target {
+  background: rgba(0, 255, 128, 0.28);
+  border: 1.5px solid #00ff80;
+  box-shadow: 0 0 12px rgba(0, 255, 128, 0.6);
+}
+.rate-slot-card.drag-over {
+  background: rgba(0, 255, 224, 0.35) !important;
+  border-color: #00ffe0 !important;
+  box-shadow: 0 0 16px rgba(0, 255, 224, 0.8) !important;
+  transform: scale(1.06);
+}
+.slot-badge {
+  position: absolute;
+  top: 3px; left: 5px;
+  font-size: 9px;
+  font-weight: 900;
+  color: #00ff80;
+  opacity: 0.8;
+}
+.slot-curr-name {
+  display: block;
+  font-family: 'Consolas', 'Courier New', monospace;
+  font-size: 13px;
+  font-weight: bold;
+  color: #fff;
+  margin-top: 4px;
+  text-shadow: 0 0 6px rgba(255, 255, 255, 0.5);
+}
+.rate-slots-hint {
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.5);
+  margin-top: 8px;
+  line-height: 1.3;
+}
+
+.rate-select-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 16px 14px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+.calc-btn-rate-confirm {
+  background: linear-gradient(135deg, #00ff80 0%, #00b4d8 100%);
+  border: none;
+  color: #041018;
+  font-weight: bold;
+  font-size: 13px;
+  padding: 7px 18px;
+  border-radius: 8px;
+  box-shadow: 0 0 12px rgba(0, 255, 128, 0.4);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.calc-btn-rate-confirm:hover {
+  box-shadow: 0 0 20px rgba(0, 255, 128, 0.8);
+  transform: scale(1.02);
+}
+
+/* ============================================================
+   最新レート自動同期ステータスバー (ヒロさん仕様: ⚙レート表示の下に配置)
+   ============================================================ */
+.time-calc-live-rate-bar {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  margin-top: 3px;
+  padding-bottom: 2px;
+  animation: fadeInRateBar 0.3s ease-out;
+}
+
+@keyframes fadeInRateBar {
+  from { opacity: 0; transform: translateY(-2px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.live-rate-status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 10.5px;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-weight: bold;
+  padding: 2px 8px;
+  border-radius: 12px;
+  user-select: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  line-height: 1.3;
+}
+.live-rate-status-pill:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.2);
+}
+.live-rate-status-pill.loading {
+  background: rgba(0, 255, 224, 0.12);
+  border: 1px dashed rgba(0, 255, 224, 0.7);
+  color: #00ffe0;
+  box-shadow: 0 0 8px rgba(0, 255, 224, 0.3);
+  animation: liveRatePulse 1.2s infinite alternate;
+}
+.live-rate-status-pill.success {
+  background: rgba(0, 40, 25, 0.85);
+  border: 1px dashed #00ff80;
+  color: #00ff80;
+  box-shadow: 0 0 8px rgba(0, 255, 128, 0.25);
+}
+.live-rate-status-pill.offline {
+  background: rgba(45, 30, 5, 0.85);
+  border: 1px dashed #ffaa00;
+  color: #ffaa00;
+  box-shadow: 0 0 8px rgba(255, 170, 0, 0.25);
+}
+.live-rate-status-pill.error {
+  background: rgba(45, 10, 10, 0.85);
+  border: 1px dashed #ff5050;
+  color: #ff5050;
+  box-shadow: 0 0 8px rgba(255, 80, 80, 0.25);
+}
+
+@keyframes liveRatePulse {
+  0% { opacity: 0.75; box-shadow: 0 0 3px rgba(0, 255, 224, 0.2); }
+  100% { opacity: 1; box-shadow: 0 0 10px rgba(0, 255, 224, 0.5); }
+}
+
+/* ============================================================
+   Time Regulus 洗練された天体オービット・モード選択画面 (ヒロさん仕様)
+   ============================================================ */
+.regulus-mode-select-screen {
+  position: relative;
+  width: 100%;
+  max-width: 480px;
+  margin: 0 auto;
+  min-height: 80vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 16px 20px 30px;
+  box-sizing: border-box;
+  text-align: center;
+}
+
+/* 言語セレクターヘッダー */
+.mode-select-header-right {
+  position: absolute;
+  top: 10px;
+  right: 12px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  z-index: 10;
+}
+.mode-lang-select {
+  background: rgba(10, 18, 30, 0.85) !important;
+  border: 1px solid rgba(0, 255, 224, 0.4) !important;
+  color: #00ffe0 !important;
+  border-radius: 6px !important;
+  padding: 4px 8px !important;
+  font-size: 13px !important;
+  font-weight: bold !important;
+  cursor: pointer;
+  outline: none;
+  box-shadow: 0 0 10px rgba(0, 255, 224, 0.2);
+  transition: all 0.2s ease;
+}
+.mode-lang-select:hover {
+  border-color: #00ffe0 !important;
+  box-shadow: 0 0 16px rgba(0, 255, 224, 0.5);
+}
+
+/* タイトルエリア (ヒロさんのこだわり: 浮かび上がるアニメーション完全復元) */
+.mode-select-title-area {
+  margin-top: 28px;
+  margin-bottom: 12px;
+}
+.mode-select-app-title {
+  font-family: 'Share Tech Mono', 'Courier New', monospace;
+  font-size: 38px;
+  font-weight: 900;
+  letter-spacing: 3px;
+  color: #00ffe0;
+  text-shadow: 0 0 12px rgba(0, 255, 224, 0.8), 0 0 24px rgba(0, 255, 224, 0.45), 0 0 36px rgba(0, 136, 255, 0.3);
+  margin: 0 0 6px 0;
+  animation: riseInShort 1s ease-out forwards, glowPulseTitle 4s infinite alternate ease-in-out 1s;
+}
+@keyframes glowPulseTitle {
+  0% { text-shadow: 0 0 10px rgba(0, 255, 224, 0.7), 0 0 20px rgba(0, 255, 224, 0.35); }
+  100% { text-shadow: 0 0 16px rgba(0, 255, 224, 0.95), 0 0 30px rgba(0, 255, 224, 0.6), 0 0 45px rgba(0, 136, 255, 0.5); }
+}
+
+.mode-select-subtitle {
+  font-size: 14px;
+  letter-spacing: 3px;
+  color: rgba(255, 255, 255, 0.6);
+  margin: 0;
+  font-weight: 500;
+}
+
+/* 天体オービットステージ (ヒロさん仕様: 拡大オービット ＆ 縦3つ並びの美しい惑星ボタン) */
+.orbit-stage-container.vertical-orbit-stage {
+  position: relative;
+  width: 100%;
+  max-width: 440px;
+  height: 350px;
+  margin: 8px auto 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* SVG軌道リング (ヒロさん仕様: ボタンの横幅290pxより外側に大きく展開) */
+.orbit-ring-svg {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 440px;
+  height: 360px;
+  max-width: 98vw;
+  pointer-events: none;
+  overflow: visible;
+  z-index: 1;
+}
+
+.orbit-ellipse-line {
+  fill: none;
+  stroke: url(#orbitGrad);
+  stroke-width: 2.4;
+  stroke-dasharray: 9 5;
+  animation: orbitClockwiseDash 24s linear infinite;
+  opacity: 0.9;
+}
+.orbit-ellipse-sub {
+  fill: none;
+  stroke: rgba(0, 180, 255, 0.55);
+  stroke-width: 1.3;
+  stroke-dasharray: 4 4; /* ヒロさん仕様: 目の細かい繊細な点線 */
+  animation: orbitSubClockwiseDash 28s linear infinite;
+  opacity: 0.85;
+}
+
+@keyframes orbitClockwiseDash {
+  from { stroke-dashoffset: 0; }
+  to { stroke-dashoffset: -350; } /* マイナス方向で時計回りに走る */
+}
+
+@keyframes orbitSubClockwiseDash {
+  from { stroke-dashoffset: 0; }
+  to { stroke-dashoffset: -320; } /* 逆斜め細線も時計回りに繊細に流れる */
+}
+
+/* 縦3つの惑星ボタン群コンテナ */
+.orbit-vertical-buttons {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  width: 100%;
+  position: relative;
+  z-index: 3;
+}
+
+/* 惑星ボタンのラッパー（時間差の揺らぎアニメーション） */
+.orbit-btn-wrapper-vert {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  transition: transform 0.3s ease;
+}
+
+/* それぞれ独立した優しい揺らぎ (ヒロさんお気に入りポイント) */
+.vert-delay-1 {
+  animation: planetVertFloat1 4.6s ease-in-out infinite alternate;
+}
+.vert-delay-2 {
+  animation: planetVertFloat2 5.2s ease-in-out infinite alternate -1.7s;
+}
+.vert-delay-3 {
+  animation: planetVertFloat3 4.8s ease-in-out infinite alternate -3.4s;
+}
+
+@keyframes planetVertFloat1 {
+  0% { transform: translateY(0px) rotate(0deg); }
+  100% { transform: translateY(-5px) rotate(0.4deg); }
+}
+@keyframes planetVertFloat2 {
+  0% { transform: translateY(0px) rotate(0deg); }
+  100% { transform: translateY(-6px) rotate(-0.5deg); }
+}
+@keyframes planetVertFloat3 {
+  0% { transform: translateY(0px) rotate(0deg); }
+  100% { transform: translateY(-5px) rotate(0.3deg); }
+}
+
+/* 縦3つの均一サイズオーバルボタン (ヒロさん仕様: 多言語化でも左右に十分な余白を確保) */
+.btn-vert-card {
+  width: 290px !important;
+  max-width: 90vw !important;
+  min-width: 250px !important;
+  padding: 14px 20px !important;
+  font-size: 14px !important;
+  letter-spacing: 0.5px !important;
+  text-align: center;
+  box-sizing: border-box !important;
+}
+.btn-vert-card .planet-btn-text {
+  display: inline-block;
+  max-width: 100%;
+  padding: 0 6px; /* 左右に十分な余白を確保 */
+  white-space: nowrap;
+}
+
+/* 惑星ボタンスタイル (ディープコズミックサファイア〜バイオレットグラデーション) */
+.orbit-planet-btn {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50px; /* 優雅なオーバル型 */
+  background: radial-gradient(circle at 35% 30%, #1e5cb3 0%, #0d2e6e 45%, #18134a 80%, #08061c 100%);
+  border: 1.8px solid #00b4d8;
+  color: #ffffff;
+  font-size: 15.5px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  text-shadow: 0 2px 5px rgba(0, 0, 0, 0.8), 0 0 10px rgba(0, 255, 224, 0.5);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.75), 0 0 20px rgba(0, 180, 216, 0.4), inset 0 2px 4px rgba(255, 255, 255, 0.55), inset 0 -4px 10px rgba(0, 0, 0, 0.7);
+  cursor: pointer;
+  outline: none;
+  user-select: none;
+  transition: all 0.28s cubic-bezier(0.2, 0.8, 0.2, 1);
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+/* 各ボタンのプロポーション */
+.btn-calc-error {
+  min-width: 145px;
+  padding: 16px 25px;
+  border-color: #00d2ff;
+}
+.btn-calc-correction {
+  min-width: 165px;
+  padding: 17px 27px;
+  border-color: #0088ff;
+}
+.btn-calc-multi {
+  min-width: 120px;
+  padding: 13px 20px;
+  font-size: 14px;
+  border-color: #00ffe0;
+}
+
+/* ホバーエフェクト */
+.orbit-planet-btn:hover {
+  transform: scale(1.05);
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.85), 0 0 28px rgba(0, 255, 224, 0.7), inset 0 2px 6px rgba(255, 255, 255, 0.8);
+  border-color: #00ffe0;
+}
+
+/* ボタンを押したときの爽快なネオンパルスアニメーション */
+.orbit-planet-btn:active, .orbit-planet-btn.is-pressed {
+  transform: scale(0.92);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.9), 0 0 35px #00ffe0, inset 0 0 15px rgba(0, 255, 224, 0.7);
+  border-color: #00ffe0;
+}
+
+/* スワイプ中は :active を抑制（長押し誤演出防止） */
+body.is-swiping .orbit-planet-btn:active {
+  transform: none;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.75), 0 0 20px rgba(0, 180, 216, 0.4), inset 0 2px 4px rgba(255, 255, 255, 0.55), inset 0 -4px 10px rgba(0, 0, 0, 0.7);
+  border-color: #00b4d8;
+}
+
+
+/* ボタン上の光の反射レイヤー */
+.planet-btn-glow {
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 60%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+  transform: skewX(-25deg);
+  pointer-events: none;
+  animation: planetGleam 6s infinite ease-in-out;
+}
+@keyframes planetGleam {
+  0%, 70% { left: -100%; }
+  85%, 100% { left: 180%; }
+}
+
+/* 床面への鏡面反射 (リフレクション・水鏡エフェクト) */
+.planet-btn-reflection {
+  width: 85%;
+  height: 14px;
+  margin-top: 5px;
+  background: radial-gradient(ellipse at 50% 0%, rgba(0, 180, 216, 0.45) 0%, rgba(20, 10, 50, 0.2) 50%, transparent 80%);
+  filter: blur(3.5px);
+  opacity: 0.7;
+  pointer-events: none;
+  transition: all 0.3s ease;
+}
+.orbit-planet-btn:hover + .planet-btn-reflection {
+  opacity: 0.95;
+  transform: scaleX(1.1);
+  filter: blur(4.5px);
+}
+
+/* 入力情報のリセット (ネオンピンクリンク) */
+.mode-select-footer-area {
+  margin-top: 10px;
+  position: relative;
+  z-index: 5;
+}
+.neon-reset-link {
+  color: #ff00aa !important;
+  font-size: 14px;
+  font-weight: bold;
+  letter-spacing: 1.5px;
+  text-decoration: none;
+  text-shadow: 0 0 10px rgba(255, 0, 170, 0.6);
+  padding: 8px 18px;
+  border-radius: 20px;
+  background: rgba(255, 0, 170, 0.08);
+  border: 1px solid rgba(255, 0, 170, 0.35);
+  transition: all 0.25s ease;
+  display: inline-block;
+}
+.neon-reset-link:hover {
+  background: rgba(255, 0, 170, 0.2);
+  border-color: #ff00aa;
+  box-shadow: 0 0 18px rgba(255, 0, 170, 0.6);
+  color: #fff !important;
+  transform: translateY(-1px);
+}
+
+
+
 

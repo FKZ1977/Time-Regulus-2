@@ -1,8 +1,8 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <title>Time Regulus v3.3.0</title>
+  <title>Time Regulus v3.3.1</title>
   <!-- Google tag (gtag.js) -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-R7PW7DY4GF"></script>
   <script>
@@ -13,7 +13,7 @@
   </script>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <link rel="manifest" href="manifest.json">
-  <meta name="apple-mobile-web-app-title" content="TimeRegulus💫">
+  <meta name="apple-mobile-web-app-title" content="TimeRegulus🦖">
   <link rel="apple-touch-icon" href="icon-192.png">
   <!-- ★【起動高速化】ロック画面用CSS（小・ブロッキング）→ 先に読み込んで即表示 -->
   <link rel="stylesheet" href="style-lock.css?c=31">
@@ -94,7 +94,7 @@
       </select>
     </div>
     <h1 class="fkz anim-title-rise" id="lockTitle" data-i18n="app_title">Time Regulus</h1>
-    <p class="subtitle anim-slow-fade" id="lockSubtitle" data-i18n="app_subtitle">タイム　レグルス　v3.3.0</p>
+    <p class="subtitle anim-slow-fade" id="lockSubtitle" data-i18n="app_subtitle">タイム　レグルス　v3.3.1</p>
     <div class="passcode-row anim-slow-fade">
       <label for="passcode" class="passcode-label" data-i18n="passcode">暗証番号：</label>
       <input type="password" id="passcode" placeholder="例：12345" data-i18n-placeholder="passcode_placeholder" tabindex="1" readonly class="passcode-input">
@@ -127,7 +127,11 @@
           <option value="sec-it">IT Italiano</option>
           <option value="sec-de">DE Deutsch</option>
           <option value="sec-uk">UA Українська</option>
+          <option value="sec-hi">HI हिन्दी</option>
+          <option value="sec-ar">AR العربية</option>
+          <option value="sec-ru">RU Русский</option>
           <option value="sec-id">ID Bahasa Indonesia</option>
+          <option value="sec-zh">ZH 中文</option>
           <option value="sec-ko">KO 한국어</option>
           <option value="sec-tr">TR Türkçe</option>
         </select>
@@ -267,38 +271,96 @@
       <circle cx="30" cy="30" r="26" id="analogRingCircle"/>
     </svg>
   </div>
-  <div id="modeSelect" style="display:none; text-align:center;">
-    <div style="position: absolute; top: 10px; right: 10px; display: flex; align-items: center; gap: 4px;">
+  <div id="modeSelect" class="regulus-mode-select-screen" style="display:none;">
+    <!-- 言語セレクター (右上) -->
+    <div class="mode-select-header-right">
       <span style="font-size: 16px;">🌐</span>
-      <select class="lang-selector" onchange="setLanguage(this.value)" style="background: transparent; border: 1px solid var(--accent); color: var(--text-main); border-radius: 4px; padding: 4px; font-size: 14px; width: auto; appearance: none; text-align: center; text-align-last: center;">
-        <option value="ja">JP 日本語</option>
-        <option value="en">EN English</option>
-        <option value="nl">NL Nederlands</option>
-        <option value="pt">PT Português</option>
-        <option value="es">ES Español</option>
-        <option value="fr">FR Français</option>
-        <option value="it">IT Italiano</option>
-        <option value="de">DE Deutsch</option>
-        <option value="uk">UK Українська</option>
-        <option value="id">ID Indonesia</option>
-        <option value="ko">KO 한국어</option>
-        <option value="tr">TR Türkçe</option>
+      <select class="lang-selector mode-lang-select" onchange="setLanguage(this.value)">
+        <option value="ja">🇯🇵 JP 日本語</option>
+        <option value="en">🇺🇸 EN English</option>
+        <option value="nl">🇳🇱 NL Nederlands</option>
+        <option value="pt">🇧🇷 PT Português</option>
+        <option value="es">🇪🇸 ES Español</option>
+        <option value="fr">🇫🇷 FR Français</option>
+        <option value="it">🇮🇹 IT Italiano</option>
+        <option value="de">🇩🇪 DE Deutsch</option>
+        <option value="uk">🇺🇦 UK Українська</option>
+        <option value="id">🇮🇩 ID Indonesia</option>
+        <option value="ko">🇰🇷 KO 한국어</option>
+        <option value="tr">🇹🇷 TR Türkçe</option>
       </select>
     </div>
-    <h1 class="fkz rise-in-short" data-i18n="app_title">Regulus</h1>
-    <div id="updateNotification" style="display:none;"></div>
-    <p class="subtitle" data-i18n="select_mode">- モード選択 -</p>
-    <div style="display: flex; flex-direction: column; align-items: center; gap: 20px; margin-top: 40px;">
-      <button class="action-btn" onclick="showErrorMode()" tabindex="3" data-i18n="calc_error">誤差の計算</button>
-      <button class="action-btn" onclick="showCorrectionMode()" tabindex="4" data-i18n="calc_correction">補正時刻の計算</button>
-      <button class="action-btn" onclick="showTimeCalcMode()" tabindex="5" data-i18n="time_calculator_etc">マルチ電卓</button>
-    </div><br><br>
-    <a href="#" onclick="showResetConfirmation(); return false;" id="resetLink" class="mode-select-link" data-i18n="reset_inputs_link">入力情報のリセット</a>
-    <div id="resetConfirmContainer" style="display:none; margin-top: 15px;">
-      <button class="action-btn" onclick="resetAppAndReturnToLock()"
-        style="background-color: var(--toggle-bg); box-shadow: 0 4px 12px rgba(255, 0, 170, 0.3); font-size: 14px; padding: 10px 20px;" data-i18n="reset_inputs_btn">入力情報を消去して初期画面に戻ります</button>
+
+    <!-- タイトルエリア (ヒロさんのこだわり: fkz rise-in-short 浮かび上がるアニメーション完全復元) -->
+    <div class="mode-select-title-area">
+      <h1 class="fkz rise-in-short mode-select-app-title" data-i18n="app_title">Time Regulus</h1>
+      <p class="mode-select-subtitle" data-i18n="select_mode">- モード選択 -</p>
+      <div id="updateNotification" style="display:none;"></div>
     </div>
-    <br><br><br><br>
+
+    <!-- 宇宙・天体オービットステージ (ヒロさん仕様: 時計回り回転の楕円 ＆ 縦3つ並びの美しい惑星ボタン) -->
+    <div class="orbit-stage-container vertical-orbit-stage">
+      <!-- 天体軌道リングSVG (ヒロさん仕様: ボタンに隠れないよう拡大 & 2つの楕円を美しく展開) -->
+      <svg class="orbit-ring-svg" viewBox="0 0 460 380">
+        <defs>
+          <linearGradient id="orbitGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#00ffe0" stop-opacity="0.95"/>
+            <stop offset="45%" stop-color="#0088ff" stop-opacity="0.45"/>
+            <stop offset="100%" stop-color="#ff00aa" stop-opacity="0.85"/>
+          </linearGradient>
+          <filter id="orbitGlow" x="-20%" y="-20%" width="140%" height="140%">
+            <feGaussianBlur stdDeviation="3.5" result="glow"/>
+            <feMerge>
+              <feMergeNode in="glow"/>
+              <feMergeNode in="SourceGraphic"/>
+            </feMerge>
+          </filter>
+        </defs>
+        <!-- メイン軌道楕円 (拡大 & 傾き固定 & 点線のみ時計回り) -->
+        <ellipse cx="230" cy="190" rx="195" ry="130" class="orbit-ellipse-line" filter="url(#orbitGlow)" transform="rotate(-15 230 190)"/>
+        <!-- サブ交差軌道楕円 (逆斜めの細い線・拡大 & 立体感強調) -->
+        <ellipse cx="230" cy="190" rx="185" ry="115" class="orbit-ellipse-sub" transform="rotate(30 230 190)"/>
+      </svg>
+
+      <!-- 縦に3つ並ぶ惑星ボタン群 (揺らぎアニメーション & 水鏡反射付き) -->
+      <div class="orbit-vertical-buttons">
+        <!-- 1. 誤差の計算 -->
+        <div class="orbit-btn-wrapper-vert vert-delay-1">
+          <button type="button" class="orbit-planet-btn btn-vert-card btn-calc-error" onclick="triggerModeTransition('error', showErrorMode)" tabindex="3">
+            <span class="planet-btn-glow"></span>
+            <span class="planet-btn-text" data-i18n="calc_error">誤差の計算</span>
+          </button>
+          <div class="planet-btn-reflection"></div>
+        </div>
+
+        <!-- 2. 補正時刻の計算 -->
+        <div class="orbit-btn-wrapper-vert vert-delay-2">
+          <button type="button" class="orbit-planet-btn btn-vert-card btn-calc-correction" onclick="triggerModeTransition('correction', showCorrectionMode)" tabindex="4">
+            <span class="planet-btn-glow"></span>
+            <span class="planet-btn-text" data-i18n="calc_correction">補正時刻の計算</span>
+          </button>
+          <div class="planet-btn-reflection"></div>
+        </div>
+
+        <!-- 3. マルチ電卓 -->
+        <div class="orbit-btn-wrapper-vert vert-delay-3">
+          <button type="button" class="orbit-planet-btn btn-vert-card btn-calc-multi" onclick="triggerModeTransition('multi', showTimeCalcMode)" tabindex="5">
+            <span class="planet-btn-glow"></span>
+            <span class="planet-btn-text" data-i18n="time_calculator_etc">マルチ電卓</span>
+          </button>
+          <div class="planet-btn-reflection"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 下部アクション: 入力情報のリセット -->
+    <div class="mode-select-footer-area">
+      <a href="#" onclick="showResetConfirmation(); return false;" id="resetLink" class="neon-reset-link" data-i18n="reset_inputs_link">入力情報のリセット</a>
+      <div id="resetConfirmContainer" style="display:none; margin-top: 15px;">
+        <button class="action-btn" onclick="resetAppAndReturnToLock()"
+          style="background-color: var(--toggle-bg); box-shadow: 0 4px 12px rgba(255, 0, 170, 0.3); font-size: 14px; padding: 10px 20px;" data-i18n="reset_inputs_btn">入力情報を消去して初期画面に戻ります</button>
+      </div>
+    </div>
   </div>
   <div id="errorMode" class="mode-card" style="display:none;">
     <button class="back-btn" onclick="backToModeSelect()" data-i18n="back_mode_select">← モード選択に戻る</button>
@@ -590,8 +652,31 @@
       </button>
     </div>
 
-    <!-- 割り勘用入力セレクター (💸モード時のみ表示) -->
+    <!-- 割り勘用入力セレクター (💸モード時のみ表示 & 多通貨対応) -->
     <div id="splitControls" class="split-controls" style="display:none;">
+      <!-- 通貨選択行 (ヒロさん仕様: 日本円や米ドル・ユーロ等の外貨での割り勘に対応) -->
+      <div class="split-currency-row" style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; padding: 2px 4px;">
+        <span style="font-size: 12px; font-weight: bold; color: var(--accent); display: flex; align-items: center; gap: 4px;">
+          <span>💱</span> <span data-i18n="split_currency_label">通貨</span>:
+        </span>
+        <select id="splitCurrencySelect" class="currency-select" style="width: auto; max-width: 230px; font-size: 12px; padding: 3px 8px; height: 28px; background: rgba(0, 255, 224, 0.08); border: 1px solid rgba(0, 255, 224, 0.4); border-radius: 6px; color: #fff;" onchange="TimeCalc.onSplitCurrencyChange()">
+          <option value="JPY" selected>🇯🇵 日本 JPY (¥)</option>
+          <option value="USD">🇺🇸 米国 USD ($)</option>
+          <option value="EUR">🇪🇺 欧州 EUR (€)</option>
+          <option value="GBP">🇬🇧 英国 GBP (£)</option>
+          <option value="AUD">🇦🇺 豪州 AUD (A$)</option>
+          <option value="CAD">🇨🇦 加国 CAD (C$)</option>
+          <option value="CHF">🇨🇭 スイス CHF (Fr)</option>
+          <option value="CNY">🇨🇳 中国 CNY (¥)</option>
+          <option value="KRW">🇰🇷 韓国 KRW (₩)</option>
+          <option value="HKD">🇭🇰 香港 HKD (HK$)</option>
+          <option value="SGD">🇸🇬 シンガポール SGD (S$)</option>
+          <option value="TWD">🇹🇼 台湾 TWD (NT$)</option>
+          <option value="THB">🇹🇭 タイ THB (฿)</option>
+          <option value="TRY">🇹🇷 トルコ TRY (₺)</option>
+        </select>
+      </div>
+
       <div style="display: flex; gap: 6px;">
         <div id="splitFieldTotal" class="split-field-row active-field" style="flex: 1.3;" onclick="TimeCalc.setSplitActiveField('total')">
           <span class="split-field-label" data-i18n="split_total">総額</span>
@@ -602,40 +687,67 @@
           <span id="splitValPeople" class="split-field-val">2人</span>
         </div>
       </div>
-      <div class="split-round-pills">
-        <button type="button" class="split-pill" id="splitRound_1" onclick="TimeCalc.setSplitRounding(1)">1円単位</button>
+      <div class="split-round-pills" id="splitRoundPills">
+        <button type="button" class="split-pill" id="splitRound_1" onclick="TimeCalc.setSplitRounding(1)">1円</button>
         <button type="button" class="split-pill" id="splitRound_10" onclick="TimeCalc.setSplitRounding(10)">10円</button>
         <button type="button" class="split-pill" id="splitRound_100" onclick="TimeCalc.setSplitRounding(100)">100円</button>
         <button type="button" class="split-pill active" id="splitRound_1000" onclick="TimeCalc.setSplitRounding(1000)">1000円</button>
       </div>
     </div>
 
-    <!-- レート変換用セレクター (💱モード時のみ表示) -->
     <div id="currencyControls" class="currency-controls" style="display:none;">
       <div class="currency-select-row">
-        <div id="currencyBoxFrom" class="currency-select-box" onclick="TimeCalc.setCurrencyActiveField('from')">
-          <span class="currency-box-label">FROM</span>
-          <select id="currencyFromSelect" class="currency-select" onchange="TimeCalc.onCurrencyChange()" onfocus="TimeCalc.setCurrencyActiveField('from')">
-            <option value="USD" selected>USD (米ドル $)</option>
-            <option value="JPY">JPY (日本円 ¥)</option>
-            <option value="GBP">GBP (英ポンド £)</option>
-            <option value="EUR">EUR (ユーロ €)</option>
-            <option value="CNY">CNY (人民元 ¥)</option>
-            <option value="KRW">KRW (ウォン ₩)</option>
-            <option value="AUD">AUD (豪ドル $)</option>
+        <div id="currencyFromField" class="currency-field-label curr-drop-target" onclick="TimeCalc.setCurrencyActiveField('from')" title="タップして元通貨を変更 / 通貨ボタンをここにドラッグ＆ドロップ">
+          <span class="currency-field-indicator">FROM</span>
+          <select id="currencyFromSelect" class="currency-select" onchange="TimeCalc.onCurrencyChange()">
+            <option value="USD" selected>🇺🇸 米国 USD (米ドル $)</option>
+            <option value="JPY">🇯🇵 日本 JPY (日本円 ¥)</option>
+            <option value="EUR">🇪🇺 欧州 EUR (ユーロ €)</option>
+            <option value="GBP">🇬🇧 英国 GBP (英ポンド £)</option>
+            <option value="AUD">🇦🇺 豪州 AUD (豪ドル A$)</option>
+            <option value="CAD">🇨🇦 加国 CAD (加ドル C$)</option>
+            <option value="CHF">🇨🇭 スイス CHF (フラン Fr)</option>
+            <option value="CNY">🇨🇳 中国 CNY (人民元 ¥)</option>
+            <option value="KRW">🇰🇷 韓国 KRW (ウォン ₩)</option>
+            <option value="HKD">🇭🇰 香港 HKD (香港ドル HK$)</option>
+            <option value="SGD">🇸🇬 シンガポール SGD (S$)</option>
+            <option value="TWD">🇹🇼 台湾 TWD (台湾ドル NT$)</option>
+            <option value="THB">🇹🇭 タイ THB (バーツ ฿)</option>
+            <option value="NZD">🇳🇿 NZ NZD (NZドル NZ$)</option>
+            <option value="INR">🇮🇳 インド INR (ルピー ₹)</option>
+            <option value="PHP">🇵🇭 比国 PHP (ペソ ₱)</option>
+            <option value="IDR">🇮🇩 インドネシア IDR (ルピア Rp)</option>
+            <option value="VND">🇻🇳 ベトナム VND (ドン ₫)</option>
+            <option value="MYR">🇲🇾 マレーシア MYR (リンギット RM)</option>
+            <option value="BRL">🇧🇷 ブラジル BRL (レアル R$)</option>
+            <option value="TRY">🇹🇷 トルコ TRY (リラ ₺)</option>
           </select>
         </div>
-        <button type="button" class="currency-swap-btn" onclick="TimeCalc.swapCurrencies()">⇄</button>
-        <div id="currencyBoxTo" class="currency-select-box active-field" onclick="TimeCalc.setCurrencyActiveField('to')">
-          <span class="currency-box-label">TO</span>
-          <select id="currencyToSelect" class="currency-select" onchange="TimeCalc.onCurrencyChange()" onfocus="TimeCalc.setCurrencyActiveField('to')">
-            <option value="JPY" selected>JPY (日本円 ¥)</option>
-            <option value="USD">USD (米ドル $)</option>
-            <option value="EUR">EUR (ユーロ €)</option>
-            <option value="GBP">GBP (英ポンド £)</option>
-            <option value="CNY">CNY (人民元 ¥)</option>
-            <option value="KRW">KRW (ウォン ₩)</option>
-            <option value="AUD">AUD (豪ドル $)</option>
+        <button type="button" class="currency-swap-btn" onclick="TimeCalc.swapCurrencies()" title="通貨を入れ替え">⇄</button>
+        <div id="currencyToField" class="currency-field-label curr-drop-target active-field" onclick="TimeCalc.setCurrencyActiveField('to')" title="タップして対象通貨を変更 / 通貨ボタンをここにドラッグ＆ドロップ">
+          <span class="currency-field-indicator">TO</span>
+          <select id="currencyToSelect" class="currency-select" onchange="TimeCalc.onCurrencyChange()">
+            <option value="JPY" selected>🇯🇵 日本 JPY (日本円 ¥)</option>
+            <option value="USD">🇺🇸 米国 USD (米ドル $)</option>
+            <option value="EUR">🇪🇺 欧州 EUR (ユーロ €)</option>
+            <option value="GBP">🇬🇧 英国 GBP (英ポンド £)</option>
+            <option value="AUD">🇦🇺 豪州 AUD (豪ドル A$)</option>
+            <option value="CAD">🇨🇦 加国 CAD (加ドル C$)</option>
+            <option value="CHF">🇨🇭 スイス CHF (フラン Fr)</option>
+            <option value="CNY">🇨🇳 中国 CNY (人民元 ¥)</option>
+            <option value="KRW">🇰🇷 韓国 KRW (ウォン ₩)</option>
+            <option value="HKD">🇭🇰 香港 HKD (香港ドル HK$)</option>
+            <option value="SGD">🇸🇬 シンガポール SGD (S$)</option>
+            <option value="TWD">🇹🇼 台湾 TWD (台湾ドル NT$)</option>
+            <option value="THB">🇹🇭 タイ THB (バーツ ฿)</option>
+            <option value="NZD">🇳🇿 NZ NZD (NZドル NZ$)</option>
+            <option value="INR">🇮🇳 インド INR (ルピー ₹)</option>
+            <option value="PHP">🇵🇭 比国 PHP (ペソ ₱)</option>
+            <option value="IDR">🇮🇩 インドネシア IDR (ルピア Rp)</option>
+            <option value="VND">🇻🇳 ベトナム VND (ドン ₫)</option>
+            <option value="MYR">🇲🇾 マレーシア MYR (リンギット RM)</option>
+            <option value="BRL">🇧🇷 ブラジル BRL (レアル R$)</option>
+            <option value="TRY">🇹🇷 トルコ TRY (リラ ₺)</option>
           </select>
         </div>
       </div>
@@ -653,6 +765,8 @@
         <span id="timeCalcFormatBadge" class="time-calc-badge" onclick="TimeCalc.toggleFormatMode()">時分秒 ⇆ HH:MM:SS</span>
         <div id="timeCalcSubDisplay" class="time-calc-sub-display">= 0.0000 h</div>
       </div>
+      <!-- リアルタイム為替レート自動同期ステータスバー (ヒロさん仕様: ⚙レート表示の下に小さく配置) -->
+      <div id="timeCalcLiveRateStatus" class="time-calc-live-rate-bar" style="display:none;"></div>
     </div>
 
     <!-- 1. 時間電卓 & 電卓用キーパッド (5列) -->
@@ -703,8 +817,8 @@
     <!-- 2. 割り勘用キーパッド (画像1に完全準拠) -->
     <div id="keypadSplit" class="time-calc-keypad" style="display:none;">
       <!-- 1行目: 総額 / 人数 / 端数単位 / 差額 / ⌫ -->
-      <button type="button" id="splitKeyTotal" class="calc-btn calc-btn-unit calc-btn-active-field" onclick="TimeCalc.setSplitActiveField('total')">総額</button>
-      <button type="button" id="splitKeyPeople" class="calc-btn calc-btn-unit" onclick="TimeCalc.setSplitActiveField('people')">人数</button>
+      <button type="button" id="splitKeyTotal" class="calc-btn calc-btn-unit calc-btn-active-field" onclick="TimeCalc.setSplitActiveField('total')" data-i18n="split_total">総額</button>
+      <button type="button" id="splitKeyPeople" class="calc-btn calc-btn-unit" onclick="TimeCalc.setSplitActiveField('people')" data-i18n="split_people">人数</button>
       <button type="button" id="splitKeyRounding" class="calc-btn calc-btn-unit" onclick="TimeCalc.cycleSplitRounding()">¥1,000</button>
       <button type="button" id="splitKeyTierGap" class="calc-btn calc-btn-unit" style="font-size: 11px; line-height: 1.2;" onclick="TimeCalc.cycleSplitTierGap()">差:<br>¥1,000</button>
       <button type="button" class="calc-btn calc-btn-del" onclick="TimeCalc.pressKey('BS')">⌫</button>
@@ -723,17 +837,17 @@
       <button type="button" id="splitKeyMore" class="calc-btn calc-btn-unit" style="font-size: 11px; line-height: 1.2;" onclick="TimeCalc.cycleSplitMoreCount()">▲ 多:<br>0人</button>
       <button type="button" id="splitKeyLess" class="calc-btn calc-btn-unit" style="font-size: 11px; line-height: 1.2;" onclick="TimeCalc.cycleSplitLessCount()">▼ 少:<br>0人</button>
 
-      <!-- 4行目: 1 2 3 (空き2マス) -->
+      <!-- 4行目: 1 2 3 . (空き1マス) -->
       <button type="button" class="calc-btn calc-btn-num" onclick="TimeCalc.pressKey('1')">1</button>
       <button type="button" class="calc-btn calc-btn-num" onclick="TimeCalc.pressKey('2')">2</button>
       <button type="button" class="calc-btn calc-btn-num" onclick="TimeCalc.pressKey('3')">3</button>
-      <div style="visibility:hidden;"></div>
+      <button type="button" class="calc-btn calc-btn-num" onclick="TimeCalc.pressKey('.')">.</button>
       <div style="visibility:hidden;"></div>
 
       <!-- 5行目: 00 0 ＝記録(3マス分) -->
       <button type="button" class="calc-btn calc-btn-num" onclick="TimeCalc.pressKey('00')">00</button>
       <button type="button" class="calc-btn calc-btn-num" onclick="TimeCalc.pressKey('0')">0</button>
-      <button type="button" class="calc-btn calc-btn-eq" style="grid-column: span 3; font-size: 18px;" onclick="TimeCalc.pressKey('=')">＝記録</button>
+      <button type="button" class="calc-btn calc-btn-eq" style="grid-column: span 3; font-size: 18px;" onclick="TimeCalc.pressKey('=')" data-i18n="split_btn_record">＝記録</button>
     </div>
 
     <!-- 3. レート変換用キーパッド (画像2に完全準拠) -->
@@ -742,7 +856,7 @@
       <button type="button" class="calc-btn calc-btn-num" onclick="TimeCalc.pressKey('7')">7</button>
       <button type="button" class="calc-btn calc-btn-num" onclick="TimeCalc.pressKey('8')">8</button>
       <button type="button" class="calc-btn calc-btn-num" onclick="TimeCalc.pressKey('9')">9</button>
-      <button type="button" class="calc-btn calc-btn-unit" style="font-size: 12px;" onclick="TimeCalc.swapCurrencies()">⇄ 切替</button>
+      <button type="button" class="calc-btn calc-btn-unit" style="font-size: 12px;" onclick="TimeCalc.swapCurrencies()" data-i18n="curr_btn_swap">⇄ 切替</button>
       <button type="button" class="calc-btn calc-btn-del" onclick="TimeCalc.pressKey('BS')">⌫</button>
 
       <!-- 2行目: 4 5 6 C AC -->
@@ -752,25 +866,25 @@
       <button type="button" class="calc-btn calc-btn-clear" onclick="TimeCalc.pressKey('C')">C</button>
       <button type="button" class="calc-btn calc-btn-allclear" onclick="TimeCalc.pressKey('AC')">AC</button>
 
-      <!-- 3行目: 1 2 3 USD EUR -->
+      <!-- 3行目: 1 2 3 スロット0(A:USD) スロット1(B:JPY) -->
       <button type="button" class="calc-btn calc-btn-num" onclick="TimeCalc.pressKey('1')">1</button>
       <button type="button" class="calc-btn calc-btn-num" onclick="TimeCalc.pressKey('2')">2</button>
       <button type="button" class="calc-btn calc-btn-num" onclick="TimeCalc.pressKey('3')">3</button>
-      <button type="button" id="currKey_USD" class="calc-btn calc-btn-unit" onclick="TimeCalc.selectCurrency('USD')">USD</button>
-      <button type="button" id="currKey_EUR" class="calc-btn calc-btn-unit" onclick="TimeCalc.selectCurrency('EUR')">EUR</button>
+      <button type="button" id="currSlot_0" class="calc-btn calc-btn-unit curr-draggable-btn" onclick="TimeCalc.selectCurrencySlot(0)">🇺🇸 USD</button>
+      <button type="button" id="currSlot_1" class="calc-btn calc-btn-unit curr-draggable-btn" onclick="TimeCalc.selectCurrencySlot(1)">🇯🇵 JPY</button>
 
-      <!-- 4行目: 00 0 . GBP AUD -->
+      <!-- 4行目: 00 0 . スロット2(C:EUR) スロット3(D:GBP) -->
       <button type="button" class="calc-btn calc-btn-num" onclick="TimeCalc.pressKey('00')">00</button>
       <button type="button" class="calc-btn calc-btn-num" onclick="TimeCalc.pressKey('0')">0</button>
       <button type="button" class="calc-btn calc-btn-num" onclick="TimeCalc.pressKey('.')">.</button>
-      <button type="button" id="currKey_GBP" class="calc-btn calc-btn-unit" onclick="TimeCalc.selectCurrency('GBP')">GBP</button>
-      <button type="button" id="currKey_AUD" class="calc-btn calc-btn-unit" onclick="TimeCalc.selectCurrency('AUD')">AUD</button>
+      <button type="button" id="currSlot_2" class="calc-btn calc-btn-unit curr-draggable-btn" onclick="TimeCalc.selectCurrencySlot(2)">🇪🇺 EUR</button>
+      <button type="button" id="currSlot_3" class="calc-btn calc-btn-unit curr-draggable-btn" onclick="TimeCalc.selectCurrencySlot(3)">🇬🇧 GBP</button>
 
-      <!-- 5行目: ＝記録(2マス) JPY CNY KRW -->
-      <button type="button" class="calc-btn calc-btn-eq" style="grid-column: span 2; font-size: 16px;" onclick="TimeCalc.pressKey('=')">＝記録</button>
-      <button type="button" id="currKey_JPY" class="calc-btn calc-btn-unit calc-btn-active-field" onclick="TimeCalc.selectCurrency('JPY')">JPY</button>
-      <button type="button" id="currKey_CNY" class="calc-btn calc-btn-unit" onclick="TimeCalc.selectCurrency('CNY')">CNY</button>
-      <button type="button" id="currKey_KRW" class="calc-btn calc-btn-unit" onclick="TimeCalc.selectCurrency('KRW')">KRW</button>
+      <!-- 5行目: ＝記録(2マス) レート選択 スロット4(E:AUD) スロット5(F:CAD) -->
+      <button type="button" class="calc-btn calc-btn-eq" style="grid-column: span 2; font-size: 16px;" onclick="TimeCalc.pressKey('=')" data-i18n="split_btn_record">＝記録</button>
+      <button type="button" id="currKey_rateSelect" class="calc-btn calc-btn-rate-select" onclick="TimeCalc.openRateSelectLayer()" data-i18n="curr_btn_select">レート<br>選択</button>
+      <button type="button" id="currSlot_4" class="calc-btn calc-btn-unit curr-draggable-btn" onclick="TimeCalc.selectCurrencySlot(4)">🇦🇺 AUD</button>
+      <button type="button" id="currSlot_5" class="calc-btn calc-btn-unit curr-draggable-btn" onclick="TimeCalc.selectCurrencySlot(5)">🇨🇦 CAD</button>
     </div>
 
     <!-- 計算履歴ボタン（下部中央） -->
@@ -812,7 +926,7 @@
     <div id="informationContent"
       style="margin-top: 30px; text-align: left; max-width: 500px; margin-left: auto; margin-right: auto;">
       <p style="margin-bottom: 8px;" id="infoCreatedBy">このアプリは <strong>H.Fukazu</strong> によって制作されました。</p>
-      <p style="margin-bottom: 24px;"><span data-i18n="info_version">バージョン：</span><strong>v3.3.0</strong></p>
+      <p style="margin-bottom: 24px;"><span data-i18n="info_version">バージョン：</span><strong>v3.3.1</strong></p>
 
       <!-- 著作権情報ボタン -->
       <div style="text-align: center; margin: 28px 0;">
@@ -881,16 +995,83 @@
         <span id="customRateToLabel">JPY</span>
       </div>
       <!-- ライブレート取得ボタン -->
-      <button id="liveRateBtn" class="live-rate-fetch-btn" onclick="TimeCalc.fetchLiveRate()">🌐 現在のレートを取得</button>
+      <button id="liveRateBtn" class="live-rate-fetch-btn" onclick="TimeCalc.fetchLiveRate()" data-i18n="custom_rate_fetch">🌐 現在のレートを取得</button>
       <div id="liveRateStatus" class="live-rate-status"></div>
       <div class="custom-rate-modal-btns">
-        <button class="custom-rate-modal-cancel" onclick="TimeCalc.closeCustomRateModal()">キャンセル</button>
-        <button class="custom-rate-modal-ok" onclick="TimeCalc.applyCustomRate()">✓ 適用</button>
+        <button class="custom-rate-modal-cancel" onclick="TimeCalc.closeCustomRateModal()" data-i18n="cancel">キャンセル</button>
+        <button class="custom-rate-modal-ok" onclick="TimeCalc.applyCustomRate()" data-i18n="apply">✓ 適用</button>
       </div>
-      <button class="custom-rate-reset-btn" onclick="TimeCalc.resetCustomRate()">↺ デフォルトレートに戻す</button>
-      <button class="custom-rate-save-default-btn" onclick="TimeCalc.saveAsDefaultRate()">💾 このレートをデフォルトとして保存</button>
+      <button class="custom-rate-reset-btn" onclick="TimeCalc.resetCustomRate()" data-i18n="custom_rate_reset">↺ デフォルトレートに戻す</button>
+      <button class="custom-rate-save-default-btn" onclick="TimeCalc.saveAsDefaultRate()" data-i18n="custom_rate_save">💾 このレートをデフォルトとして保存</button>
     </div>
   </div>
+
+  <!-- レート選択レイヤー (ヒロさんの手描きイメージ画像に完全準拠 & 多言語化) -->
+  <div id="rateSelectModal" class="rate-select-modal" role="dialog" aria-modal="true" style="display:none;" onclick="if(event.target===this)TimeCalc.closeRateSelectLayer()">
+    <div class="rate-select-modal-box">
+      <div class="rate-select-modal-header">
+        <div class="rate-select-modal-title" data-i18n="rate_modal_title">💱 レート枠の選択・配置 (全21種類)</div>
+        <button type="button" class="rate-select-close-btn" onclick="TimeCalc.closeRateSelectLayer()">✕</button>
+      </div>
+
+      <div class="rate-select-layout">
+        <!-- 左〜下: 21種類の通貨パレット (3列×7行で美しく全マス埋まる) -->
+        <div class="rate-palette-container">
+          <div class="rate-section-label" data-i18n="rate_modal_available">利用可能な通貨 (21種類)</div>
+          <div id="ratePaletteGrid" class="rate-palette-grid">
+            <!-- JSで21種類の通貨ボタンを自動生成 -->
+          </div>
+        </div>
+
+        <!-- 右上: キーパッドに配置される6枠 (A〜F) -->
+        <div class="rate-slots-container">
+          <div class="rate-section-label" data-i18n="rate_modal_slots">キーパッドの6枠 (A〜F)</div>
+          <div class="rate-slots-grid" id="rateSlotsGrid">
+            <!-- A: Slot 0 -->
+            <div class="rate-slot-card" data-slot="0" onclick="TimeCalc.onRateSlotClick(0)">
+              <span class="slot-badge">A</span>
+              <span class="slot-curr-name" id="slotCardCurr_0">🇺🇸 USD</span>
+            </div>
+            <!-- B: Slot 1 -->
+            <div class="rate-slot-card" data-slot="1" onclick="TimeCalc.onRateSlotClick(1)">
+              <span class="slot-badge">B</span>
+              <span class="slot-curr-name" id="slotCardCurr_1">🇯🇵 JPY</span>
+            </div>
+            <!-- C: Slot 2 -->
+            <div class="rate-slot-card" data-slot="2" onclick="TimeCalc.onRateSlotClick(2)">
+              <span class="slot-badge">C</span>
+              <span class="slot-curr-name" id="slotCardCurr_2">🇪🇺 EUR</span>
+            </div>
+            <!-- D: Slot 3 -->
+            <div class="rate-slot-card" data-slot="3" onclick="TimeCalc.onRateSlotClick(3)">
+              <span class="slot-badge">D</span>
+              <span class="slot-curr-name" id="slotCardCurr_3">🇬🇧 GBP</span>
+            </div>
+            <!-- E: Slot 4 -->
+            <div class="rate-slot-card" data-slot="4" onclick="TimeCalc.onRateSlotClick(4)">
+              <span class="slot-badge">E</span>
+              <span class="slot-curr-name" id="slotCardCurr_4">🇦🇺 AUD</span>
+            </div>
+            <!-- F: Slot 5 -->
+            <div class="rate-slot-card" data-slot="5" onclick="TimeCalc.onRateSlotClick(5)">
+              <span class="slot-badge">F</span>
+              <span class="slot-curr-name" id="slotCardCurr_5">🇨🇦 CAD</span>
+            </div>
+          </div>
+          <div class="rate-slots-hint" data-i18n="rate_modal_guide">※通貨を選んで枠に割り当て、またはドラッグ＆ドロップできます</div>
+        </div>
+      </div>
+
+      <div class="rate-select-footer">
+        <button type="button" class="calc-btn calc-btn-clear" style="padding: 6px 14px; font-size: 12px;" onclick="TimeCalc.resetCurrencySlotsToDefault()" data-i18n="rate_modal_reset">↺ 初期値に戻す</button>
+        <button type="button" class="calc-btn calc-btn-rate-confirm" onclick="TimeCalc.closeRateSelectLayer()" data-i18n="rate_modal_confirm">✓ 決定して閉じる</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 指/マウス追従用 ドラッグゴースト要素 -->
+  <div id="currDragGhost" class="curr-drag-ghost" style="display:none;">USD</div>
+
   <script src="i18n.js?v=3" defer></script>
   <script src="script.js?c=36" defer></script>
   <script>

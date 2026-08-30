@@ -6169,15 +6169,12 @@ body:not(.lang-ja):not(.lang-zh):not(.lang-ko) .warning-msg {
   transition: transform 0.3s ease;
 }
 
-/* それぞれ独立した優しい揺らぎ (ヒロさんお気に入りポイント) */
-.vert-delay-1 {
-  animation: planetVertFloat1 4.6s ease-in-out infinite alternate;
-}
-.vert-delay-2 {
-  animation: planetVertFloat2 5.2s ease-in-out infinite alternate -1.7s;
-}
+/* ボタンの位置を固定（スマホの発熱・電力消費抑制のため揺らぎアニメーションを停止） */
+.vert-delay-1,
+.vert-delay-2,
 .vert-delay-3 {
-  animation: planetVertFloat3 4.8s ease-in-out infinite alternate -3.4s;
+  animation: none;
+  transform: none;
 }
 
 @keyframes planetVertFloat1 {

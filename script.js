@@ -1,4 +1,4 @@
-﻿const currentVersion = "3.3.1";
+const currentVersion = "3.3.1";
 let lastError = null;
 let hasCalculated = false;
 let reverseMode = "toStandard";
@@ -7418,14 +7418,14 @@ function _startAnalogClock() {
       eS.style.transition = "opacity 0.3s ease";
     }
 
-    // コロナSVGパスのアニメーション更新
+    // コロナSVGパス（静止画として固定し、毎フレームの過剰計算・発熱を防止）
     const c1 = document.querySelector(".corona-layer1");
     const c2 = document.querySelector(".corona-layer2");
-    if (c1) {
-      c1.setAttribute("d", _generateCoronaPath(150, 150, 74, timeMs, 0));
+    if (c1 && !c1.getAttribute("d")) {
+      c1.setAttribute("d", _generateCoronaPath(150, 150, 74, 0, 0));
     }
-    if (c2) {
-      c2.setAttribute("d", _generateCoronaPath(150, 150, 80, timeMs, 35));
+    if (c2 && !c2.getAttribute("d")) {
+      c2.setAttribute("d", _generateCoronaPath(150, 150, 80, 0, 35));
     }
 
     _analogAnimFrameId = requestAnimationFrame(updateHands);

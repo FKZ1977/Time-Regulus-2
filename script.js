@@ -6946,37 +6946,9 @@ const _jp_holidays = new Set([
   "2027-01-01", "2027-01-11", "2027-02-11", "2027-02-23", "2027-03-21", "2027-03-22", "2027-04-29", "2027-05-03", "2027-05-04", "2027-05-05", "2027-07-19", "2027-08-11", "2027-09-20", "2027-09-23", "2027-10-11", "2027-11-03", "2027-11-23"
 ]);
 
-// コロナ時計（Eclipse）用の動的SVGパス生成（有機的に波打つ太陽光冠）
-function _generateCoronaPath(cx, cy, baseRadius, timeMs, seed) {
-  const points = [];
-  const count = 96;  // 点数を増やして輪郭を滑らかに
-  for (let i = 0; i < count; i++) {
-    const angle = (i / count) * Math.PI * 2;
-    // 振幅を抑えてコロナらしい小さな炎のひだに
-    const wave1 = Math.sin(angle * 5  + timeMs * 0.0018 + seed) * 5;   // 大波: 14→5, 周波数3→5
-    const wave2 = Math.sin(angle * 11 - timeMs * 0.0026 + seed * 2.5) * 3.5; // 中波: 9→3.5, 周波数7→11
-    const wave3 = Math.cos(angle * 17 + timeMs * 0.0034) * 2;          // 細波: 6→2, 周波数13→17
-    const wave4 = Math.sin(angle * 8  + timeMs * 0.0012 + seed * 1.2) * 4;   // 補助波: 11→4, 周波数5→8
-    const wave5 = Math.cos(angle * 23 - timeMs * 0.0042 + seed * 0.7) * 1.5; // 超細波(新規): 微細なギザギザ
-    const r = baseRadius + Math.max(1, wave1 + wave2 + wave3 + wave4 + wave5);
-    const x = cx + Math.cos(angle) * r;
-    const y = cy + Math.sin(angle) * r;
-    points.push({ x, y });
-  }
-  let d = `M ${points[0].x.toFixed(2)} ${points[0].y.toFixed(2)}`;
-  for (let i = 0; i < count; i++) {
-    const p0 = points[(i - 1 + count) % count];
-    const p1 = points[i];
-    const p2 = points[(i + 1) % count];
-    const p3 = points[(i + 2) % count];
-    const cp1x = p1.x + (p2.x - p0.x) / 6;
-    const cp1y = p1.y + (p2.y - p0.y) / 6;
-    const cp2x = p2.x - (p3.x - p1.x) / 6;
-    const cp2y = p2.y - (p3.y - p1.y) / 6;
-    d += ` C ${cp1x.toFixed(2)} ${cp1y.toFixed(2)}, ${cp2x.toFixed(2)} ${cp2y.toFixed(2)}, ${p2.x.toFixed(2)} ${p2.y.toFixed(2)}`;
-  }
-  d += " Z";
-  return d;
+// コロナ時計（Eclipse）用のSVGパス生成（でっぱり・へこみのない滑らかな真円の後光）
+function _generateCoronaPath(cx, cy, baseRadius) {
+  return `M ${cx} ${cy - baseRadius} A ${baseRadius} ${baseRadius} 0 1 0 ${cx} ${cy + baseRadius} A ${baseRadius} ${baseRadius} 0 1 0 ${cx} ${cy - baseRadius} Z`;
 }
 
 function _updateAnalogPager() {
@@ -7418,14 +7390,14 @@ function _startAnalogClock() {
       eS.style.transition = "opacity 0.3s ease";
     }
 
-    // コロナSVGパス（静止画として固定し、毎フレームの過剰計算・発熱を防止）
+    // コロナSVGパス（でっぱり・へこみのない真円で固定し、背後から均一にもわっと光が広がる後光）
     const c1 = document.querySelector(".corona-layer1");
     const c2 = document.querySelector(".corona-layer2");
     if (c1 && !c1.getAttribute("d")) {
-      c1.setAttribute("d", _generateCoronaPath(150, 150, 74, 0, 0));
+      c1.setAttribute("d", _generateCoronaPath(150, 150, 75));
     }
     if (c2 && !c2.getAttribute("d")) {
-      c2.setAttribute("d", _generateCoronaPath(150, 150, 80, 0, 35));
+      c2.setAttribute("d", _generateCoronaPath(150, 150, 83));
     }
 
     _analogAnimFrameId = requestAnimationFrame(updateHands);

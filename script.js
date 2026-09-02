@@ -2831,21 +2831,13 @@ function toggleRealTime(checked) {
         el.style.opacity = '0.7';
       }
     });
-    // RealTime ON で秒の00固定を解除。以降はOFFにしても秒を自由入力可能にする（フラグを立てる）
+    // RealTime ON で秒の00固定解除フラグを立てる（以降はOFFにしても秒を自由入力可能にする）
     _standardSecUnlocked = true;
-    const sS = document.getElementById('standardSec_direct');
-    if (sS) {
-      sS.disabled = false;
-      sS.readOnly = false;
-      sS.style.opacity = '';
-      sS.style.pointerEvents = 'auto';
-      sS.classList.remove('seconds-fixed-00');
-    }
-    // ドラム（standardSeconds）も解除
+    // ドラム（standardSeconds）もロック
     const sSel = document.getElementById('standardSeconds');
     if (sSel) {
-      sSel.disabled = false;
-      sSel.style.pointerEvents = 'auto';
+      sSel.disabled = true;
+      sSel.style.pointerEvents = 'none';
       sSel.classList.remove('seconds-fixed-00');
     }
     // 即時反映
@@ -3266,6 +3258,25 @@ function swapErrorModeInputs() {
       nowButton.style.display = "none";
       const realTimeRow = document.getElementById('realTimeCheckboxRow');
       if (realTimeRow) realTimeRow.style.display = 'flex';
+      // RealTimeが動作中なら停止・リセット
+      if (realTimeInterval) { clearInterval(realTimeInterval); realTimeInterval = null; }
+      const realTimeCheckbox = document.getElementById('realTimeCheckbox');
+      if (realTimeCheckbox) realTimeCheckbox.checked = false;
+
+      // 時・分・年月日のロックを解除（秒以外は通常入力可能）
+      const normalFields = [
+        'standardYear_direct', 'standardMonth_direct', 'standardDay_direct',
+        'standardHour_direct', 'standardMin_direct'
+      ];
+      normalFields.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) {
+          el.readOnly = false;
+          el.style.pointerEvents = 'auto';
+          el.style.opacity = '';
+        }
+      });
+
       if (standardSecDirect) {
         standardSecDirect.value = "00";
         standardSecDirect.disabled = true;
@@ -3291,6 +3302,21 @@ function swapErrorModeInputs() {
       if (realTimeCheckbox) realTimeCheckbox.checked = false;
       const realTimeRow = document.getElementById('realTimeCheckboxRow');
       if (realTimeRow) realTimeRow.style.display = 'none';
+
+      // 全フィールド（年月日、時、分、秒）のロックを完全に解除
+      const allFields = [
+        'standardYear_direct', 'standardMonth_direct', 'standardDay_direct',
+        'standardHour_direct', 'standardMin_direct', 'standardSec_direct'
+      ];
+      allFields.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) {
+          el.readOnly = false;
+          el.style.pointerEvents = 'auto';
+          el.style.opacity = '';
+        }
+      });
+
       if (standardSecDirect) {
         standardSecDirect.readOnly = false;
         standardSecDirect.style.opacity = '';
@@ -3298,6 +3324,12 @@ function swapErrorModeInputs() {
         standardSecDirect.style.pointerEvents = 'auto';
         standardSecDirect.classList.remove('seconds-fixed-00');
         // swap時に秒数をクリアせず、直前の秒（Real Timeまたは00固定）を保持する
+      }
+      const standardSecsDrum = document.getElementById('standardSeconds');
+      if (standardSecsDrum) {
+        standardSecsDrum.disabled = false;
+        standardSecsDrum.style.pointerEvents = 'auto';
+        standardSecsDrum.classList.remove('seconds-fixed-00');
       }
     }
 

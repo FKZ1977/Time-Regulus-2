@@ -697,7 +697,7 @@
 
     <div id="currencyControls" class="currency-controls" style="display:none;">
       <div class="currency-select-row">
-        <div id="currencyFromField" class="currency-field-label curr-drop-target" onclick="TimeCalc.setCurrencyActiveField('from')" title="タップして元通貨を変更 / 通貨ボタンをここにドラッグ＆ドロップ">
+        <div id="currencyFromField" class="currency-field-label curr-drop-target active-field" onclick="TimeCalc.setCurrencyActiveField('from')" title="タップして元通貨を変更 / 通貨ボタンをここにドラッグ＆ドロップ">
           <span class="currency-field-indicator">FROM</span>
           <select id="currencyFromSelect" class="currency-select" onchange="TimeCalc.onCurrencyChange()">
             <option value="USD" selected>🇺🇸 米国 USD (米ドル $)</option>
@@ -724,7 +724,7 @@
           </select>
         </div>
         <button type="button" class="currency-swap-btn" onclick="TimeCalc.swapCurrencies()" title="通貨を入れ替え">⇄</button>
-        <div id="currencyToField" class="currency-field-label curr-drop-target active-field" onclick="TimeCalc.setCurrencyActiveField('to')" title="タップして対象通貨を変更 / 通貨ボタンをここにドラッグ＆ドロップ">
+        <div id="currencyToField" class="currency-field-label curr-drop-target" onclick="TimeCalc.setCurrencyActiveField('to')" title="タップして対象通貨を変更 / 通貨ボタンをここにドラッグ＆ドロップ">
           <span class="currency-field-indicator">TO</span>
           <select id="currencyToSelect" class="currency-select" onchange="TimeCalc.onCurrencyChange()">
             <option value="JPY" selected>🇯🇵 日本 JPY (日本円 ¥)</option>

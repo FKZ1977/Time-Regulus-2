@@ -6190,12 +6190,12 @@ body:not(.lang-ja):not(.lang-zh):not(.lang-ko) .warning-msg {
   100% { transform: translateY(-5px) rotate(0.3deg); }
 }
 
-/* 縦3つの均一サイズオーバルボタン (ヒロさん仕様: 多言語化でも左右に十分な余白を確保) */
+/* 縦3つの均一サイズオーバルボタン (ヒロさん仕様: 多言語化でも文字と枠に最小限の余白を確保) */
 .btn-vert-card {
-  width: 290px !important;
-  max-width: 90vw !important;
-  min-width: 250px !important;
-  padding: 14px 20px !important;
+  width: 262px !important;
+  max-width: 82vw !important;
+  min-width: 220px !important;
+  padding: 14px 16px !important;
   font-size: 14px !important;
   letter-spacing: 0.5px !important;
   text-align: center;
@@ -6204,7 +6204,7 @@ body:not(.lang-ja):not(.lang-zh):not(.lang-ko) .warning-msg {
 .btn-vert-card .planet-btn-text {
   display: inline-block;
   max-width: 100%;
-  padding: 0 6px; /* 左右に十分な余白を確保 */
+  padding: 0 3px; /* 文字と枠が接触しないギリギリの余白 */
   white-space: nowrap;
 }
 
@@ -6233,18 +6233,18 @@ body:not(.lang-ja):not(.lang-zh):not(.lang-ko) .warning-msg {
 
 /* 各ボタンのプロポーション */
 .btn-calc-error {
-  min-width: 145px;
-  padding: 16px 25px;
+  min-width: 125px;
+  padding: 16px 18px;
   border-color: #00d2ff;
 }
 .btn-calc-correction {
-  min-width: 165px;
-  padding: 17px 27px;
+  min-width: 140px;
+  padding: 17px 20px;
   border-color: #0088ff;
 }
 .btn-calc-multi {
-  min-width: 120px;
-  padding: 13px 20px;
+  min-width: 105px;
+  padding: 13px 16px;
   font-size: 14px;
   border-color: #00ffe0;
 }

@@ -8038,7 +8038,7 @@ const TimeCalc = {
   // 為替レート変換用ステート (19通貨対応)
   currencyFrom: 'USD',
   currencyTo: 'JPY',
-  currencyActiveField: 'to',  // 'from' または 'to' : 通貨ボタンがどちらを変更するか
+  currencyActiveField: 'from',  // 'from' または 'to' : 通貨ボタンがどちらを変更するか（デフォルト: FROM側をアクティブ）
   currencyAmount: 0,
   currencyInputStr: '0',
 
@@ -8123,6 +8123,12 @@ const TimeCalc = {
   _autoRateTimer: null,
 
   async syncCurrentCurrencyRate(forceRefresh = false) {
+    // 全スロット（A〜F）一括取得に委譲
+    await this.syncAllSlotRates(forceRefresh);
+  },
+
+  // A〜Fスロットに設定されている全通貨のレートをUSD基準で一括取得
+  async syncAllSlotRates(forceRefresh = false) {
     // 1. オフライン判定
     if (typeof navigator !== 'undefined' && navigator.onLine === false) {
       this._autoRateStatus = {
@@ -8134,24 +8140,23 @@ const TimeCalc = {
       return;
     }
 
-    const from = this.currencyFrom;
-    const to = this.currencyTo;
-
-    // 2. キャッシュチェック (5分以内かつ強制更新でない場合)
     const now = Date.now();
-    const cache = this._liveRateCache[from];
-    if (!forceRefresh && cache && (now - cache.fetchedAt) < this._liveRateCacheMs && cache.rates[to]) {
-      const timeStr = new Date(cache.fetchedAt).toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' });
+
+    // 2. キャッシュチェック: USDキャッシュが5分以内であればスキップ（全スロット分カバー済み）
+    const usdCache = this._liveRateCache['USD'];
+    if (!forceRefresh && usdCache && (now - usdCache.fetchedAt) < this._liveRateCacheMs) {
+      const timeStr = new Date(usdCache.fetchedAt).toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' });
+      const slotList = this.currencySlots.join(' / ');
       this._autoRateStatus = {
         state: 'success',
-        message: '最新のレート取得済み',
+        message: `最新のレート取得済み（${slotList}）`,
         timeStr: timeStr
       };
       this.updateDisplay();
       return;
     }
 
-    // 3. オンライン取得中ステータス
+    // 3. 取得中ステータス表示
     this._autoRateStatus = {
       state: 'loading',
       message: '最新のレートを取得中...',
@@ -8160,18 +8165,20 @@ const TimeCalc = {
     this.updateDisplay();
 
     try {
-      // Frankfurter API または open.er-api.com からレート取得
+      // USD基準で全通貨レートを一括取得（Frankfurter API → open.er-api フォールバック）
       let rates = {};
       try {
-        const resp = await fetch(`https://api.frankfurter.app/latest?from=${from}`);
+        const resp = await fetch('https://api.frankfurter.app/latest?from=USD');
         if (resp.ok) {
           const data = await resp.json();
           rates = data.rates || {};
+          rates['USD'] = 1.0; // 自身を明示的に追加
         }
       } catch(_) {}
 
-      if (!rates[to]) {
-        const fbResp = await fetch(`https://open.er-api.com/v6/latest/${from}`);
+      if (Object.keys(rates).length < 2) {
+        // フォールバック: open.er-api.com
+        const fbResp = await fetch('https://open.er-api.com/v6/latest/USD');
         if (fbResp.ok) {
           const fbData = await fbResp.json();
           rates = fbData.rates || {};
@@ -8179,35 +8186,49 @@ const TimeCalc = {
       }
 
       if (rates && Object.keys(rates).length > 0) {
-        // キャッシュ更新
-        this._liveRateCache[from] = { rates, fetchedAt: now };
+        rates['USD'] = rates['USD'] || 1.0;
 
-        // 最新の値を常にデフォルト値として適用
-        if (from === 'USD') {
-          Object.keys(rates).forEach(c => {
-            if (this.allCurrencies.includes(c)) {
-              this.currencyRates[c] = rates[c];
-              this.defaultCurrencyRates[c] = rates[c];
+        // USDキャッシュを保存（全スロット分のレートが含まれる）
+        this._liveRateCache['USD'] = { rates, fetchedAt: now };
+
+        // A〜Fスロット全通貨 + FROM/TO通貨のレートを更新
+        const targetCurrencies = new Set([
+          ...this.currencySlots,
+          this.currencyFrom,
+          this.currencyTo
+        ]);
+        targetCurrencies.forEach(c => {
+          if (this.allCurrencies.includes(c) && rates[c] !== undefined) {
+            this.currencyRates[c] = rates[c];
+            this.defaultCurrencyRates[c] = rates[c];
+            // 各通貨基準のキャッシュも作成（逆算）
+            if (!this._liveRateCache[c]) {
+              const crossRates = {};
+              Object.keys(rates).forEach(other => {
+                if (rates[c] && rates[other]) {
+                  crossRates[other] = rates[other] / rates[c];
+                }
+              });
+              this._liveRateCache[c] = { rates: crossRates, fetchedAt: now };
             }
-          });
-        } else if (rates['USD']) {
-          // 他通貨基準の場合、USD基準のratesも逆算更新
-          const usdRate = 1 / rates['USD'];
-          this.currencyRates[from] = rates['USD'];
-        }
+          }
+        });
+
+        // スロットA〜Fの通貨一覧をメッセージに含める
+        const slotList = this.currencySlots.join(' / ');
 
         const timeStr = new Date().toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' });
         this._autoRateStatus = {
           state: 'success',
-          message: '最新のレートを取得完了',
+          message: `取得完了（${slotList}）`,
           timeStr: timeStr
         };
 
-        // 3.5秒後にスマートに「最新のレート取得済み」へ穏やかに変化
+        // 3.5秒後に「最新のレート取得済み」へ変化（スロット通貨一覧付き）
         if (this._autoRateTimer) clearTimeout(this._autoRateTimer);
         this._autoRateTimer = setTimeout(() => {
           if (this._autoRateStatus.state === 'success') {
-            this._autoRateStatus.message = '最新のレート取得済み';
+            this._autoRateStatus.message = `最新のレート取得済み（${slotList}）`;
             this.updateDisplay();
           }
         }, 3500);
@@ -8236,7 +8257,7 @@ const TimeCalc = {
 
     // ネットワーク状態の変化を自動監視
     window.addEventListener('online', () => {
-      if (this.engineMode === 'currency') this.syncCurrentCurrencyRate(true);
+      if (this.engineMode === 'currency') this.syncAllSlotRates(true);
     });
     window.addEventListener('offline', () => {
       if (this.engineMode === 'currency') {
@@ -8250,7 +8271,7 @@ const TimeCalc = {
     });
 
     if (this.engineMode === 'currency') {
-      this.syncCurrentCurrencyRate();
+      this.syncAllSlotRates();
     }
   },
 

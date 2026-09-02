@@ -5603,8 +5603,9 @@ function showViewLockScreen() {
 
   // 入室時：ランダムフォントを1つ選択し、モードをOFF（手動スワイプ切替）でスタート
   _viewLockCurrentFontIndex = Math.floor(Math.random() * VIEW_LOCK_FONTS.length);
-  _vlRandomFontMode = false;
+  _vlRandomMode = 0;       // ランダムモードは必ずOFFでスタート（前セッションの状態を持ち越さない）
   _vlLastTapTime = 0;
+  _vlTapCount = 0;
   changeViewLockStyle("init");
   
   // setInterval(changeViewLockStyle, 60000) は削除。

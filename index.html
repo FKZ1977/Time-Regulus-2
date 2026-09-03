@@ -18,9 +18,9 @@
   <!-- ★【起動高速化】ロック画面用CSS（小・ブロッキング）→ 先に読み込んで即表示 -->
   <link rel="stylesheet" href="style-lock.css?c=31">
   <!-- ★【起動高速化】メインCSS（大・非ブロッキング）→ ロック画面表示後に裏で読み込む -->
-  <link rel="stylesheet" href="style-main.css?c=31" media="print" onload="this.media='all'">
+  <link rel="stylesheet" href="style-main.css?c=45" media="print" onload="this.media='all'">
   <noscript>
-    <link rel="stylesheet" href="style-main.css?c=31">
+    <link rel="stylesheet" href="style-main.css?c=45">
   </noscript>
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -183,7 +183,10 @@
       </div>
     </div>
 
-    <p class="decoy-hint anim-slow-fade" id="decoyHint"></p>
+    <!-- 普段から画面最下部に控えめに表示される固定ガイド -->
+    <div class="decoy-bottom-guide" id="decoyBottomGuide">長押しで戻る</div>
+
+    <p class="decoy-hint" id="decoyHint"></p>
     <!-- 長押しプログレスリング -->
     <svg id="decoyHoldRing" viewBox="0 0 60 60">
       <circle cx="30" cy="30" r="26" id="decoyRingCircle"/>
@@ -498,21 +501,21 @@
     <div class="flex-wrap" style="align-items: center !important; overflow: visible !important; padding: 4px 2px;">
       <!-- 【入力補助 ON 時の日数入力欄】 -->
       <div class="unit-input input-helper-on error-days-wrapper"
-        style="display: none; flex: 1 1 auto; min-width: 110px !important; align-items: center !important; overflow: visible !important; padding: 4px 4px; margin-left: 2px;">
-        <div class="direct-group-error-days" style="flex: 1; width: 100%;">
+        style="display: none; align-items: center !important; overflow: visible !important; padding: 4px 2px; margin-left: 2px;">
+        <div class="direct-group-error-days">
           <input type="number" id="errorDays" min="0" step="1" placeholder="d" tabindex="13" inputmode="numeric"
             pattern="[0-9]*">
         </div>
-        <span class="unit-label" data-i18n="days_unit" style="margin-left: 4px; margin-right: 4px;">日</span>
+        <span class="unit-label" data-i18n="days_unit" style="margin-left: 4px; margin-right: 4px; white-space: nowrap; flex-shrink: 0;">日</span>
       </div>
       <!-- 【入力補助 OFF 時の日数入力欄】 -->
       <div class="unit-input input-helper-off error-days-wrapper"
-        style="flex: 1 1 auto; min-width: 110px !important; align-items: center !important; overflow: visible !important; padding: 4px 4px; margin-left: 2px;">
-        <div class="direct-group-error-days" style="flex: 1; width: 100%;">
+        style="align-items: center !important; overflow: visible !important; padding: 4px 2px; margin-left: 2px;">
+        <div class="direct-group-error-days">
           <input type="tel" id="errorDays_direct" placeholder="d" tabindex="13" inputmode="numeric" pattern="[0-9]*"
             class="direct-error-val">
         </div>
-        <span class="unit-label" data-i18n="days_unit" style="margin-left: 4px; margin-right: 4px;">日</span>
+        <span class="unit-label" data-i18n="days_unit" style="margin-left: 4px; margin-right: 4px; white-space: nowrap; flex-shrink: 0;">日</span>
       </div>
       <!-- 【共通の時分秒入力欄 (常にテンキー用直接入力枠を表示 - 三分割均等幅)】 -->
       <div class="unit-capsule-wrapper" style="flex: none; width: auto; display: flex; align-items: center; gap: 2px;">
@@ -1073,7 +1076,7 @@
   <div id="currDragGhost" class="curr-drag-ghost" style="display:none;">USD</div>
 
   <script src="i18n.js?v=3" defer></script>
-  <script src="script.js?c=36" defer></script>
+  <script src="script.js?c=46" defer></script>
   <script>
     if ('serviceWorker' in navigator) { window.addEventListener('load', () => { navigator.serviceWorker.getRegistrations().then(r => r.forEach(reg => reg.unregister())); }); }
   </script>

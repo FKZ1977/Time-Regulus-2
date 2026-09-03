@@ -2211,8 +2211,9 @@ function restartLockScreenAnimation() {
 
 
 
-function generateKeypad() {
+function generateKeypad(initialDelay = 0) {
   const keypad = document.getElementById("keypad");
+  if (!keypad) return;
   const numbers = [1, 2, 3, 4, 5, 6, 7, 8, 9];
   const shuffled = numbers.sort(() => Math.random() - 0.5);
   keypad.innerHTML = "";
@@ -2222,12 +2223,13 @@ function generateKeypad() {
     btn.innerText = num;
     btn.onclick = () => {
       const input = document.getElementById("passcode");
-      input.value += num;
+      if (input) input.value += num;
     };
     keypad.appendChild(btn);
 
-    // 星の瞬き（チカチカ明滅）アニメーションをランダムディレイ（0〜250ms）で付与
-    const randomDelay = Math.random() * 250;
+    // 星の瞬き（チカチカ明滅）アニメーションをランダムディレイで付与
+    // initialDelay（初回起動時は400ms）を足すことで、iPhoneのCPU初期化負荷と画面フェードイン後に確実にキラキラを発動させる
+    const randomDelay = initialDelay + Math.random() * 250;
     setTimeout(() => {
       btn.classList.add("sparkle-btn-anim");
       
@@ -2259,7 +2261,6 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   // 暗証番号入力欄のフォーカス& Enterキー対応
-  if (typeof generateKeypad === 'function') { generateKeypad(); }
   const passInput = document.getElementById("passcode");
   if (passInput) {
     passInput.focus();
@@ -2270,8 +2271,27 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   }
 
+  // ★【iPhone起動最適化】
+  // 初回起動時は、画面のフェードインと初期化処理が完了するタイミング（400ms後）に合わせて
+  // キラキラアニメーションを発動させることで、iPhoneでも確実に美しいランダム演出を目に届かせる！
+  if (typeof generateKeypad === 'function') {
+    generateKeypad(400);
+  }
+
   // ロック画面のアニメーション再始動
-  restartLockScreenAnimation();
+  const lockScreen = document.getElementById('lockScreen');
+  if (lockScreen) {
+    const animEls = lockScreen.querySelectorAll('.anim-title-rise, .anim-slow-fade');
+    animEls.forEach(el => {
+      const hasTitleRise = el.classList.contains('anim-title-rise');
+      const hasSlowFade  = el.classList.contains('anim-slow-fade');
+      if (hasTitleRise) el.classList.remove('anim-title-rise');
+      if (hasSlowFade)  el.classList.remove('anim-slow-fade');
+      void el.offsetWidth;
+      if (hasTitleRise) el.classList.add('anim-title-rise');
+      if (hasSlowFade)  el.classList.add('anim-slow-fade');
+    });
+  }
 
   // =====================================================================
   // ■ フェーズ2：メイン機能の遅延初期化
@@ -6117,17 +6137,36 @@ function initViewLockHold() {
 /* ============================================================
    ダミー画面（デコイ時計）ロジック
    ============================================================ */
-let _decoyClockTimer  = null; // 時計更新タイマー
-let _decoyHoldTimer   = null; // 長押し判定タイマー
-let _decoyHoldStarted = false;
-let _decoyClockPaused = false;
-let _decoyLastTapTime = 0;
-let _decoyDisplayMode = 0; // 0: 通常, 1: 24時間残り, 2: 日の出/日没
-let _decoySingleTapTimer = null;
-let _decoyTapCount = 0;
-let _decoyHideSubSeconds = false;
+let _decoyClockTimer     = null; // 時計更新タイマー
+let _decoyHoldTimer      = null; // 長押し完了タイマー (1000ms)
+let _decoyHoldDelayTimer = null; // 長押し開始判定ディレイ (260ms)
+let _decoyTapTimer       = null; // シングルタップ確定ディレイ (250ms)
+let _decoyTapCount       = 0;
+let _decoyPressStartTime = 0;
+let _decoyStartX         = 0;
+let _decoyStartY         = 0;
+let _decoyHasMoved       = false;
+let _decoyHoldStarted    = false;
+let _decoyHoldActive     = false; // 長押しモードが開始されたか
+let _decoyDisplayMode    = 0; // 0: 通常, 1: 24時間残り, 2: 日の出/日没
+let _decoyTimeFormat     = 0; // 0: 時分秒.ミリ秒, 1: 時分秒, 2: 時分 (三段階切り替え)
+
+function _formatDecoyTimeString(h, mi, s, ms) {
+  if (_decoyTimeFormat === 2) {
+    return `${h}:${mi}`;
+  } else if (_decoyTimeFormat === 1) {
+    return `${h}:${mi}:${s}`;
+  } else {
+    return `${h}:${mi}:${s}.${ms}`;
+  }
+}
 
 function showDecoyScreen() {
+  _decoyClockPaused = false;
+  _decoyDisplayMode = 0;
+  _decoyHoldStarted = false;
+  _decoyPressStartTime = 0;
+  _decoyHasMoved = false;
   // Google Analytics: ダミー画面への遷移をカウント（国別データなどもAnalytics上で確認可能）
   if (typeof gtag === 'function') {
     gtag('event', 'view_decoy_screen', {
@@ -6180,13 +6219,14 @@ function showDecoyScreen() {
   const decoyEl = document.getElementById("decoyScreen");
   if (decoyEl) decoyEl._visibilityHandler = _decoyVisibilityHandler;
 
-  // 長押しイベント登録
-  decoy.addEventListener("touchstart",  _decoyHoldStart,  { passive: false });
-  decoy.addEventListener("touchend",    _decoyHoldEnd,    { passive: true });
-  decoy.addEventListener("touchcancel", _decoyHoldEnd,    { passive: true });
-  decoy.addEventListener("mousedown",   _decoyHoldStart);
-  decoy.addEventListener("mouseup",     _decoyHoldEnd);
-  decoy.addEventListener("mouseleave",  _decoyHoldEnd);
+  // 長押しイベント登録（画面全体のどこを押しても確実に検知するためdocumentレベルで登録）
+  document.addEventListener("touchstart",  _decoyHoldStart,  { passive: false });
+  document.addEventListener("touchmove",   _decoyHoldMove,   { passive: false });
+  document.addEventListener("touchend",    _decoyHoldEnd,    { passive: true });
+  document.addEventListener("touchcancel", _decoyHoldEnd,    { passive: true });
+  document.addEventListener("mousedown",   _decoyHoldStart);
+  window.addEventListener("mousemove",     _decoyHoldMove);
+  window.addEventListener("mouseup",       _decoyHoldEnd);
 }
 
 function hideDecoyScreen() {
@@ -6194,11 +6234,16 @@ function hideDecoyScreen() {
   _decoyClockTimer = null;
   clearTimeout(_decoyHoldTimer);
   _decoyHoldTimer = null;
-  _decoyHoldStarted = false;
-  _decoyDisplayMode = 0;
-  _decoyClockPaused = false;
-  _decoyLastTapTime = 0;
+  clearTimeout(_decoyHoldDelayTimer);
+  _decoyHoldDelayTimer = null;
+  clearTimeout(_decoyTapTimer);
+  _decoyTapTimer = null;
   _decoyTapCount = 0;
+  _decoyHoldStarted = false;
+  _decoyHoldActive = false;
+  _decoyPressStartTime = 0;
+  _decoyHasMoved = false;
+  _decoyTimeFormat = 0;
 
   // ★【消灯防止】Wake Lock を解放する
   _releaseWakeLock();
@@ -6210,20 +6255,33 @@ function hideDecoyScreen() {
     document.removeEventListener('visibilitychange', decoy._visibilityHandler);
     decoy._visibilityHandler = null;
   }
-  decoy.removeEventListener("touchstart",  _decoyHoldStart);
-  decoy.removeEventListener("touchend",    _decoyHoldEnd);
-  decoy.removeEventListener("touchcancel", _decoyHoldEnd);
-  decoy.removeEventListener("mousedown",   _decoyHoldStart);
-  decoy.removeEventListener("mouseup",     _decoyHoldEnd);
-  decoy.removeEventListener("mouseleave",  _decoyHoldEnd);
+  document.removeEventListener("touchstart",  _decoyHoldStart);
+  document.removeEventListener("touchmove",   _decoyHoldMove);
+  document.removeEventListener("touchend",    _decoyHoldEnd);
+  document.removeEventListener("touchcancel", _decoyHoldEnd);
+  document.removeEventListener("mousedown",   _decoyHoldStart);
+  window.removeEventListener("mousemove",     _decoyHoldMove);
+  window.removeEventListener("mouseup",       _decoyHoldEnd);
 
-  // ヒント・リングをリセット
+  // ヒント・リング・下部ガイドをリセット
   const hint = document.getElementById("decoyHint");
-  if (hint) { hint.textContent = ""; hint.classList.remove("visible"); }
+  if (hint) {
+    hint.textContent = "";
+    hint.classList.remove("visible");
+    hint.style.left = "";
+    hint.style.top = "";
+    hint.style.transform = "";
+  }
   const ring = document.getElementById("decoyHoldRing");
-  if (ring) ring.style.display = "none";
+  if (ring) {
+    ring.style.display = "none";
+    ring.style.left = "";
+    ring.style.top = "";
+  }
   const circle = document.getElementById("decoyRingCircle");
   if (circle) circle.style.strokeDashoffset = "163";
+  const guide = document.getElementById("decoyBottomGuide");
+  if (guide) guide.style.opacity = "1";
 
   decoy.style.display = "none";
   document.getElementById("lockScreen").style.display = "block";
@@ -6284,7 +6342,6 @@ function getSunriseSunset(date, lat = 35.6895, lng = 139.6917) {
 }
 
 function _updateDecoyClock() {
-  if (_decoyClockPaused) return; // ダブルタップ停止中は更新しない
   const now = new Date();
   const dateEl = document.getElementById("decoyDate");
   const timeEl = document.getElementById("decoyTime");
@@ -6310,7 +6367,7 @@ function _updateDecoyClock() {
     }
     if (timeEl) {
       timeEl.style.fontSize = ""; // Reset inline font-size
-      timeEl.textContent = _decoyHideSubSeconds ? `${h}:${mi}:${s}` : `${h}:${mi}:${s}.${ms}`;
+      timeEl.textContent = _formatDecoyTimeString(h, mi, s, ms);
     }
   } else if (_decoyDisplayMode === 2) {
     // Mode 2: 日の出・日没
@@ -6349,7 +6406,7 @@ function _updateDecoyClock() {
     }
     if (timeEl) {
       timeEl.style.fontSize = ""; // 固定サイズを維持
-      timeEl.textContent = _decoyHideSubSeconds ? `${h}:${mi}:${s}` : `${h}:${mi}:${s}.${ms}`;
+      timeEl.textContent = _formatDecoyTimeString(h, mi, s, ms);
     }
   } else {
     // Mode 0: 通常
@@ -6369,98 +6426,175 @@ function _updateDecoyClock() {
     // 全角コロンだと幅を取りすぎて改行されるため、半角コロンに変更
     if (timeEl) {
       timeEl.style.fontSize = ""; // Reset inline font-size
-      timeEl.textContent = _decoyHideSubSeconds ? `${h}:${mi}:${s}` : `${h}:${mi}:${s}.${ms}`;
+      timeEl.textContent = _formatDecoyTimeString(h, mi, s, ms);
     }
   }
 }
 
 function _decoyHoldStart(e) {
-  // ボタン類がタップされた場合は長押し判定やpreventDefaultを除外し、本来のclickを発火させる
+  // 精密時計画面が表示されていない時は反応しない
+  const decoy = document.getElementById("decoyScreen");
+  if (!decoy || decoy.style.display === "none") return;
+
+  // ボタン類（タイマー操作など）がタップされた場合は長押し判定を除外
   if (e && e.target && (e.target.tagName === 'BUTTON' || e.target.closest('button'))) return;
 
-  if (e && e.cancelable) e.preventDefault(); // ghost click防止
   if (_decoyHoldStarted) return;
   _decoyHoldStarted = true;
+  _decoyHoldActive = false; // まだ長押しモードではない
+  _decoyHasMoved = false;
+  _decoyPressStartTime = Date.now();
 
-  // ヒントを表示
+  // タッチまたはマウス位置を取得
+  const touch = (e.touches && e.touches.length > 0) ? e.touches[0] : e;
+  const clientX = (touch && touch.clientX !== undefined) ? touch.clientX : (window.innerWidth / 2);
+  const clientY = (touch && touch.clientY !== undefined) ? touch.clientY : (window.innerHeight / 2);
+  _decoyStartX = clientX;
+  _decoyStartY = clientY;
+
+  // 押した瞬間にはリングを出さず、260ms押し続けた時だけ「長押しモード」として水色の丸とヒントを表示開始！
+  // これにより、短いタップ時に長押し処理が干渉するのを完全に防ぎます！
+  if (_decoyHoldDelayTimer) clearTimeout(_decoyHoldDelayTimer);
+  _decoyHoldDelayTimer = setTimeout(() => {
+    if (!_decoyHoldStarted || _decoyHasMoved) return;
+
+    _decoyHoldActive = true; // 長押しモード確定
+
+    const ring = document.getElementById("decoyHoldRing");
+    const circle = document.getElementById("decoyRingCircle");
+    const hint = document.getElementById("decoyHint");
+    const guide = document.getElementById("decoyBottomGuide");
+    const ringSize = 60;
+    // タップした指・クリックの「直下（真下・中心）」
+    const ringLeft = clientX - ringSize / 2;
+    const ringTop = clientY - ringSize / 2;
+
+    if (ring) {
+      ring.style.left = ringLeft + "px";
+      ring.style.top = ringTop + "px";
+      ring.style.display = "block";
+    }
+
+    // ヒント文字の位置計算：水色の円の「上」に配置
+    if (hint) {
+      hint.textContent = "長押しで戻る...";
+      const hintTop = ringTop - 26;
+      hint.style.left = (ringLeft + ringSize / 2) + "px";
+      hint.style.top = Math.max(8, hintTop) + "px";
+      hint.style.transform = "translateX(-50%)";
+      hint.classList.add("visible");
+    }
+
+    // 下の固定ガイドを長押し中はフェードアウト
+    if (guide) guide.style.opacity = "0";
+
+    // 1秒でぐるっと時計回りに円が描かれるアニメーション
+    if (circle) {
+      circle.style.transition = "none";
+      circle.style.strokeDashoffset = "163";
+      void circle.getBoundingClientRect(); // 強制リフローで163(空)を反映
+      requestAnimationFrame(() => {
+        circle.style.transition = "stroke-dashoffset 1.0s linear";
+        circle.style.strokeDashoffset = "0";
+      });
+    }
+
+    // 1秒長押し完了でロック画面へ戻る
+    if (_decoyHoldTimer) clearTimeout(_decoyHoldTimer);
+    _decoyHoldTimer = setTimeout(() => {
+      if (_decoyHoldStarted && !_decoyHasMoved) {
+        hideDecoyScreen();
+      }
+    }, 1000);
+  }, 260);
+}
+
+function _decoyHoldMove(e) {
+  if (!_decoyHoldStarted) return;
+  const touch = (e.touches && e.touches.length > 0) ? e.touches[0] : e;
+  if (!touch) return;
+  const curX = touch.clientX !== undefined ? touch.clientX : _decoyStartX;
+  const curY = touch.clientY !== undefined ? touch.clientY : _decoyStartY;
+  // 15px以上動いたらスワイプ/ドラッグと判定し、長押しを即座にキャンセル
+  if (Math.abs(curX - _decoyStartX) > 15 || Math.abs(curY - _decoyStartY) > 15) {
+    _decoyHasMoved = true;
+    if (_decoyHoldDelayTimer) {
+      clearTimeout(_decoyHoldDelayTimer);
+      _decoyHoldDelayTimer = null;
+    }
+    _cancelDecoyHoldVisuals();
+  }
+}
+
+function _cancelDecoyHoldVisuals() {
+  if (_decoyHoldDelayTimer) {
+    clearTimeout(_decoyHoldDelayTimer);
+    _decoyHoldDelayTimer = null;
+  }
+  if (_decoyHoldTimer) {
+    clearTimeout(_decoyHoldTimer);
+    _decoyHoldTimer = null;
+  }
   const hint = document.getElementById("decoyHint");
-  if (hint) { hint.textContent = "長押しで戻る..."; hint.classList.add("visible"); }
-
-  // プログレスリングを表示して開始
-  const ring   = document.getElementById("decoyHoldRing");
+  if (hint) {
+    hint.textContent = "";
+    hint.classList.remove("visible");
+    hint.style.left = "";
+    hint.style.top = "";
+    hint.style.transform = "";
+  }
+  const ring = document.getElementById("decoyHoldRing");
   const circle = document.getElementById("decoyRingCircle");
-  if (ring)   ring.style.display = "block";
+  if (ring) {
+    ring.style.display = "none";
+    ring.style.left = "";
+    ring.style.top = "";
+  }
   if (circle) {
-    // 一度リセットしてからアニメーション開始
     circle.style.transition = "none";
     circle.style.strokeDashoffset = "163";
-    // 強制リフロー後にアニメーション開始
-    void circle.getBoundingClientRect();
-    circle.style.transition = "stroke-dashoffset 0.8s linear";
-    circle.style.strokeDashoffset = "0";
   }
-
-  // 0.8秒後にロック画面へ戻る
-  _decoyHoldTimer = setTimeout(() => {
-    hideDecoyScreen();
-  }, 800);
+  const guide = document.getElementById("decoyBottomGuide");
+  if (guide) guide.style.opacity = "1";
 }
 
 function _decoyHoldEnd(e) {
+  const decoy = document.getElementById("decoyScreen");
+  if (!decoy || decoy.style.display === "none") return;
   if (e && e.target && (e.target.tagName === 'BUTTON' || e.target.closest('button'))) return;
-
   if (!_decoyHoldStarted) return;
+
+  const wasHoldActive = _decoyHoldActive;
+  const elapsed = Date.now() - _decoyPressStartTime;
+  const hadMoved = _decoyHasMoved;
+
   _decoyHoldStarted = false;
-  clearTimeout(_decoyHoldTimer);
-  _decoyHoldTimer = null;
+  _decoyHoldActive = false;
+  _decoyPressStartTime = 0;
 
-  // ヒントとリングをリセット
-  const hint = document.getElementById("decoyHint");
-  if (hint) { hint.textContent = ""; hint.classList.remove("visible"); }
-  const ring   = document.getElementById("decoyHoldRing");
-  const circle = document.getElementById("decoyRingCircle");
-  if (ring)   ring.style.display = "none";
-  if (circle) {
-    circle.style.transition = "none";
-    circle.style.strokeDashoffset = "163";
-  }
+  // リングと長押しタイマーを即座にリセット
+  _cancelDecoyHoldVisuals();
 
-  // タップ判定（長押しで戻る前に離した場合）
-  const now = Date.now();
-  if (_decoyLastTapTime > 0 && now - _decoyLastTapTime > 400) {
-    _decoyTapCount = 0; // 400ms以上空いたらリセット
-  }
-  _decoyLastTapTime = now;
-  _decoyTapCount++;
-  
-  if (_decoySingleTapTimer) clearTimeout(_decoySingleTapTimer);
-  
-  if (_decoyTapCount === 3) {
-    // トリプルタップ (元々はダブルタップの機能)
-    _decoyTapCount = 0;
-    _decoyClockPaused = !_decoyClockPaused; // 停止/再開をトグル
-    if (!_decoyClockPaused) {
-      _updateDecoyClock(); // 即時反映
-    }
-  } else {
-    // 400ms待って次のタップが来なければ確定させる
-    _decoySingleTapTimer = setTimeout(() => {
-      const count = _decoyTapCount;
+  // 長押しモードが開始されておらず、かつ指を動かしていない場合（タップ判定！）
+  if (!wasHoldActive && !hadMoved && elapsed < 450) {
+    _decoyTapCount++;
+    if (_decoyTapTimer) clearTimeout(_decoyTapTimer);
+
+    if (_decoyTapCount >= 2) {
+      // 【ダブルタップ（素早く2回タップ）】：時分秒の三段階切り替え！
+      // 0: 時分秒.ミリ秒 → 1: 時分秒 → 2: 時分 → 0: 時分秒.ミリ秒
       _decoyTapCount = 0;
-      if (count === 1) {
-        // シングルタップ
+      _decoyTimeFormat = (_decoyTimeFormat + 1) % 3;
+      _updateDecoyClock(); // 即時反映
+    } else {
+      // 【シングルタップ（1回タップ）】：250ms待って次のタップが来なければ実行！
+      // 0: 通常表示 → 1: 一日の終わりまで → 2: 日の出・日没 → 0: 通常表示
+      _decoyTapTimer = setTimeout(() => {
+        _decoyTapCount = 0;
         _decoyDisplayMode = (_decoyDisplayMode + 1) % 3;
-      } else if (count === 2) {
-        // ダブルタップ (元々はトリプルタップの機能)
-        _decoyHideSubSeconds = !_decoyHideSubSeconds;
-        if (_decoyHideSubSeconds) {
-          _decoyClockPaused = false; // コンマ秒をなくした時計が起動したときは静止を解除
-        }
-      }
-      if (!_decoyClockPaused || count === 2) {
         _updateDecoyClock(); // 即時反映
-      }
-    }, 400);
+      }, 250);
+    }
   }
 }
 

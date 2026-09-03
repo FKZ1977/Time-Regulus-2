@@ -1,0 +1,621 @@
+﻿chrome.exe : [4848:14500:0904/055202.675:VERBOSE1:components\enterprise\browser\controller\chrome_browser_cloud_managem
+ent_controller.cc:124] DM token = empty
+発生場所 行:1 文字:1
++ & "C:\Program Files\Google\Chrome\Application\chrome.exe" --headless= ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ([4848:14500:090...M token = empty:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+[4848:14500:0904/055202.675:VERBOSE1:components\enterprise\browser\controller\chrome_browser_cloud_management_controlle
+r.cc:130] Enrollment token = 
+[4848:14500:0904/055202.675:VERBOSE1:components\enterprise\browser\controller\chrome_browser_cloud_management_controlle
+r.cc:131] Client ID = c1579394-2bbc-4002-a640-91700faebf37
+[4848:14500:0904/055202.675:VERBOSE1:components\policy\core\common\policy_service_impl.cc:632] Taking initial snapshot 
+of POLICY_DOMAIN_CHROME policies
+[4848:14500:0904/055202.679:VERBOSE1:components\variations\service\variations_field_trial_creator.cc:84] VariationsSeed
+Usage:2
+[4848:14500:0904/055202.679:VERBOSE1:components\variations\service\variations_field_trial_creator.cc:399] VariationsSet
+upComplete
+[4848:14500:0904/055202.688:VERBOSE1:base\allocator\scheduler_loop_quarantine_config.cc:195] No entry found for browser
+/global.
+[4848:14500:0904/055202.688:VERBOSE1:base\allocator\scheduler_loop_quarantine_config.cc:195] No entry found for browser
+/*.
+[4848:14500:0904/055202.764:VERBOSE1:chrome\browser\media\webrtc\webrtc_event_log_manager.cc:126] WebRTC remote-bound e
+vent logging enabled.
+[4848:14500:0904/055202.771:VERBOSE1:components\proxy_config\pref_proxy_config_tracker_impl.cc:466] 0x78f400130680: set
+ chrome proxy config service to 0x78f4000c90e0
+[4848:14500:0904/055202.774:VERBOSE1:components\device_event_log\device_event_log_impl.cc:214] [05:52:02.774] Display: 
+EVENT: screen_win.cc:1103 Displays updated, count: 1
+[4848:14500:0904/055202.774:VERBOSE1:components\device_event_log\device_event_log_impl.cc:214] [05:52:02.774] Display: 
+EVENT: screen_win.cc:1105 Display[2300000000] bounds=[0,0 800x600], workarea=[0,0 800x600], scale=1, rotation=0, panel_
+rotation=0 external detected
+[4848:14500:0904/055202.832:VERBOSE1:components\enterprise\browser\controller\chrome_browser_cloud_management_controlle
+r.cc:213] Starting CBCM Controller Initialization
+[4848:14500:0904/055202.832:INFO:components\enterprise\browser\controller\chrome_browser_cloud_management_controller.cc
+:241] No machine level policy manager exists.
+[4848:14500:0904/055202.832:VERBOSE1:chrome\installer\util\install_util.cc:218] Existing Chrome version found: 152.0.79
+77.75
+[4848:14500:0904/055202.835:VERBOSE1:chrome\browser\enterprise\platform_auth\platform_auth_policy_observer.cc:108] Plat
+formAuthProviderManager enabled: 0
+[4848:14500:0904/055202.845:VERBOSE1:components\policy\core\common\cloud\user_cloud_policy_store.cc:146] [policy_type=g
+oogle/chrome/user] Initiating immediate policy load from disk
+[4848:14500:0904/055202.845:VERBOSE1:components\policy\core\common\cloud\user_cloud_policy_store.cc:249] [policy_type=g
+oogle/chrome/user] No policy found on disk
+[4848:14500:0904/055202.845:VERBOSE1:components\policy\core\common\cloud\user_cloud_policy_store.cc:146] [policy_type=g
+oogle/extension-install-cloud-policy/chrome/user] Initiating immediate policy load from disk
+[4848:14500:0904/055202.845:VERBOSE1:components\policy\core\common\cloud\user_cloud_policy_store.cc:249] [policy_type=g
+oogle/extension-install-cloud-policy/chrome/user] No policy found on disk
+[4848:14500:0904/055202.846:VERBOSE1:components\policy\core\common\policy_service_impl.cc:632] Taking initial snapshot 
+of POLICY_DOMAIN_CHROME policies
+[4848:14500:0904/055203.017:VERBOSE1:components\proxy_config\pref_proxy_config_tracker_impl.cc:466] 0x78f400132080: set
+ chrome proxy config service to 0x78f4000cc1a0
+[4848:14500:0904/055203.018:VERBOSE1:components\signin\internal\identity_manager\mutable_profile_oauth2_token_service_d
+elegate.cc:355] MutablePO2TS::MutablePO2TS
+[4848:14500:0904/055203.020:VERBOSE1:google_apis\gaia\gaia_auth_util.cc:53] Canonicalized @gmail.com to @gmail.com
+[4848:14500:0904/055203.020:VERBOSE1:google_apis\gaia\gaia_auth_util.cc:53] Canonicalized @gmail.com to @gmail.com
+[4848:14500:0904/055203.020:VERBOSE1:components\signin\core\browser\account_reconcilor.cc:145] AccountReconcilor::Accou
+ntReconcilor
+[4848:14500:0904/055203.020:VERBOSE1:components\signin\core\browser\account_reconcilor.cc:168] AccountReconcilor::Initi
+alize
+[4848:14500:0904/055203.020:VERBOSE1:components\signin\core\browser\account_reconcilor.cc:221] AccountReconcilor::Regis
+terWithContentSettings
+[4848:14500:0904/055203.020:VERBOSE1:components\signin\core\browser\account_reconcilor.cc:244] AccountReconcilor::Regis
+terWithIdentityManager
+[4848:14500:0904/055203.023:VERBOSE1:components\proxy_config\pref_proxy_config_tracker_impl.cc:466] 0x78f4001323c0: set
+ chrome proxy config service to 0x78f4000cc920
+[4848:14500:0904/055203.023:VERBOSE1:chrome\browser\permissions\prediction_service\prediction_model_handler_provider_fa
+ctory.cc:62] [PermissionsAI]: PredictionModelHandlerProviderFactory::BuildServiceInstanceForBrowserContext
+[4848:14500:0904/055203.023:VERBOSE1:chrome\browser\permissions\prediction_service\prediction_model_handler_provider_fa
+ctory.cc:99] [PermissionsAI]: PredictionModelHandlerProviderFactory::BuildServiceInstanceForBrowserContext PermissionsA
+Iv4 not enabled, passage embedder not setup.
+[4848:14500:0904/055203.023:VERBOSE1:chrome\browser\permissions\prediction_service\prediction_model_handler_provider.cc
+:55] [PermissionsAI] PredictionModelHandlerProvider ctor passage_embedder available: false
+[4848:14500:0904/055203.024:VERBOSE1:chrome\browser\permissions\prediction_service\prediction_model_handler_provider.cc
+:58] [PermissionsAI] PredictionModelHandlerProvider ctor optimization_guide available: true
+[4848:14500:0904/055203.025:VERBOSE1:components\signin\internal\identity_manager\mutable_profile_oauth2_token_service_d
+elegate.cc:461] MutablePO2TS::RefreshTokenIsAvailable
+[4848:14500:0904/055203.025:VERBOSE1:components\signin\internal\identity_manager\mutable_profile_oauth2_token_service_d
+elegate.cc:461] MutablePO2TS::RefreshTokenIsAvailable
+[4848:14500:0904/055203.026:VERBOSE1:components\signin\internal\identity_manager\mutable_profile_oauth2_token_service_d
+elegate.cc:461] MutablePO2TS::RefreshTokenIsAvailable
+[4848:14500:0904/055203.026:VERBOSE1:components\actor\core\aggregated_journal.cc:145] [ActorTool]: GlicActorPolicyCheck
+er::ComputeActOnWebCapability: outcome=kNo reasons=kAccountCapabilityIneligible 
+[4848:14500:0904/055203.026:VERBOSE1:components\signin\internal\identity_manager\mutable_profile_oauth2_token_service_d
+elegate.cc:461] MutablePO2TS::RefreshTokenIsAvailable
+[4848:14500:0904/055203.026:VERBOSE1:components\actor\core\aggregated_journal.cc:145] [ActorTool]: GlicActorPolicyCheck
+er::ComputeActOnWebCapability: outcome=kNo reasons=kAccountCapabilityIneligible 
+[4848:14500:0904/055203.026:VERBOSE1:components\signin\internal\identity_manager\mutable_profile_oauth2_token_service_d
+elegate.cc:461] MutablePO2TS::RefreshTokenIsAvailable
+[4848:14500:0904/055203.026:VERBOSE1:components\signin\internal\identity_manager\mutable_profile_oauth2_token_service_d
+elegate.cc:461] MutablePO2TS::RefreshTokenIsAvailable
+[4848:14500:0904/055203.026:VERBOSE1:components\signin\internal\identity_manager\mutable_profile_oauth2_token_service_d
+elegate.cc:461] MutablePO2TS::RefreshTokenIsAvailable
+[4848:14500:0904/055203.026:VERBOSE1:components\signin\internal\identity_manager\mutable_profile_oauth2_token_service_d
+elegate.cc:461] MutablePO2TS::RefreshTokenIsAvailable
+[4848:14500:0904/055203.026:VERBOSE1:components\signin\internal\identity_manager\mutable_profile_oauth2_token_service_d
+elegate.cc:461] MutablePO2TS::RefreshTokenIsAvailable
+[4848:14500:0904/055203.026:VERBOSE1:components\signin\internal\identity_manager\mutable_profile_oauth2_token_service_d
+elegate.cc:461] MutablePO2TS::RefreshTokenIsAvailable
+[4848:14500:0904/055203.307:VERBOSE1:components\signin\internal\identity_manager\mutable_profile_oauth2_token_service_d
+elegate.cc:461] MutablePO2TS::RefreshTokenIsAvailable
+[4848:14500:0904/055203.307:VERBOSE1:components\signin\internal\identity_manager\mutable_profile_oauth2_token_service_d
+elegate.cc:461] MutablePO2TS::RefreshTokenIsAvailable
+[4848:14500:0904/055203.307:VERBOSE1:components\signin\internal\identity_manager\mutable_profile_oauth2_token_service_d
+elegate.cc:461] MutablePO2TS::RefreshTokenIsAvailable
+[4848:14500:0904/055203.309:VERBOSE1:components\signin\internal\identity_manager\mutable_profile_oauth2_token_service_d
+elegate.cc:461] MutablePO2TS::RefreshTokenIsAvailable
+[4848:14500:0904/055203.314:VERBOSE1:extensions\browser\extension_registrar.cc:575] AddComponentExtension Chrome PDF Vi
+ewer
+[4848:14500:0904/055203.314:VERBOSE1:extensions\browser\extension_registrar.cc:577] Component extension Chrome PDF View
+er (mhjfbmdgcfjbbpaeojofohoefgiehjai) installing/upgrading from '' to 1
+[4848:14500:0904/055203.315:VERBOSE1:extensions\browser\extension_registrar.cc:575] AddComponentExtension Google Hangou
+ts
+[4848:14500:0904/055203.315:VERBOSE1:extensions\browser\extension_registrar.cc:577] Component extension Google Hangouts
+ (nkeimhogjdpnpccoofpliimaahmaaome) installing/upgrading from '' to 1.3.26
+[4848:14500:0904/055203.316:VERBOSE1:extensions\browser\extension_registrar.cc:575] AddComponentExtension Google Networ
+k Speech
+[4848:14500:0904/055203.317:VERBOSE1:extensions\browser\extension_registrar.cc:577] Component extension Google Network 
+Speech (fignfifoniblkonapihmkfakmlgkbkcf) installing/upgrading from '' to 1.0
+[4848:14500:0904/055203.318:VERBOSE1:components\signin\internal\identity_manager\mutable_profile_oauth2_token_service_d
+elegate.cc:461] MutablePO2TS::RefreshTokenIsAvailable
+[4848:14500:0904/055203.318:VERBOSE1:components\signin\internal\identity_manager\mutable_profile_oauth2_token_service_d
+elegate.cc:461] MutablePO2TS::RefreshTokenIsAvailable
+[4848:14500:0904/055203.319:VERBOSE1:components\signin\internal\identity_manager\mutable_profile_oauth2_token_service_d
+elegate.cc:461] MutablePO2TS::RefreshTokenIsAvailable
+[4848:14500:0904/055203.320:VERBOSE1:components\component_updater\installer_policies\on_device_head_suggest_component_i
+nstaller.cc:59] On Device Head Component will fetch model for locale: JA500000
+[4848:14500:0904/055203.320:VERBOSE1:chrome\browser\component_updater\trust_token_key_commitments_component_installer.c
+c:22] Registering Trust Token Key Commitments component.
+[4848:14500:0904/055203.320:VERBOSE1:chrome\browser\component_updater\first_party_sets_component_installer.cc:40] Regis
+tering Related Website Sets component.
+[4848:14500:0904/055203.320:VERBOSE1:chrome\browser\component_updater\privacy_sandbox_attestations_component_installer.
+cc:181] Registering Privacy Sandbox Attestations component
+[4848:14500:0904/055203.320:VERBOSE1:components\component_updater\installer_policies\actor_safety_lists_component_insta
+ller.cc:141] Registering Actor Safety Lists Component.
+[4848:14500:0904/055203.320:VERBOSE1:chrome\browser\component_updater\file_type_policies_component_installer.cc:126] Re
+gistering File Type Policies component.
+[4848:14500:0904/055203.320:VERBOSE1:chrome\browser\component_updater\hyphenation_component_installer.cc:148] Registeri
+ng Hyphenation component.
+[4848:14500:0904/055203.320:VERBOSE1:chrome\browser\component_updater\translate_kit_component_installer.cc:210] Registe
+ring TranslateKit component.
+[4848:14500:0904/055203.320:VERBOSE1:chrome\browser\component_updater\wasm_tts_engine_component_installer.cc:286] Regis
+tering WASM TTS Engine component.
+[4848:14500:0904/055203.320:VERBOSE1:chrome\browser\component_updater\captcha_provider_component_installer.cc:175] Regi
+stering Captcha Provider component.
+[4848:14500:0904/055203.322:VERBOSE1:chrome\browser\profiles\profile_manager.cc:1405] AddKeepAlive(Default, kOffTheReco
+rdProfile). keep_alives=[kWaitingForFirstBrowserWindow (1), kOffTheRecordProfile (1)]
+[4848:11044:0904/055203.293:VERBOSE1:net\disk_cache\simple\simple_index_file.cc:625] Simple Cache Index is being restor
+ed from disk.
+[4848:9288:0904/055203.334:VERBOSE1:components\component_updater\component_installer.cc:511] StartRegistration for Priv
+acy Sandbox Attestations
+[4848:9288:0904/055203.346:VERBOSE1:components\component_updater\component_installer.cc:330] Preinstalled component fou
+nd for Privacy Sandbox Attestations at C:\Program Files\Google\Chrome\Application\152.0.7977.75\PrivacySandboxAttestati
+onsPreloaded with version 2025.7.18.0.
+[4848:14500:0904/055203.347:VERBOSE1:chrome\browser\permissions\prediction_service\prediction_model_handler_provider_fa
+ctory.cc:62] [PermissionsAI]: PredictionModelHandlerProviderFactory::BuildServiceInstanceForBrowserContext
+[4848:14500:0904/055203.347:VERBOSE1:chrome\browser\permissions\prediction_service\prediction_model_handler_provider_fa
+ctory.cc:99] [PermissionsAI]: PredictionModelHandlerProviderFactory::BuildServiceInstanceForBrowserContext PermissionsA
+Iv4 not enabled, passage embedder not setup.
+[4848:14500:0904/055203.347:VERBOSE1:chrome\browser\permissions\prediction_service\prediction_model_handler_provider.cc
+:55] [PermissionsAI] PredictionModelHandlerProvider ctor passage_embedder available: false
+[4848:14500:0904/055203.347:VERBOSE1:chrome\browser\permissions\prediction_service\prediction_model_handler_provider.cc
+:58] [PermissionsAI] PredictionModelHandlerProvider ctor optimization_guide available: true
+[4848:9288:0904/055203.348:VERBOSE1:components\component_updater\component_installer.cc:511] StartRegistration for Cert
+ificate Error Assistant
+[4848:14500:0904/055203.349:VERBOSE1:components\proxy_config\pref_proxy_config_tracker_impl.cc:466] 0x78f400136180: set
+ chrome proxy config service to 0x78f4000d3400
+[4848:9288:0904/055203.349:VERBOSE1:components\component_updater\component_installer.cc:511] StartRegistration for File
+ Type Policies
+[4848:9288:0904/055203.371:VERBOSE1:components\component_updater\component_installer.cc:511] StartRegistration for CRLS
+et
+[4848:9288:0904/055203.372:VERBOSE1:components\component_updater\component_installer.cc:511] StartRegistration for Orig
+in Trials
+[4848:9288:0904/055203.373:VERBOSE1:components\component_updater\component_installer.cc:511] StartRegistration for MEI 
+Preload
+[4848:9288:0904/055203.373:VERBOSE1:components\component_updater\component_installer.cc:330] Preinstalled component fou
+nd for MEI Preload at C:\Program Files\Google\Chrome\Application\152.0.7977.75\MEIPreload with version 1.0.7.1652906823
+.
+[4848:9288:0904/055203.380:VERBOSE1:components\component_updater\component_installer.cc:511] StartRegistration for PKI 
+Metadata
+[4848:9288:0904/055203.381:VERBOSE1:components\component_updater\component_installer.cc:511] StartRegistration for Safe
+ty Tips
+[4848:16308:0904/055203.383:VERBOSE1:components\component_updater\component_installer.cc:511] StartRegistration for Cro
+wd Deny
+[4848:16308:0904/055203.384:VERBOSE1:components\component_updater\component_installer.cc:511] StartRegistration for Hyp
+henation
+[4848:16308:0904/055203.385:VERBOSE1:components\component_updater\component_installer.cc:511] StartRegistration for Zxc
+vbn Data Dictionaries
+[4848:16308:0904/055203.386:VERBOSE1:components\component_updater\component_installer.cc:511] StartRegistration for Amo
+unt Extraction Heuristic Regexes
+[4848:11044:0904/055203.387:VERBOSE1:components\component_updater\component_installer.cc:511] StartRegistration for WAS
+M TTS Engine
+[4848:16308:0904/055203.387:VERBOSE1:components\component_updater\component_installer.cc:511] StartRegistration for Cap
+tcha Providers
+[4848:14060:0904/055203.292:VERBOSE1:net\disk_cache\simple\simple_index_file.cc:625] Simple Cache Index is being restor
+ed from disk.
+[4848:9336:0904/055203.339:VERBOSE1:components\component_updater\component_installer.cc:511] StartRegistration for Chro
+me Improved Recovery
+[4848:14188:0904/055203.408:VERBOSE1:extensions\browser\content_verifier\content_verifier.cc:944] OnFetchComplete mhjfb
+mdgcfjbbpaeojofohoefgiehjai success:0
+[4848:14188:0904/055203.423:VERBOSE1:extensions\browser\content_verifier\content_verifier.cc:944] OnFetchComplete nkeim
+hogjdpnpccoofpliimaahmaaome success:0
+[4848:14188:0904/055203.423:VERBOSE1:extensions\browser\content_verifier\content_verifier.cc:944] OnFetchComplete fignf
+ifoniblkonapihmkfakmlgkbkcf success:0
+[4848:5968:0904/055203.339:VERBOSE1:components\component_updater\component_installer.cc:511] StartRegistration for Subr
+esource Filter Rules
+[4848:13044:0904/055203.339:VERBOSE1:components\component_updater\component_installer.cc:511] StartRegistration for OnD
+eviceHeadSuggest
+[4848:12096:0904/055203.339:VERBOSE1:components\component_updater\component_installer.cc:511] StartRegistration for Opt
+imization Hints
+[4848:15956:0904/055203.339:VERBOSE1:components\component_updater\component_installer.cc:511] StartRegistration for Tru
+st Token Key Commitments
+[4848:14056:0904/055203.339:VERBOSE1:components\component_updater\component_installer.cc:511] StartRegistration for Act
+or Safety Lists
+[4848:7116:0904/055203.339:VERBOSE1:components\component_updater\component_installer.cc:511] StartRegistration for Wide
+vine Content Decryption Module
+[4848:7116:0904/055203.426:VERBOSE1:components\component_updater\component_installer.cc:330] Preinstalled component fou
+nd for Widevine Content Decryption Module at C:\Program Files\Google\Chrome\Application\152.0.7977.75\WidevineCdm with 
+version 4.10.3050.0.
+[4848:14500:0904/055203.587:VERBOSE1:chrome\browser\enterprise\data_protection\data_protection_navigation_observer.cc:2
+29] enterprise.data_protection: same document navigation: 0
+[4848:14500:0904/055203.588:VERBOSE1:chrome\browser\enterprise\data_protection\data_protection_navigation_observer.cc:2
+31] enterprise.data_protection: URL to scan: file:///C:/Users/hiros/OneDrive/%E3%83%89%E3%82%AD%E3%83%A5%E3%83%A1%E3%83
+%B3%E3%83%88/Time%20Regulus_V3.3.1_%E5%A4%9A%E8%A8%80%E8%AA%9E%E5%8C%96/index.html
+[4848:14500:0904/055203.610:VERBOSE1:chrome\browser\ui\views\omnibox\omnibox_popup_closer.cc:63] Closing omnibox popup 
+with reason: kRevertAll
+[4848:14500:0904/055203.655:VERBOSE1:chrome\browser\profiles\profile_manager.cc:1405] AddKeepAlive(Default, kExtensionU
+pdater). keep_alives=[kWaitingForFirstBrowserWindow (1), kOffTheRecordProfile (1), kExtensionUpdater (1)]
+[4848:14500:0904/055203.655:WARNING:chrome\browser\extensions\external_registry_loader_win.cc:236] Error observing HKLM
+: 繧｢繧ｯ繧ｻ繧ｹ縺梧拠蜷ｦ縺輔ｌ縺ｾ縺励◆縲・(0x5)
+[4848:14500:0904/055203.670:VERBOSE1:components\component_updater\component_installer.cc:582] FinishRegistration for Pr
+ivacy Sandbox Attestations
+[4848:14500:0904/055203.670:VERBOSE1:components\component_updater\component_updater_service.cc:177] CrxUpdateService st
+arting up. First update attempt will take place in 60 s seconds. Next update attempt will take place in 18000 s seconds
+. 
+[4848:14500:0904/055203.670:VERBOSE1:components\component_updater\component_installer.cc:620] Component ready, version 
+2025.7.18.0 in C:\Program Files\Google\Chrome\Application\152.0.7977.75\PrivacySandboxAttestationsPreloaded
+[4848:14500:0904/055203.670:VERBOSE1:chrome\browser\component_updater\privacy_sandbox_attestations_component_installer.
+cc:111] Privacy Sandbox Attestations Component ready, version 2025.7.18.0 in C:\Program Files\Google\Chrome\Application
+\152.0.7977.75\PrivacySandboxAttestationsPreloaded
+[4848:14500:0904/055203.670:VERBOSE1:chrome\browser\component_updater\privacy_sandbox_attestations_component_installer.
+cc:188] Received privacy sandbox attestations file
+[4848:14500:0904/055203.670:VERBOSE1:components\component_updater\component_installer.cc:582] FinishRegistration for Ce
+rtificate Error Assistant
+[4848:14500:0904/055203.670:VERBOSE1:components\component_updater\component_installer.cc:582] FinishRegistration for Fi
+le Type Policies
+[4848:14500:0904/055203.680:VERBOSE1:components\component_updater\component_installer.cc:582] FinishRegistration for CR
+LSet
+[4848:14500:0904/055203.680:VERBOSE1:components\component_updater\component_installer.cc:582] FinishRegistration for Or
+igin Trials
+[4848:14500:0904/055203.680:VERBOSE1:components\component_updater\component_installer.cc:582] FinishRegistration for ME
+I Preload
+[4848:14500:0904/055203.680:VERBOSE1:components\component_updater\component_installer.cc:620] Component ready, version 
+1.0.7.1652906823 in C:\Program Files\Google\Chrome\Application\152.0.7977.75\MEIPreload
+[4848:14500:0904/055203.680:VERBOSE1:components\component_updater\component_installer.cc:582] FinishRegistration for PK
+I Metadata
+[4848:14500:0904/055203.680:VERBOSE1:components\component_updater\component_installer.cc:582] FinishRegistration for Cr
+owd Deny
+[4848:14500:0904/055203.680:VERBOSE1:components\component_updater\component_installer.cc:582] FinishRegistration for Hy
+phenation
+[4848:14500:0904/055203.680:VERBOSE1:components\component_updater\component_installer.cc:582] FinishRegistration for Zx
+cvbn Data Dictionaries
+[4848:14500:0904/055203.680:VERBOSE1:components\component_updater\component_installer.cc:582] FinishRegistration for Am
+ount Extraction Heuristic Regexes
+[4848:14500:0904/055203.680:VERBOSE1:components\component_updater\component_installer.cc:582] FinishRegistration for Ca
+ptcha Providers
+[4848:14500:0904/055203.680:VERBOSE1:components\component_updater\component_installer.cc:582] FinishRegistration for Sa
+fety Tips
+[4848:14500:0904/055203.680:VERBOSE1:components\component_updater\component_installer.cc:582] FinishRegistration for WA
+SM TTS Engine
+[4848:14500:0904/055203.680:VERBOSE1:components\component_updater\component_installer.cc:582] FinishRegistration for Ch
+rome Improved Recovery
+[4848:14500:0904/055203.680:VERBOSE1:components\component_updater\component_installer.cc:582] FinishRegistration for Su
+bresource Filter Rules
+[4848:14500:0904/055203.680:VERBOSE1:components\component_updater\component_installer.cc:582] FinishRegistration for Op
+timization Hints
+[4848:14500:0904/055203.680:VERBOSE1:components\component_updater\component_installer.cc:582] FinishRegistration for Tr
+ust Token Key Commitments
+[4848:14500:0904/055203.680:VERBOSE1:components\component_updater\component_installer.cc:582] FinishRegistration for Ac
+tor Safety Lists
+[4848:14500:0904/055203.680:VERBOSE1:components\component_updater\component_installer.cc:582] FinishRegistration for Wi
+devine Content Decryption Module
+[4848:14500:0904/055203.680:VERBOSE1:components\component_updater\component_installer.cc:620] Component ready, version 
+4.10.3050.0 in C:\Program Files\Google\Chrome\Application\152.0.7977.75\WidevineCdm
+[4848:14500:0904/055203.680:VERBOSE1:components\component_updater\component_installer.cc:582] FinishRegistration for On
+DeviceHeadSuggest
+[4848:12096:0904/055203.692:VERBOSE1:content\browser\loader\file_url_loader_factory.cc:476] FileURLLoader::Start: file:
+///C:/Users/hiros/OneDrive/%E3%83%89%E3%82%AD%E3%83%A5%E3%83%A1%E3%83%B3%E3%83%88/Time%20Regulus_V3.3.1_%E5%A4%9A%E8%A8
+%80%E8%AA%9E%E5%8C%96/index.html
+[4848:14500:0904/055203.720:VERBOSE1:components\signin\internal\identity_manager\mutable_profile_oauth2_token_service_d
+elegate.cc:461] MutablePO2TS::RefreshTokenIsAvailable
+[4848:14500:0904/055203.729:VERBOSE1:components\privacy_sandbox\privacy_sandbox_attestations\privacy_sandbox_attestatio
+ns.cc:480] Parsed Privacy Sandbox Attestation list version: 2025.7.18.0
+[4848:14500:0904/055203.729:VERBOSE1:components\privacy_sandbox\privacy_sandbox_attestations\privacy_sandbox_attestatio
+ns.cc:482] Number of attestation entries: 263
+[4848:14500:0904/055203.731:VERBOSE1:components\signin\internal\identity_manager\mutable_profile_oauth2_token_service_d
+elegate.cc:461] MutablePO2TS::RefreshTokenIsAvailable
+[4848:14500:0904/055203.740:VERBOSE1:chrome\browser\component_updater\widevine_cdm_component_installer.cc:94] Registeri
+ng Widevine CDM 4.10.3050.0 with Chrome
+[4848:14500:0904/055203.741:VERBOSE1:chrome\browser\web_applications\locks\partitioned_lock_manager.cc:262] Acquiring <
+PartitionedLockId>{id: 0x31, partition: 0} for ScheduleAllFixes@chrome\browser\web_applications\generated_icon_fix_mana
+ger.cc:79
+[4848:14500:0904/055203.741:VERBOSE1:chrome\browser\web_applications\locks\partitioned_lock_manager.cc:243] All locks a
+cquired for ScheduleAllFixes@chrome\browser\web_applications\generated_icon_fix_manager.cc:79
+[4848:14500:0904/055203.748:VERBOSE1:chrome\browser\web_applications\locks\partitioned_lock_manager.cc:286] Releasing <
+PartitionedLockId>{id: 0x31, partition: 0} requested by ScheduleAllFixes@chrome\browser\web_applications\generated_icon
+_fix_manager.cc:79
+[4848:14500:0904/055203.748:VERBOSE1:chrome\browser\web_applications\locks\partitioned_lock_manager.cc:318] Acquiring <
+PartitionedLockId>{id: 0x31, partition: 0} for OnSyncBridgeReady@chrome\browser\web_applications\web_app_provider.cc:57
+3
+[4848:14500:0904/055203.748:VERBOSE1:chrome\browser\web_applications\locks\partitioned_lock_manager.cc:243] All locks a
+cquired for OnSyncBridgeReady@chrome\browser\web_applications\web_app_provider.cc:573
+[4848:14500:0904/055203.848:VERBOSE1:chrome\browser\web_applications\locks\partitioned_lock_manager.cc:286] Releasing <
+PartitionedLockId>{id: 0x31, partition: 0} requested by OnSyncBridgeReady@chrome\browser\web_applications\web_app_provi
+der.cc:573
+[4848:1460:0904/055204.347:VERBOSE1:net\disk_cache\simple\simple_index_file.cc:625] Simple Cache Index is being restore
+d from disk.
+[4848:14500:0904/055204.381:VERBOSE1:components\segmentation_platform\internal\signals\signal_filter_processor.cc:61] S
+egmentation platform started observing Session.TotalDuration
+[4848:14500:0904/055204.381:VERBOSE1:components\segmentation_platform\internal\signals\signal_filter_processor.cc:61] S
+egmentation platform started observing Commerce.PriceDrops.ActiveTabNavigationComplete.IsProductDetailPage
+[4848:14500:0904/055204.381:VERBOSE1:components\segmentation_platform\internal\signals\signal_filter_processor.cc:54] S
+egmentation platform started observing Autofill_PolledCreditCardSuggestions
+[4848:14500:0904/055206.546:VERBOSE1:components\segmentation_platform\internal\signals\signal_filter_processor.cc:61] S
+egmentation platform started observing IOS.ParcelTracking.Tracked.AutoTrack
+[4848:14500:0904/055206.546:VERBOSE1:components\segmentation_platform\internal\signals\signal_filter_processor.cc:61] S
+egmentation platform started observing Omnibox.SuggestionUsed.ClientSummarizedResultType
+[4848:14500:0904/055206.546:VERBOSE1:components\segmentation_platform\internal\signals\signal_filter_processor.cc:54] S
+egmentation platform started observing MetadataWriter
+[4848:14500:0904/055206.546:VERBOSE1:components\segmentation_platform\internal\signals\signal_filter_processor.cc:61] S
+egmentation platform started observing Sync.DeviceCount2
+[4848:14500:0904/055206.546:VERBOSE1:components\segmentation_platform\internal\signals\signal_filter_processor.cc:61] S
+egmentation platform started observing Sync.DeviceCount2.Phone
+[4848:14500:0904/055206.546:VERBOSE1:components\segmentation_platform\internal\signals\signal_filter_processor.cc:61] S
+egmentation platform started observing Sync.DeviceCount2.Desktop
+[4848:14500:0904/055206.546:VERBOSE1:components\segmentation_platform\internal\signals\signal_filter_processor.cc:61] S
+egmentation platform started observing Sync.DeviceCount2.Tablet
+[4848:14500:0904/055206.546:VERBOSE1:components\segmentation_platform\internal\signals\signal_filter_processor.cc:54] S
+egmentation platform started observing MobileBookmarkManagerOpen
+[4848:14500:0904/055206.546:VERBOSE1:components\segmentation_platform\internal\signals\signal_filter_processor.cc:54] S
+egmentation platform started observing NewTabPage.MostVisited.Clicked
+[4848:14500:0904/055206.546:VERBOSE1:components\segmentation_platform\internal\signals\signal_filter_processor.cc:54] S
+egmentation platform started observing TabGroup.Created.OpenInNewTab
+[4848:14500:0904/055206.546:VERBOSE1:components\segmentation_platform\internal\signals\signal_filter_processor.cc:54] S
+egmentation platform started observing Android.HistoryPage.OpenItem
+[4848:14500:0904/055206.546:VERBOSE1:components\segmentation_platform\internal\signals\signal_filter_processor.cc:54] S
+egmentation platform started observing MobileMenuRecentTabs
+[4848:14500:0904/055206.546:VERBOSE1:components\segmentation_platform\internal\signals\signal_filter_processor.cc:61] S
+egmentation platform started observing PasswordManager.ManagePasswordsReferrer
+[4848:14500:0904/055206.546:VERBOSE1:components\segmentation_platform\internal\signals\signal_filter_processor.cc:61] S
+egmentation platform started observing PasswordManager.ProfileStore.TotalAccountsHiRes3.WithScheme.Https
+[4848:14500:0904/055206.546:VERBOSE1:components\segmentation_platform\internal\signals\signal_filter_processor.cc:61] S
+egmentation platform started observing PasswordManager.FillingAssistance
+[4848:14500:0904/055206.546:VERBOSE1:components\segmentation_platform\internal\signals\signal_filter_processor.cc:61] S
+egmentation platform started observing PasswordManager.SavedPasswordIsGenerated
+[4848:14500:0904/055206.546:VERBOSE1:components\segmentation_platform\internal\signals\signal_filter_processor.cc:61] S
+egmentation platform started observing PasswordManager.SaveUIDismissalReason
+[4848:14500:0904/055206.546:VERBOSE1:components\segmentation_platform\internal\signals\signal_filter_processor.cc:61] S
+egmentation platform started observing PasswordManager.SaveUIDismissalReason
+[4848:14500:0904/055206.546:VERBOSE1:components\segmentation_platform\internal\signals\signal_filter_processor.cc:61] S
+egmentation platform started observing IOS.CredentialExtension.IsEnabled.Startup
+[4848:14500:0904/055206.546:VERBOSE1:components\segmentation_platform\internal\signals\signal_filter_processor.cc:61] S
+egmentation platform started observing Session.TotalDuration
+[4848:8656:0904/055204.644:VERBOSE1:components\signin\public\webdata\token_service_table.cc:259] Loaded tokens: result 
+= 3 ; number of tokens loaded = 0
+[4848:14500:0904/055206.546:VERBOSE1:chrome\browser\local_discovery\service_discovery_device_lister.cc:36] DeviceLister
+Start: service_type: _googlecast._tcp.local
+[4848:14500:0904/055206.632:VERBOSE1:chrome\browser\local_discovery\service_discovery_device_lister.cc:42] DiscoverNewD
+evices: service_type: _googlecast._tcp.local
+[4848:14500:0904/055206.674:VERBOSE1:components\signin\internal\identity_manager\mutable_profile_oauth2_token_service_d
+elegate.cc:660] MutablePO2TS::OnWebDataServiceRequestDone. Result type: 6
+[4848:14500:0904/055206.674:VERBOSE1:components\signin\internal\identity_manager\mutable_profile_oauth2_token_service_d
+elegate.cc:722] MutablePO2TS::LoadAllCredentialsIntoMemory; 0 credential(s).
+[4848:14500:0904/055206.674:VERBOSE1:components\signin\internal\identity_manager\mutable_profile_oauth2_token_service_d
+elegate.cc:461] MutablePO2TS::RefreshTokenIsAvailable
+[4848:14500:0904/055206.674:VERBOSE1:google_apis\gaia\gaia_auth_util.cc:53] Canonicalized @gmail.com to @gmail.com
+[4848:14500:0904/055206.674:VERBOSE1:google_apis\gaia\gaia_auth_util.cc:53] Canonicalized @gmail.com to @gmail.com
+[4848:14500:0904/055206.676:VERBOSE1:components\signin\internal\identity_manager\mutable_profile_oauth2_token_service_d
+elegate.cc:461] MutablePO2TS::RefreshTokenIsAvailable
+[4848:14500:0904/055206.676:VERBOSE1:components\signin\internal\identity_manager\mutable_profile_oauth2_token_service_d
+elegate.cc:461] MutablePO2TS::RefreshTokenIsAvailable
+[4848:14500:0904/055206.676:VERBOSE1:components\signin\internal\identity_manager\mutable_profile_oauth2_token_service_d
+elegate.cc:461] MutablePO2TS::RefreshTokenIsAvailable
+[4848:14500:0904/055206.676:VERBOSE1:components\signin\internal\identity_manager\mutable_profile_oauth2_token_service_d
+elegate.cc:461] MutablePO2TS::RefreshTokenIsAvailable
+[4848:14500:0904/055206.676:VERBOSE1:components\signin\internal\identity_manager\mutable_profile_oauth2_token_service_d
+elegate.cc:461] MutablePO2TS::RefreshTokenIsAvailable
+[4848:14500:0904/055206.676:VERBOSE1:components\signin\internal\identity_manager\mutable_profile_oauth2_token_service_d
+elegate.cc:461] MutablePO2TS::RefreshTokenIsAvailable
+[4848:14500:0904/055206.676:VERBOSE1:components\signin\internal\identity_manager\mutable_profile_oauth2_token_service_d
+elegate.cc:461] MutablePO2TS::RefreshTokenIsAvailable
+[4848:14500:0904/055206.676:VERBOSE1:components\signin\internal\identity_manager\mutable_profile_oauth2_token_service_d
+elegate.cc:461] MutablePO2TS::RefreshTokenIsAvailable
+[4848:14500:0904/055206.676:VERBOSE1:components\signin\internal\identity_manager\mutable_profile_oauth2_token_service_d
+elegate.cc:461] MutablePO2TS::RefreshTokenIsAvailable
+[4848:14500:0904/055206.676:VERBOSE1:components\signin\internal\identity_manager\mutable_profile_oauth2_token_service_d
+elegate.cc:461] MutablePO2TS::RefreshTokenIsAvailable
+[4848:14500:0904/055206.676:VERBOSE1:components\signin\internal\identity_manager\mutable_profile_oauth2_token_service_d
+elegate.cc:461] MutablePO2TS::RefreshTokenIsAvailable
+[4848:14500:0904/055206.676:VERBOSE1:components\signin\internal\identity_manager\mutable_profile_oauth2_token_service_d
+elegate.cc:461] MutablePO2TS::RefreshTokenIsAvailable
+[4848:14500:0904/055206.676:VERBOSE1:components\signin\internal\identity_manager\mutable_profile_oauth2_token_service_d
+elegate.cc:461] MutablePO2TS::RefreshTokenIsAvailable
+[4848:14500:0904/055206.676:VERBOSE1:components\signin\internal\identity_manager\mutable_profile_oauth2_token_service_d
+elegate.cc:461] MutablePO2TS::RefreshTokenIsAvailable
+[4848:14500:0904/055206.676:VERBOSE1:components\signin\core\browser\account_reconcilor.cc:309] AccountReconcilor::OnEnd
+BatchOfRefreshTokenStateChanges. Reconcilor state: 1
+[4848:14500:0904/055206.716:VERBOSE1:components\signin\internal\identity_manager\mutable_profile_oauth2_token_service_d
+elegate.cc:461] MutablePO2TS::RefreshTokenIsAvailable
+[4848:14500:0904/055206.978:VERBOSE1:components\segmentation_platform\internal\selection\segment_result_provider.cc:136
+] GetSegmentResult: segment=OPTIMIZATION_TARGET_SEGMENTATION_DEVICE_SWITCHER ignoring DB score, executing model.
+[4848:14500:0904/055206.978:VERBOSE1:components\segmentation_platform\internal\selection\segment_result_provider.cc:277
+] ExecuteModelAndGetScore: segment=OPTIMIZATION_TARGET_SEGMENTATION_DEVICE_SWITCHER server segment info not available
+[4848:14500:0904/055206.978:VERBOSE1:components\segmentation_platform\internal\selection\segment_result_provider.cc:210
+] OnGotModelScore: segment=OPTIMIZATION_TARGET_SEGMENTATION_DEVICE_SWITCHER failed to get database model score, trying 
+default model.
+[4848:14060:0904/055207.011:VERBOSE1:content\browser\loader\file_url_loader_factory.cc:476] FileURLLoader::Start: file:
+///C:/Users/hiros/OneDrive/%E3%83%89%E3%82%AD%E3%83%A5%E3%83%A1%E3%83%B3%E3%83%88/Time%20Regulus_V3.3.1_%E5%A4%9A%E8%A8
+%80%E8%AA%9E%E5%8C%96/style-lock.css?c=31
+[4848:14060:0904/055207.022:VERBOSE1:content\browser\loader\file_url_loader_factory.cc:476] FileURLLoader::Start: file:
+///C:/Users/hiros/OneDrive/%E3%83%89%E3%82%AD%E3%83%A5%E3%83%A1%E3%83%B3%E3%83%88/Time%20Regulus_V3.3.1_%E5%A4%9A%E8%A8
+%80%E8%AA%9E%E5%8C%96/QRCorde.PNG
+[4848:14060:0904/055207.028:VERBOSE1:content\browser\loader\file_url_loader_factory.cc:476] FileURLLoader::Start: file:
+///C:/Users/hiros/OneDrive/%E3%83%89%E3%82%AD%E3%83%A5%E3%83%A1%E3%83%B3%E3%83%88/Time%20Regulus_V3.3.1_%E5%A4%9A%E8%A8
+%80%E8%AA%9E%E5%8C%96/i18n.js?v=3
+[4848:14060:0904/055207.032:VERBOSE1:content\browser\loader\file_url_loader_factory.cc:476] FileURLLoader::Start: file:
+///C:/Users/hiros/OneDrive/%E3%83%89%E3%82%AD%E3%83%A5%E3%83%A1%E3%83%B3%E3%83%88/Time%20Regulus_V3.3.1_%E5%A4%9A%E8%A8
+%80%E8%AA%9E%E5%8C%96/script.js?c=40
+[4848:14060:0904/055207.044:VERBOSE1:content\browser\loader\file_url_loader_factory.cc:476] FileURLLoader::Start: file:
+///C:/Users/hiros/OneDrive/%E3%83%89%E3%82%AD%E3%83%A5%E3%83%A1%E3%83%B3%E3%83%88/Time%20Regulus_V3.3.1_%E5%A4%9A%E8%A8
+%80%E8%AA%9E%E5%8C%96/style-main.css?c=31
+[4848:14500:0904/055207.177:VERBOSE1:components\signin\core\browser\account_reconcilor.cc:550] AccountReconcilor::OnAcc
+ountsInCookieUpdated: CookieJar 0 accounts, Reconcilor's state is 1, Error was 
+[4848:14500:0904/055207.177:VERBOSE1:components\signin\core\browser\account_reconcilor.cc:644] AccountReconcilor::LoadV
+alidAccountsFromTokenService: Chrome 0 accounts
+[4848:14500:0904/055207.177:VERBOSE1:components\signin\core\browser\account_reconcilor.cc:786] AccountReconcilor::Calcu
+lateIfMultiloginReconcileIsDone: Error was 
+[4848:14500:0904/055207.177:VERBOSE1:components\signin\core\browser\account_reconcilor.cc:680] AccountReconcilor::Start
+ReconcileIfChromeAccountsChanged
+[4848:14500:0904/055207.182:VERBOSE1:components\signin\core\browser\account_reconcilor.cc:550] AccountReconcilor::OnAcc
+ountsInCookieUpdated: CookieJar 0 accounts, Reconcilor's state is 1, Error was 
+[4848:14500:0904/055207.183:VERBOSE1:components\signin\core\browser\account_reconcilor.cc:644] AccountReconcilor::LoadV
+alidAccountsFromTokenService: Chrome 0 accounts
+[4848:14500:0904/055207.183:VERBOSE1:components\signin\core\browser\account_reconcilor.cc:786] AccountReconcilor::Calcu
+lateIfMultiloginReconcileIsDone: Error was 
+[4848:14500:0904/055207.183:VERBOSE1:components\signin\core\browser\account_reconcilor.cc:680] AccountReconcilor::Start
+ReconcileIfChromeAccountsChanged
+[4848:14500:0904/055208.655:VERBOSE1:chrome\browser\profiles\profile_manager.cc:1405] AddKeepAlive(Default, kExtensionU
+pdater). keep_alives=[kWaitingForFirstBrowserWindow (1), kOffTheRecordProfile (1), kExtensionUpdater (2)]
+[4848:14500:0904/055208.792:VERBOSE1:chrome\browser\profiles\profile_manager.cc:1405] AddKeepAlive(Default, kExtensionU
+pdater). keep_alives=[kWaitingForFirstBrowserWindow (1), kOffTheRecordProfile (1), kExtensionUpdater (3)]
+[4848:14188:0904/055209.388:VERBOSE1:base\allocator\scheduler_loop_quarantine_config.cc:195] No entry found for browser
+/io.
+[4848:14500:0904/055209.391:VERBOSE1:components\enterprise\browser\reporting\saas_usage\saas_usage_report_scheduler.cc:
+108] Scheduling next browser SaaS usage report at 1601-01-01 04:00:00.000000 UTC
+[4848:14500:0904/055209.391:VERBOSE1:components\enterprise\browser\reporting\saas_usage\saas_usage_report_scheduler.cc:
+74] No domain metrics aggregated - skipping browser report upload.
+[4848:14500:0904/055209.391:VERBOSE1:components\enterprise\browser\reporting\saas_usage\saas_usage_report_scheduler.cc:
+108] Scheduling next browser SaaS usage report at 2026-09-04 00:52:09.391600 UTC
+[4848:14500:0904/055209.392:VERBOSE1:chrome\browser\web_applications\locks\partitioned_lock_manager.cc:262] Acquiring <
+PartitionedLockId>{id: 0x31, partition: 0} for SynchronizeInstalledApps@chrome\browser\web_applications\externally_mana
+ged_app_manager.cc:186
+[4848:14500:0904/055209.393:VERBOSE1:chrome\browser\web_applications\locks\partitioned_lock_manager.cc:243] All locks a
+cquired for SynchronizeInstalledApps@chrome\browser\web_applications\externally_managed_app_manager.cc:186
+[4848:14500:0904/055209.393:VERBOSE1:chrome\browser\web_applications\locks\partitioned_lock_manager.cc:286] Releasing <
+PartitionedLockId>{id: 0x31, partition: 0} requested by SynchronizeInstalledApps@chrome\browser\web_applications\extern
+ally_managed_app_manager.cc:186
+[4848:14500:0904/055209.477:VERBOSE1:components\device_event_log\device_event_log_impl.cc:214] [05:52:09.478] USB: USER
+: usb_service_win.cc:765 USB device added: path=\\?\usb#vid_8087&pid_0aaa#5&14a46c96&0&10#{a5dcbf10-6530-11d2-901f-00c0
+4fb951ed} vendor=32903 "", product=2730 "", serial="", driver="BTHUSB", guid=cb437af0-6553-44d5-91d8-800666676c93
+[4848:14500:0904/055209.478:VERBOSE1:components\device_event_log\device_event_log_impl.cc:214] [05:52:09.479] USB: DEBU
+G: usb_device_handle_win.cc:1096 Failed to read descriptor from node connection: 繧ｷ繧ｹ繝・Β縺ｫ謗･邯壹＆繧後◆繝・ヰ繧､繧ｹ縺梧ｩ溯・縺励※縺・∪縺帙ｓ
+縲・(0x1F)
+[4848:14500:0904/055209.479:VERBOSE1:components\device_event_log\device_event_log_impl.cc:214] [05:52:09.479] USB: USER
+: usb_service_win.cc:765 USB device added: path=\\?\usb#vid_04f2&pid_b685#5&14a46c96&0&1#{a5dcbf10-6530-11d2-901f-00c04
+fb951ed} vendor=1266 "", product=46725 "", serial="", driver="usbccgp", guid=d56e2fc5-a071-42f2-981a-3187c72d68fd
+[4848:13020:0904/055211.489:VERBOSE1:chrome\installer\util\install_util.cc:218] Existing Chrome version found: 152.0.79
+77.75
+[4848:13020:0904/055211.489:VERBOSE1:chrome\installer\util\install_util.cc:242] No existing Chrome install found.
+[4848:14500:0904/055211.552:VERBOSE1:components\segmentation_platform\internal\selection\segment_result_provider.cc:226
+] GetCachedModelScore: segment=OPTIMIZATION_TARGET_SEGMENTATION_CHROME_LOW_USER_ENGAGEMENT does not have a segment info
+.
+[4848:14500:0904/055211.552:VERBOSE1:components\segmentation_platform\internal\selection\segment_result_provider.cc:172
+] OnGotModelScore: segment=OPTIMIZATION_TARGET_SEGMENTATION_CHROME_LOW_USER_ENGAGEMENT failed to get score from databas
+e, executing server model.
+[4848:14500:0904/055211.552:VERBOSE1:components\segmentation_platform\internal\selection\segment_result_provider.cc:277
+] ExecuteModelAndGetScore: segment=OPTIMIZATION_TARGET_SEGMENTATION_CHROME_LOW_USER_ENGAGEMENT server segment info not 
+available
+[4848:14500:0904/055211.552:VERBOSE1:components\segmentation_platform\internal\selection\segment_result_provider.cc:201
+] OnGotModelScore: segment=OPTIMIZATION_TARGET_SEGMENTATION_CHROME_LOW_USER_ENGAGEMENT failed to get score from executi
+ng server model, getting score from default model from db.
+[4848:14500:0904/055211.552:VERBOSE1:components\segmentation_platform\internal\selection\segment_result_provider.cc:240
+] GetCachedModelScore: segment=OPTIMIZATION_TARGET_SEGMENTATION_CHROME_LOW_USER_ENGAGEMENT has expired or unavailable r
+esult.
+[4848:14500:0904/055211.552:VERBOSE1:components\segmentation_platform\internal\selection\segment_result_provider.cc:210
+] OnGotModelScore: segment=OPTIMIZATION_TARGET_SEGMENTATION_CHROME_LOW_USER_ENGAGEMENT failed to get database model sco
+re, trying default model.
+[4848:14500:0904/055211.552:VERBOSE1:components\segmentation_platform\internal\selection\segment_result_provider.cc:295
+] ExecuteModelAndGetScore: segment=OPTIMIZATION_TARGET_SEGMENTATION_CHROME_LOW_USER_ENGAGEMENT signal collection not me
+t
+[4848:14500:0904/055211.552:VERBOSE1:components\segmentation_platform\internal\selection\segment_result_provider.cc:226
+] GetCachedModelScore: segment=OPTIMIZATION_TARGET_SEGMENTATION_SEARCH_USER does not have a segment info.
+[4848:14500:0904/055211.552:VERBOSE1:components\segmentation_platform\internal\selection\segment_result_provider.cc:172
+] OnGotModelScore: segment=OPTIMIZATION_TARGET_SEGMENTATION_SEARCH_USER failed to get score from database, executing se
+rver model.
+[4848:14500:0904/055211.552:VERBOSE1:components\segmentation_platform\internal\selection\segment_result_provider.cc:277
+] ExecuteModelAndGetScore: segment=OPTIMIZATION_TARGET_SEGMENTATION_SEARCH_USER server segment info not available
+[4848:14500:0904/055211.552:VERBOSE1:components\segmentation_platform\internal\selection\segment_result_provider.cc:201
+] OnGotModelScore: segment=OPTIMIZATION_TARGET_SEGMENTATION_SEARCH_USER failed to get score from executing server model
+, getting score from default model from db.
+[4848:14500:0904/055211.552:VERBOSE1:components\segmentation_platform\internal\selection\segment_result_provider.cc:240
+] GetCachedModelScore: segment=OPTIMIZATION_TARGET_SEGMENTATION_SEARCH_USER has expired or unavailable result.
+[4848:14500:0904/055211.552:VERBOSE1:components\segmentation_platform\internal\selection\segment_result_provider.cc:210
+] OnGotModelScore: segment=OPTIMIZATION_TARGET_SEGMENTATION_SEARCH_USER failed to get database model score, trying defa
+ult model.
+[4848:14500:0904/055211.552:VERBOSE1:components\segmentation_platform\internal\selection\segment_result_provider.cc:295
+] ExecuteModelAndGetScore: segment=OPTIMIZATION_TARGET_SEGMENTATION_SEARCH_USER signal collection not met
+[4848:14500:0904/055211.552:VERBOSE1:components\segmentation_platform\internal\selection\segment_result_provider.cc:226
+] GetCachedModelScore: segment=OPTIMIZATION_TARGET_SEGMENTATION_SHOPPING_USER does not have a segment info.
+[4848:14500:0904/055211.552:VERBOSE1:components\segmentation_platform\internal\selection\segment_result_provider.cc:172
+] OnGotModelScore: segment=OPTIMIZATION_TARGET_SEGMENTATION_SHOPPING_USER failed to get score from database, executing 
+server model.
+[4848:14500:0904/055211.552:VERBOSE1:components\segmentation_platform\internal\selection\segment_result_provider.cc:277
+] ExecuteModelAndGetScore: segment=OPTIMIZATION_TARGET_SEGMENTATION_SHOPPING_USER server segment info not available
+[4848:14500:0904/055211.552:VERBOSE1:components\segmentation_platform\internal\selection\segment_result_provider.cc:201
+] OnGotModelScore: segment=OPTIMIZATION_TARGET_SEGMENTATION_SHOPPING_USER failed to get score from executing server mod
+el, getting score from default model from db.
+[4848:14500:0904/055211.552:VERBOSE1:components\segmentation_platform\internal\selection\segment_result_provider.cc:240
+] GetCachedModelScore: segment=OPTIMIZATION_TARGET_SEGMENTATION_SHOPPING_USER has expired or unavailable result.
+[4848:14500:0904/055211.552:VERBOSE1:components\segmentation_platform\internal\selection\segment_result_provider.cc:210
+] OnGotModelScore: segment=OPTIMIZATION_TARGET_SEGMENTATION_SHOPPING_USER failed to get database model score, trying de
+fault model.
+[4848:14500:0904/055211.552:VERBOSE1:components\segmentation_platform\internal\selection\segment_result_provider.cc:226
+] GetCachedModelScore: segment=CROSS_DEVICE_USER_SEGMENT does not have a segment info.
+[4848:14500:0904/055211.552:VERBOSE1:components\segmentation_platform\internal\selection\segment_result_provider.cc:172
+] OnGotModelScore: segment=CROSS_DEVICE_USER_SEGMENT failed to get score from database, executing server model.
+[4848:14500:0904/055211.552:VERBOSE1:components\segmentation_platform\internal\selection\segment_result_provider.cc:277
+] ExecuteModelAndGetScore: segment=CROSS_DEVICE_USER_SEGMENT server segment info not available
+[4848:14500:0904/055211.552:VERBOSE1:components\segmentation_platform\internal\selection\segment_result_provider.cc:201
+] OnGotModelScore: segment=CROSS_DEVICE_USER_SEGMENT failed to get score from executing server model, getting score fro
+m default model from db.
+[4848:14500:0904/055211.552:VERBOSE1:components\segmentation_platform\internal\selection\segment_result_provider.cc:240
+] GetCachedModelScore: segment=CROSS_DEVICE_USER_SEGMENT has expired or unavailable result.
+[4848:14500:0904/055211.552:VERBOSE1:components\segmentation_platform\internal\selection\segment_result_provider.cc:210
+] OnGotModelScore: segment=CROSS_DEVICE_USER_SEGMENT failed to get database model score, trying default model.
+[4848:14500:0904/055211.552:VERBOSE1:components\segmentation_platform\internal\selection\segment_result_provider.cc:295
+] ExecuteModelAndGetScore: segment=CROSS_DEVICE_USER_SEGMENT signal collection not met
+[4848:14500:0904/055211.552:VERBOSE1:components\segmentation_platform\internal\selection\segment_result_provider.cc:226
+] GetCachedModelScore: segment=RESUME_HEAVY_USER_SEGMENT does not have a segment info.
+[4848:14500:0904/055211.552:VERBOSE1:components\segmentation_platform\internal\selection\segment_result_provider.cc:172
+] OnGotModelScore: segment=RESUME_HEAVY_USER_SEGMENT failed to get score from database, executing server model.
+[4848:14500:0904/055211.553:VERBOSE1:components\segmentation_platform\internal\selection\segment_result_provider.cc:277
+] ExecuteModelAndGetScore: segment=RESUME_HEAVY_USER_SEGMENT server segment info not available
+[4848:14500:0904/055211.553:VERBOSE1:components\segmentation_platform\internal\selection\segment_result_provider.cc:201
+] OnGotModelScore: segment=RESUME_HEAVY_USER_SEGMENT failed to get score from executing server model, getting score fro
+m default model from db.
+[4848:14500:0904/055211.553:VERBOSE1:components\segmentation_platform\internal\selection\segment_result_provider.cc:240
+] GetCachedModelScore: segment=RESUME_HEAVY_USER_SEGMENT has expired or unavailable result.
+[4848:14500:0904/055211.553:VERBOSE1:components\segmentation_platform\internal\selection\segment_result_provider.cc:210
+] OnGotModelScore: segment=RESUME_HEAVY_USER_SEGMENT failed to get database model score, trying default model.
+[4848:14500:0904/055211.553:VERBOSE1:components\segmentation_platform\internal\selection\segment_result_provider.cc:295
+] ExecuteModelAndGetScore: segment=RESUME_HEAVY_USER_SEGMENT signal collection not met
+[4848:14500:0904/055211.553:VERBOSE1:components\segmentation_platform\internal\selection\segment_result_provider.cc:226
+] GetCachedModelScore: segment=PASSWORD_MANAGER_USER does not have a segment info.
+[4848:14500:0904/055211.553:VERBOSE1:components\segmentation_platform\internal\selection\segment_result_provider.cc:172
+] OnGotModelScore: segment=PASSWORD_MANAGER_USER failed to get score from database, executing server model.
+[4848:14500:0904/055211.553:VERBOSE1:components\segmentation_platform\internal\selection\segment_result_provider.cc:277
+] ExecuteModelAndGetScore: segment=PASSWORD_MANAGER_USER server segment info not available
+[4848:14500:0904/055211.553:VERBOSE1:components\segmentation_platform\internal\selection\segment_result_provider.cc:201
+] OnGotModelScore: segment=PASSWORD_MANAGER_USER failed to get score from executing server model, getting score from de
+fault model from db.
+[4848:14500:0904/055211.553:VERBOSE1:components\segmentation_platform\internal\selection\segment_result_provider.cc:240
+] GetCachedModelScore: segment=PASSWORD_MANAGER_USER has expired or unavailable result.
+[4848:14500:0904/055211.553:VERBOSE1:components\segmentation_platform\internal\selection\segment_result_provider.cc:210
+] OnGotModelScore: segment=PASSWORD_MANAGER_USER failed to get database model score, trying default model.
+[4848:14500:0904/055211.553:VERBOSE1:components\segmentation_platform\internal\selection\segment_result_provider.cc:295
+] ExecuteModelAndGetScore: segment=PASSWORD_MANAGER_USER signal collection not met
+[4848:14500:0904/055211.553:VERBOSE1:components\segmentation_platform\internal\selection\segment_result_provider.cc:226
+] GetCachedModelScore: segment=CHROME_USER_ENGAGEMENT does not have a segment info.
+[4848:14500:0904/055211.553:VERBOSE1:components\segmentation_platform\internal\selection\segment_result_provider.cc:172
+] OnGotModelScore: segment=CHROME_USER_ENGAGEMENT failed to get score from database, executing server model.
+[4848:14500:0904/055211.553:VERBOSE1:components\segmentation_platform\internal\selection\segment_result_provider.cc:277
+] ExecuteModelAndGetScore: segment=CHROME_USER_ENGAGEMENT server segment info not available
+[4848:14500:0904/055211.553:VERBOSE1:components\segmentation_platform\internal\selection\segment_result_provider.cc:201
+] OnGotModelScore: segment=CHROME_USER_ENGAGEMENT failed to get score from executing server model, getting score from d
+efault model from db.
+[4848:14500:0904/055211.553:VERBOSE1:components\segmentation_platform\internal\selection\segment_result_provider.cc:240
+] GetCachedModelScore: segment=CHROME_USER_ENGAGEMENT has expired or unavailable result.
+[4848:14500:0904/055211.553:VERBOSE1:components\segmentation_platform\internal\selection\segment_result_provider.cc:210
+] OnGotModelScore: segment=CHROME_USER_ENGAGEMENT failed to get database model score, trying default model.
+[4848:14500:0904/055211.553:VERBOSE1:components\segmentation_platform\internal\selection\segment_result_provider.cc:295
+] ExecuteModelAndGetScore: segment=CHROME_USER_ENGAGEMENT signal collection not met
+[4848:2496:0904/055211.554:VERBOSE1:components\segmentation_platform\internal\database\ukm_database_backend.cc:355] Out
+put from SQL query SELECT IFNULL(COUNT(metric_value),0)FROM uma_metrics WHERE metric_hash='1A94D82447638877' AND profil
+e_id=? AND type=? AND metric_value IN(1)AND event_timestamp BETWEEN ? AND ? Bind values: 0:1826410572 1:2 2:2026-08-27 
+20:52:11.553586 UTC 3:2026-09-03 20:52:11.553586 UTC  Result: 0.000000,
+[4848:2496:0904/055211.555:VERBOSE1:components\segmentation_platform\internal\database\ukm_database_backend.cc:355] Out
+put from SQL query SELECT IFNULL(COUNT(metric_value),0)FROM uma_metrics WHERE metric_hash='8A5076C9026398BD' AND profil
+e_id=? AND type=? AND event_timestamp BETWEEN ? AND ? Bind values: 0:1826410572 1:1 2:2026-08-27 20:52:11.553586 UTC 3:
+2026-09-03 20:52:11.553586 UTC  Result: 0.000000,
+[4848:2496:0904/055211.555:VERBOSE1:components\segmentation_platform\internal\database\ukm_database_backend.cc:355] Out
+put from SQL query SELECT COALESCE((SELECT metric_value FROM uma_metrics WHERE metric_hash='ED7CFEC70BF9942D' AND profi
+le_id=? AND type=? AND event_timestamp BETWEEN ? AND ? ORDER BY event_timestamp DESC,id DESC LIMIT 1),0.000000) Bind va
+lues: 0:1826410572 1:3 2:2026-08-27 20:52:11.553586 UTC 3:2026-09-03 20:52:11.553586 UTC  Result: 0.000000,
+[4848:14500:0904/055211.555:VERBOSE1:components\segmentation_platform\internal\execution\model_executor_impl.cc:191] Se
+gmentation model input:  feature 0: 0 feature 1: 0 feature 2: 0 feature 3: 0 for segment OPTIMIZATION_TARGET_SEGMENTATI
+ON_SHOPPING_USER
+[4848:14500:0904/055211.555:VERBOSE1:components\segmentation_platform\internal\execution\model_executor_impl.cc:220] Se
+gmentation model result:  output 0: 0 for segment OPTIMIZATION_TARGET_SEGMENTATION_SHOPPING_USER
+[4848:14500:0904/055211.555:VERBOSE1:components\segmentation_platform\internal\execution\model_executor_impl.cc:278] Mo
+del: OPTIMIZATION_TARGET_SEGMENTATION_SHOPPING_USER version: 3 execution status: 0, output size: 1
+[4848:14500:0904/055211.555:VERBOSE1:components\segmentation_platform\internal\selection\segment_result_provider.cc:29]
+ ComputeDiscreteMapping: segment=: result=0, rank=0
+[4848:14500:0904/055211.555:VERBOSE1:components\segmentation_platform\internal\selection\segment_result_provider.cc:359
+] OnModelExecuted: Default model executed successfully. Result: PredictionResult: timestamp: 13432942331556342 result 0
+: 0 for segment OPTIMIZATION_TARGET_SEGMENTATION_SHOPPING_USER
+[4848:14500:0904/055211.555:VERBOSE1:components\segmentation_platform\internal\database\segment_info_database.cc:208] S
+aveSegmentResult: saving: PredictionResult: timestamp: 13432942331556342 result 0: 0 for segment id: OPTIMIZATION_TARGE
+T_SEGMENTATION_SHOPPING_USER
+[4848:14500:0904/055211.555:VERBOSE1:components\segmentation_platform\internal\database\cached_result_writer.cc:30] Cac
+hedResultWriter updating prefs with new result: PredictionResult: timestamp: 13432942331556342 result 0: 0 for segmenta
+tion key: shopping_user

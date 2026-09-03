@@ -1098,23 +1098,26 @@ input:checked + .switch-slider:before {
   overflow: visible !important;
 }
 #correctionMode .error-days-wrapper {
-  flex: 2 1 0% !important;
-  min-width: 110px !important;
+  flex: 0 0 auto !important;
+  min-width: auto !important;
+  max-width: 140px !important;
   width: auto !important;
+  margin-right: 8px !important;
 }
 #correctionMode .direct-group-error-days {
-  flex: 1 1 auto !important;
-  width: 100% !important;
-  min-width: 70px !important;
+  flex: 0 0 auto !important;
+  width: 52px !important;
+  min-width: 48px !important;
 }
 #correctionMode .direct-group-error-days input {
   width: 100% !important;
-  min-width: 60px !important;
+  min-width: 44px !important;
   font-size: 15px !important;
 }
 #correctionMode .unit-capsule-wrapper {
   flex: 0 0 auto !important;
   width: auto !important;
+  margin-left: 2px !important;
 }
 #correctionMode .direct-group-error-time {
   width: 30px !important;
@@ -2760,9 +2763,9 @@ body.picker-open-padding {
   gap: 0 !important; /* 隙間をゼロに */
 }
 
-/* 補正誤差の「日」枠の右側に6pxの隙間を確保 */
-#correctionMode .unit-input:first-child {
-  margin-right: 6px !important;
+/* 補正誤差の「日」枠の右側に8pxの隙間を確保 */
+#correctionMode .error-days-wrapper {
+  margin-right: 8px !important;
 }
 
 /* --- 5. 補正誤差 (error) の「時分秒」新設極美ドッキングカプセル ＆ 完璧な三等分（1:1:1）超強固定義 --- */
@@ -3000,7 +3003,7 @@ body.input-helper-off-mode #reverseDisplayDateGroup_direct {
               margin-right 0.25s ease,
               padding 0.25s ease !important;
   overflow: hidden !important; /* アニメーション中の文字はみ出しを防ぐ */
-  max-width: 100px; /* 通常時の最大幅 */
+  max-width: 140px; /* 通常時の最大幅（多言語のDays/Dagen/giorniなどに対応） */
 }
 
 /* 年月日計算トグルOFFのときに「日」の枠を滑らかに幅0に縮小して消去する */
@@ -3773,28 +3776,50 @@ body:not(.lang-ja):not(.lang-zh):not(.lang-ko) .warning-msg {
   text-align: center;
   padding-top: 30px;
   min-height: 100vh;
+  height: 100vh;
+  width: 100vw;
+  box-sizing: border-box;
+  position: fixed;
+  top: 0;
+  left: 0;
+  overflow-y: auto;
   background: var(--bg-dark);
   user-select: none;
   -webkit-user-select: none;
+  z-index: 1000;
 }
 
 #decoyScreen .decoy-title {
   font-size: 36px;
   letter-spacing: 4px;
+  padding-left: 4px; /* letter-spacingの右側余白を相殺して完全中央配置 */
   margin-top: 10px;
+  text-align: center;
+  width: 100%;
+  box-sizing: border-box;
+  display: block;
 }
 
 .decoy-subtitle {
   color: var(--text-sub);
   font-size: 13px;
   letter-spacing: 4px;
+  padding-left: 4px; /* letter-spacing相殺 */
   margin-top: -10px;
   margin-bottom: 40px;
+  text-align: center;
+  width: 100%;
+  box-sizing: border-box;
+  display: block;
 }
 
 .decoy-clock-wrap {
-  display: inline-block;
-  padding: 30px 20px;
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 30px 24px;
   border: 1px solid rgba(0, 255, 224, 0.25);
   border-radius: 20px;
   background: rgba(0, 255, 224, 0.04);
@@ -3807,6 +3832,10 @@ body:not(.lang-ja):not(.lang-zh):not(.lang-ko) .warning-msg {
   color: var(--accent);
   text-shadow: 0 0 16px var(--accent), 0 0 32px rgba(0, 255, 224, 0.4);
   letter-spacing: 4px;
+  padding-left: 4px; /* letter-spacingの右側余白を相殺して完全中央揃え */
+  text-align: center;
+  width: 100%;
+  box-sizing: border-box;
   margin-bottom: 16px;
 }
 
@@ -3818,31 +3847,42 @@ body:not(.lang-ja):not(.lang-zh):not(.lang-ko) .warning-msg {
   color: var(--accent);
   text-shadow: 0 0 20px var(--accent), 0 0 50px rgba(0, 255, 224, 0.5);
   letter-spacing: 4px;
+  padding-left: 4px; /* letter-spacingの右側余白を相殺して完全中央揃え */
+  text-align: center;
+  width: 100%;
+  box-sizing: border-box;
   line-height: 1;
 }
 
 .decoy-hint {
-  margin-top: 60px;
-  font-size: 12px;
-  color: rgba(255,255,255,0.15);
-  letter-spacing: 1px;
-  min-height: 20px;
-  transition: color 0.5s ease;
+  position: fixed !important;
+  pointer-events: none !important;
+  font-size: 14px !important;
+  font-weight: 500 !important;
+  color: #00ffe0 !important;
+  text-shadow: 0 0 8px rgba(0, 255, 224, 0.8), 0 0 16px rgba(0, 255, 224, 0.5) !important;
+  letter-spacing: 2px !important;
+  white-space: nowrap !important;
+  margin: 0 !important;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.15s ease !important;
+  z-index: 10000 !important;
 }
 
 .decoy-hint.visible {
-  color: rgba(255,255,255,0.4);
+  opacity: 1 !important;
+  visibility: visible !important;
 }
 
 /* 長押しプログレスリング */
 #decoyHoldRing {
   display: none;
-  position: fixed;
-  bottom: 60px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 60px;
-  height: 60px;
+  position: fixed !important;
+  width: 60px !important;
+  height: 60px !important;
+  pointer-events: none !important;
+  z-index: 9999 !important;
 }
 
 #decoyHoldRing circle {
@@ -3854,8 +3894,22 @@ body:not(.lang-ja):not(.lang-zh):not(.lang-ko) .warning-msg {
   stroke-linecap: round;
   transform: rotate(-90deg);
   transform-origin: 50% 50%;
-  transition: stroke-dashoffset 3s linear;
-  filter: drop-shadow(0 0 6px var(--accent));
+  filter: drop-shadow(0 0 8px var(--accent));
+}
+
+/* 通常時に画面最下部に控えめに固定表示されるガイド */
+.decoy-bottom-guide {
+  position: fixed !important;
+  bottom: 24px !important;
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+  font-size: 13px !important;
+  letter-spacing: 2px !important;
+  color: rgba(255, 255, 255, 0.28) !important;
+  white-space: nowrap !important;
+  pointer-events: none !important;
+  transition: opacity 0.25s ease !important;
+  z-index: 1001 !important;
 }
 
 /* ============================================================

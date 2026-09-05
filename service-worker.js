@@ -1,4 +1,4 @@
-const CACHE_NAME = "time-regulus-v3.3.0-c36";
+const CACHE_NAME = "time-regulus-v3.3.1-c37";
 const urlsToCache = [
   "./",
   "./index.html",
@@ -8,7 +8,16 @@ const urlsToCache = [
   "./manifest.json",
   "./icon-192.png",
   "./icon-512.png",
-  "./QRCorde.PNG"
+  "./QRCorde.PNG",
+  "./fonts/Bellefair.ttf",
+  "./fonts/BungeeShade.ttf",
+  "./fonts/DiplomataSC.ttf",
+  "./fonts/MoiraiOne.woff2",
+  "./fonts/Orbitron-Bold.woff2",
+  "./fonts/RubikDirt.woff2",
+  "./fonts/ShareTechMono.woff2",
+  "./fonts/Sixtyfour.woff2",
+  "./fonts/VT323.woff2"
 ];
 
 // インストール時に必要なアセットをキャッシュ

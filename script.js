@@ -5514,7 +5514,7 @@ function changeViewLockStyle(reason = "tick") {
   const randomFont = VIEW_LOCK_FONTS[_viewLockCurrentFontIndex];
   const clockEl = document.getElementById("viewLockClock");
   if (clockEl) {
-    clockEl.style.fontFamily = randomFont;
+    clockEl.style.fontFamily = `'${randomFont}', sans-serif`;
   }
   
   // フォーマット・スケールの変更は、初期化時またはフォントランダム時
@@ -5933,7 +5933,7 @@ function _vlEndHold(e) {
   const absDeltaY = Math.abs(deltaY);
   const absDeltaX = Math.abs(deltaX);
 
-  if (absDeltaX > 25 && absDeltaX > absDeltaY && elapsed < 700) {
+  if (absDeltaX > 20 && absDeltaX > absDeltaY && elapsed < 1000) {
     // ─── 横スワイプ検出 — フォント＋フォーマット切替 ───
     if (_vlRandomMode === 2 || _vlRandomMode === 3) {
       _viewLockCurrentFontIndex = Math.floor(Math.random() * VIEW_LOCK_FONTS.length);
@@ -5950,7 +5950,7 @@ function _vlEndHold(e) {
       }
     }
     changeViewLockStyle("swipe");
-  } else if (absDeltaY > 25 && absDeltaY > absDeltaX && elapsed < 700) {
+  } else if (absDeltaY > 20 && absDeltaY > absDeltaX && elapsed < 1000) {
     // ─── 縦スワイプ検出 — ネオン輝き強度の増減 ───
     const step = 0.2;
     if (deltaY > 0) {

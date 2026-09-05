@@ -4047,6 +4047,73 @@ body:not(.lang-ja):not(.lang-zh):not(.lang-ko) .warning-msg {
 }
 
 /* ============================================================
+   第2のおとり画面用 Webフォント定義 (@font-face)
+   ============================================================ */
+@font-face {
+  font-family: 'Orbitron';
+  src: url('fonts/Orbitron-Bold.woff2') format('woff2');
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'VT323';
+  src: url('fonts/VT323.woff2') format('woff2');
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Share Tech Mono';
+  src: url('fonts/ShareTechMono.woff2') format('woff2');
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Sixtyfour';
+  src: url('fonts/Sixtyfour.woff2') format('woff2');
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Rubik Dirt';
+  src: url('fonts/RubikDirt.woff2') format('woff2');
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Moirai One';
+  src: url('fonts/MoiraiOne.woff2') format('woff2');
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Bungee Shade';
+  src: url('fonts/BungeeShade.ttf') format('truetype');
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Diplomata SC';
+  src: url('fonts/DiplomataSC.ttf') format('truetype');
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Bellefair';
+  src: url('fonts/Bellefair.ttf') format('truetype');
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* ============================================================
    第2のおとり画面 (view_lock_screen)
    ============================================================ */
 #viewLockScreen {
@@ -4057,6 +4124,7 @@ body:not(.lang-ja):not(.lang-zh):not(.lang-ko) .warning-msg {
   align-items: center;
   user-select: none;
   -webkit-user-select: none;
+  touch-action: none;
 }
 
 

@@ -76,7 +76,7 @@
   <input type="text" id="iosKeyboardCloser" readonly tabindex="-1"
     style="position: absolute; top: -9999px; left: -9999px; opacity: 0; pointer-events: none;">
   <div id="lockScreen">
-    <div style="position: absolute; top: 10px; right: 10px; display: flex; align-items: center; gap: 4px;">
+    <div class="anim-slow-fade" style="position: absolute; top: 10px; right: 10px; display: flex; align-items: center; gap: 4px;">
       <span style="font-size: 16px;">🌐</span>
       <select class="lang-selector" onchange="setLanguage(this.value)" style="background: transparent; border: 1px solid var(--accent); color: var(--text-main); border-radius: 4px; padding: 4px; font-size: 14px; width: auto; appearance: none; text-align: center; text-align-last: center;">
         <option value="ja">JP 日本語</option>
@@ -100,7 +100,17 @@
       <input type="password" id="passcode" placeholder="例：12345" data-i18n-placeholder="passcode_placeholder" tabindex="1" readonly class="passcode-input">
     </div>
     <button class="action-btn anim-slow-fade" onclick="checkPass()" tabindex="2" data-i18n="open">開く</button>
-    <div id="keypad" class="keypad-grid"></div>
+    <div id="keypad" class="keypad-grid">
+      <button type="button">&nbsp;</button>
+      <button type="button">&nbsp;</button>
+      <button type="button">&nbsp;</button>
+      <button type="button">&nbsp;</button>
+      <button type="button">&nbsp;</button>
+      <button type="button">&nbsp;</button>
+      <button type="button">&nbsp;</button>
+      <button type="button">&nbsp;</button>
+      <button type="button">&nbsp;</button>
+    </div>
     <p id="error" class="anim-slow-fade"></p>
     <p class="subtitle anim-slow-fade">- produced by H.Fukazu -</p>
     <p class="info-link anim-slow-fade" onclick="showInformationPage()"> - Information - </p>

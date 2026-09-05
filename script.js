@@ -2211,39 +2211,54 @@ function restartLockScreenAnimation() {
 
 
 
-function generateKeypad(initialDelay = 0) {
+function generateKeypad(initialDelay = 120) {
   const keypad = document.getElementById("keypad");
   if (!keypad) return;
   const numbers = [1, 2, 3, 4, 5, 6, 7, 8, 9];
   const shuffled = numbers.sort(() => Math.random() - 0.5);
-  keypad.innerHTML = "";
 
-  shuffled.forEach(num => {
-    const btn = document.createElement("button");
-    btn.innerText = num;
+  let buttons = keypad.querySelectorAll("button");
+  if (buttons.length !== 9) {
+    keypad.innerHTML = "";
+    for (let i = 0; i < 9; i++) {
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.innerHTML = "&nbsp;";
+      keypad.appendChild(btn);
+    }
+    buttons = keypad.querySelectorAll("button");
+  } else {
+    // 既存の枠を維持しつつ、中身を一旦クリア
+    buttons.forEach(btn => {
+      btn.innerHTML = "&nbsp;";
+      btn.classList.remove("sparkle-btn-anim");
+    });
+  }
+
+  buttons.forEach((btn, index) => {
+    const num = shuffled[index];
     btn.onclick = () => {
       const input = document.getElementById("passcode");
       if (input) input.value += num;
     };
-    keypad.appendChild(btn);
 
-    // 星の瞬き（チカチカ明滅）アニメーションをランダムディレイで付与
-    // initialDelay（初回起動時は400ms）を足すことで、iPhoneのCPU初期化負荷と画面フェードイン後に確実にキラキラを発動させる
-    const randomDelay = initialDelay + Math.random() * 250;
+    // ① ランダムテンキーの瞬き演出
+    // 9つの枠が表示された後、initialDelay後にキラキラ明滅＆数字高速ルーレットを開始
+    const randomDelay = initialDelay + Math.random() * 150;
     setTimeout(() => {
       btn.classList.add("sparkle-btn-anim");
       
-      // 明滅している間、表示する数字を高速ランダム変化させる（60msごとに1〜9のランダム数値）
+      // 明滅している間、表示する数字を高速ランダム変化（50msごとに1〜9のランダム数値）
       const changeInterval = setInterval(() => {
         btn.innerText = Math.floor(Math.random() * 9) + 1;
-      }, 60);
+      }, 50);
 
-      // 瞬き（0.25s * 2回 = 500ms）完了後に自動的にクラスを剥がし、本来の確定数字を再セット
+      // 瞬き（約500ms）完了後に確定数字をセット
       setTimeout(() => {
         clearInterval(changeInterval);
         btn.innerText = num;
         btn.classList.remove("sparkle-btn-anim");
-      }, 500);
+      }, 450);
     }, randomDelay);
   });
 }
@@ -2271,26 +2286,9 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   }
 
-  // ★【iPhone起動最適化】
-  // 初回起動時は、画面のフェードインと初期化処理が完了するタイミング（400ms後）に合わせて
-  // キラキラアニメーションを発動させることで、iPhoneでも確実に美しいランダム演出を目に届かせる！
+  // ★【起動時演出①】テンキーの枠を表示した状態から瞬きアニメーションをスタート（120ms遅延）
   if (typeof generateKeypad === 'function') {
-    generateKeypad(400);
-  }
-
-  // ロック画面のアニメーション再始動
-  const lockScreen = document.getElementById('lockScreen');
-  if (lockScreen) {
-    const animEls = lockScreen.querySelectorAll('.anim-title-rise, .anim-slow-fade');
-    animEls.forEach(el => {
-      const hasTitleRise = el.classList.contains('anim-title-rise');
-      const hasSlowFade  = el.classList.contains('anim-slow-fade');
-      if (hasTitleRise) el.classList.remove('anim-title-rise');
-      if (hasSlowFade)  el.classList.remove('anim-slow-fade');
-      void el.offsetWidth;
-      if (hasTitleRise) el.classList.add('anim-title-rise');
-      if (hasSlowFade)  el.classList.add('anim-slow-fade');
-    });
+    generateKeypad(120);
   }
 
   // =====================================================================
@@ -5383,14 +5381,12 @@ function initHoldToReturn() {
   window.addEventListener('scroll', cancelHold, { capture: true, passive: true });
 }
 
-// Force keypad generation on script execution
+// Hold to return initialization
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', () => {
-    if (typeof generateKeypad === 'function') generateKeypad();
     initHoldToReturn();
   });
 } else {
-  if (typeof generateKeypad === 'function') generateKeypad();
   initHoldToReturn();
 }
 

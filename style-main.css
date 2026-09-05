@@ -4561,6 +4561,8 @@ body:not(.lang-ja):not(.lang-zh):not(.lang-ko) .warning-msg {
   width: 140px; height: 140px;
   background: #000;
   border-radius: 50%;
+  box-sizing: border-box;
+  border: 1px solid rgba(255, 255, 255, 0.95);
   box-shadow: 0 0 calc(45px * var(--analog-glow, 1.0)) rgba(255,255,255,0.35), inset 0 0 15px rgba(0,0,0,1);
   animation: coronaBreathe 16s ease-in-out infinite;
   z-index: 10;
@@ -4578,6 +4580,7 @@ body:not(.lang-ja):not(.lang-zh):not(.lang-ko) .warning-msg {
   width: 300px; height: 300px;
   pointer-events: none;
   z-index: 1;
+  opacity: var(--analog-glow, 1.0);
 }
 
 .corona-layer1 {
@@ -4598,6 +4601,7 @@ body:not(.lang-ja):not(.lang-zh):not(.lang-ko) .warning-msg {
 .info-state-2 .analog-calendar-viewport {
   display: block;
   pointer-events: auto; /* マウスやタッチのイベントを受け取るために必須 */
+  touch-action: none;   /* iOS Safariのダブルタップズームやスクロール干渉を防止 */
   cursor: grab;
 }
 .info-state-2 .analog-calendar-viewport.is-dragging {

@@ -7096,6 +7096,15 @@ function hideAnalogLockScreen() {
     _releaseWakeLock();
   }
   
+  if (_analogSingleTapTimer) {
+    clearTimeout(_analogSingleTapTimer);
+    _analogSingleTapTimer = null;
+  }
+  _analogTapCount = 0;
+  _analogLastTapEndTime = 0;
+  _analogLastTouchTime = 0;
+  _analogHasMoved = false;
+
   const ring = document.getElementById("analogHoldRing");
   const circle = document.getElementById("analogRingCircle");
   if (ring) ring.style.opacity = "0";
@@ -7145,6 +7154,8 @@ let _analogPressStartTime = 0;
 let _analogIsLongPressSuccess = false;
 let _analogHoldTimer = null;
 let _analogLastTapTime = 0;
+let _analogLastTapEndTime = 0;
+let _analogLastTouchTime = 0;
 let _analogTapCount = 0;
 let _analogSingleTapTimer = null;
 let _analogLastTouchTarget = null;
@@ -7262,35 +7273,32 @@ function _renderCalendar() {
   const blockWidth = 192;
   const gap = 12;         // 1ヶ月モードのブロック間隔
   const gap2 = 36;        // 2ヶ月モードのブロック間隔（一文字分）
-  const totalBlockWidth = blockWidth + gap;
   const viewport = document.getElementById("analogCalendarViewport");
+  const buffer = 8;       // 前後8ヶ月分（計17〜18ヶ月分）を常時バッファ展開して自由自在なロールを可能にする
 
   if (_analogCalendar2Month) {
-    // 2ヶ月並列表示モード: 今月+翌月 を中心に前後を含む4ブロック生成
-    // [-1: 先月, 0: 今月, 1: 翌月, 2: 翌翌月] の4ブロック
-    for (let offset = -1; offset <= 2; offset++) {
+    // 2ヶ月並列表示モード: 今月+翌月 を中心に前後8ヶ月分を生成
+    const step = blockWidth + gap2;
+    for (let offset = -buffer; offset <= buffer + 1; offset++) {
       const d = new Date(now.getFullYear(), now.getMonth() + offset + _analogCalendarMonthOffset, 1);
       const block = _generateCalendarBlock(d.getFullYear(), d.getMonth());
       rail.appendChild(block);
     }
     const viewportWidth = blockWidth * 2 + gap2; // 2ヶ月分の幅（一文字分の間隔付き）
     if (viewport) viewport.style.width = `${viewportWidth}px`;
-    // レールに2ヶ月モード用のgapを適用
     rail.style.gap = `${gap2}px`;
-    // 今月+翌月を表示するため、先月1ブロック分だけ左にずらす
-    rail.style.transform = `translateX(-${blockWidth + gap2}px)`;
+    rail.style.transform = `translate3d(-${buffer * step}px, 0, 0)`;
   } else {
-    // 1ヶ月表示モード: 前月・今月・翌月の3ブロック生成
-    for (let offset = -1; offset <= 1; offset++) {
+    // 1ヶ月表示モード: 今月 を中心に前後8ヶ月分を生成
+    const step = blockWidth + gap;
+    for (let offset = -buffer; offset <= buffer; offset++) {
       const d = new Date(now.getFullYear(), now.getMonth() + offset + _analogCalendarMonthOffset, 1);
       const block = _generateCalendarBlock(d.getFullYear(), d.getMonth());
       rail.appendChild(block);
     }
     if (viewport) viewport.style.width = `${blockWidth}px`;
-    // 1ヶ月モードはgapをリセット
     rail.style.gap = `${gap}px`;
-    // 今月（真ん中ブロック）を表示
-    rail.style.transform = `translateX(-${totalBlockWidth}px)`;
+    rail.style.transform = `translate3d(-${buffer * step}px, 0, 0)`;
   }
 }
 
@@ -7349,11 +7357,9 @@ function _animateCalendarSnapToCurrent() {
   const targetPosIndex = blocks.indexOf(0);
   const targetTranslate = -(targetPosIndex * step);
   
-  // まず初期位置に瞬時セット（トランジション無効）
+  // まず初期位置に瞬時セット（ハードウェアアクセラレーションを有効化してトランジション無効）
   rail.style.transition = "none";
-  rail.style.transform = `translateX(${startTranslate}px)`;
-  
-  // ブラウザの再描画を強制確定
+  rail.style.transform = `translate3d(${startTranslate}px, 0, 0)`;
   void rail.offsetWidth;
   
   // ギューンと高速にスライドして、止まる直前にスーッと静止するイージング
@@ -7361,15 +7367,20 @@ function _animateCalendarSnapToCurrent() {
   const absDistance = Math.abs(offset);
   const duration = Math.min(850, 420 + absDistance * 45);
   
-  // 指数減速イージング: 最初ギューンと猛スピードで、最後スーッと極限までなめらかに減速して静止
-  rail.style.transition = `transform ${duration}ms cubic-bezier(0.16, 1, 0.3, 1)`;
-  rail.style.transform = `translateX(${targetTranslate}px)`;
-  
-  setTimeout(() => {
-    _analogCalendarMonthOffset = 0;
-    _renderCalendar();
-    _calIsAnimating = false;
-  }, duration + 30);
+  // iOS Safari / WebKit に初期配置を1フレーム確実に描画させてから、次のフレームで遷移を開始
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      // 指数減速イージング: 最初ギューンと猛スピードで、最後スーッと極限までなめらかに減速して静止
+      rail.style.transition = `transform ${duration}ms cubic-bezier(0.16, 1, 0.3, 1)`;
+      rail.style.transform = `translate3d(${targetTranslate}px, 0, 0)`;
+      
+      setTimeout(() => {
+        _analogCalendarMonthOffset = 0;
+        _renderCalendar();
+        _calIsAnimating = false;
+      }, duration + 50);
+    });
+  });
 }
 
 function initAnalogCalendarTouch() {
@@ -7378,24 +7389,24 @@ function initAnalogCalendarTouch() {
   
   let startX = 0;
   let startY = 0;
+  let startTime = 0;
   let isDragging = false;
+  let hasMovedRail = false;
   let initialTranslate = 0;
+  const buffer = 8;
   
   const getStep = () => _analogCalendar2Month ? (192 + 36) : (192 + 12);
+  const getInitialTranslate = () => -(buffer * getStep());
   
   const handleStart = (clientX, clientY) => {
     if (_calIsAnimating) return;
     startX = clientX;
     startY = clientY;
+    startTime = Date.now();
     isDragging = true;
-    initialTranslate = -getStep();
-    
+    hasMovedRail = false;
+    initialTranslate = getInitialTranslate();
     viewport.classList.add("is-dragging");
-    
-    const r = document.getElementById("analogCalendarRail");
-    if (r) {
-      r.style.transition = "none"; // 指/マウスに100%吸い付かせるためトランジション解除
-    }
   };
   
   const handleMove = (clientX, clientY, e) => {
@@ -7403,17 +7414,19 @@ function initAnalogCalendarTouch() {
     const diffX = clientX - startX;
     const diffY = clientY - startY;
     
-    if (Math.abs(diffX) > 8 || Math.abs(diffY) > 8) {
+    if (Math.abs(diffX) > 15 || Math.abs(diffY) > 15) {
       _analogHasMoved = true;
     }
     
-    // 横移動が優位な場合、カレンダーレールをリアルタイムに追従
-    if (Math.abs(diffX) > Math.abs(diffY) || Math.abs(diffX) > 10) {
+    // 横移動が優位な場合（10px以上の水平移動）、カレンダーレールをリアルタイムに追従
+    if (Math.abs(diffX) > 10 && (Math.abs(diffX) > Math.abs(diffY))) {
       if (e && e.cancelable) e.preventDefault();
+      hasMovedRail = true;
       const r = document.getElementById("analogCalendarRail");
       if (r) {
         // 指/マウスの動きに合わせて滑らかにスーッと平行移動
-        r.style.transform = `translateX(${initialTranslate + diffX}px)`;
+        r.style.transition = "none";
+        r.style.transform = `translate3d(${initialTranslate + diffX}px, 0, 0)`;
       }
     }
   };
@@ -7426,46 +7439,64 @@ function initAnalogCalendarTouch() {
     
     const diffX = clientX - startX;
     const diffY = clientY - startY;
+    const elapsed = Math.max(10, Date.now() - startTime);
+    const speed = Math.abs(diffX) / elapsed; // px/ms
     const step = getStep();
-    const threshold = 45; // 45px以上ドラッグしたらめくり確定
     const r = document.getElementById("analogCalendarRail");
     
     if (Math.abs(diffX) >= 15 || Math.abs(diffY) >= 15) {
       _analogHasMoved = true;
     }
 
-    if (r) {
-      if (diffX > threshold && Math.abs(diffX) > Math.abs(diffY)) {
-        // 前月へ進める（右方向スワイプ: 指を離した位置からスーッと吸い付くようにゴールへ）
+    if (r && hasMovedRail) {
+      const dist = Math.abs(diffX);
+      let monthsDelta = 0;
+
+      // 1. スライド移動距離に基づく月数（45px以上で1ヶ月、以降約130px毎に+1ヶ月）
+      if (dist >= 45) {
+        monthsDelta = 1 + Math.floor((dist - 45) / 130);
+      }
+      
+      // 2. フリック（素早いスワイプ）の速度ボーナス加算
+      if (speed > 2.0) {
+        monthsDelta += 3;
+      } else if (speed > 1.3) {
+        monthsDelta += 2;
+      } else if (speed > 0.7) {
+        monthsDelta += 1;
+      }
+      
+      // 一度にめくれる最大月数をバッファ内の6ヶ月までに制限
+      monthsDelta = Math.min(6, monthsDelta);
+
+      if (monthsDelta > 0 && Math.abs(diffX) > Math.abs(diffY)) {
         _calIsAnimating = true;
-        r.style.transition = "transform 0.28s cubic-bezier(0.22, 1, 0.36, 1)";
-        r.style.transform = `translateX(${initialTranslate + step}px)`;
+        const direction = diffX < 0 ? 1 : -1; // 1: 翌月方向 (左スワイプ), -1: 前月方向 (右スワイプ)
+        const targetOffsetDelta = direction * monthsDelta;
+        const targetTranslate = initialTranslate - (targetOffsetDelta * step);
+        
+        // 移動月数と速度に応じた、極めてなめらかな指数減速イージング時間 (280ms〜680ms)
+        const duration = Math.min(680, 260 + monthsDelta * 65);
+        
+        r.style.transition = `transform ${duration}ms cubic-bezier(0.16, 1, 0.3, 1)`;
+        r.style.transform = `translate3d(${targetTranslate}px, 0, 0)`;
+        
         setTimeout(() => {
           r.style.transition = "none";
-          _analogCalendarMonthOffset--;
+          _analogCalendarMonthOffset += targetOffsetDelta;
           _renderCalendar();
           _calIsAnimating = false;
-        }, 290);
-      } else if (diffX < -threshold && Math.abs(diffX) > Math.abs(diffY)) {
-        // 翌月へ進める（左方向スワイプ: 指を離した位置からスーッと吸い付くようにゴールへ）
-        _calIsAnimating = true;
-        r.style.transition = "transform 0.28s cubic-bezier(0.22, 1, 0.36, 1)";
-        r.style.transform = `translateX(${initialTranslate - step}px)`;
-        setTimeout(() => {
-          r.style.transition = "none";
-          _analogCalendarMonthOffset++;
-          _renderCalendar();
-          _calIsAnimating = false;
-        }, 290);
+        }, duration + 40);
       } else {
         // しきい値未満: 元の位置にスーッと戻る（スナップバック）
         r.style.transition = "transform 0.22s cubic-bezier(0.22, 1, 0.36, 1)";
-        r.style.transform = `translateX(${initialTranslate}px)`;
+        r.style.transform = `translate3d(${initialTranslate}px, 0, 0)`;
         setTimeout(() => {
           if (r) r.style.transition = "none";
         }, 230);
       }
     }
+    hasMovedRail = false;
   };
   
   // タッチ操作 (スマホ)
@@ -7714,6 +7745,22 @@ function initAnalogHold() {
     _analogStartX = touch.clientX;
     _analogStartY = touch.clientY;
     _analogLastTouchTarget = e.target;
+
+    // 1回目のタップ後の待ち受け時間内（380ms以内）に2回目のタップが開始されたら、
+    // シングルタップ確定タイマーを一旦止めてダブルタップ成立を待つ
+    const now = Date.now();
+    if (_analogTapCount === 1 && (now - _analogLastTapEndTime) < 380) {
+      if (_analogSingleTapTimer) {
+        clearTimeout(_analogSingleTapTimer);
+        _analogSingleTapTimer = null;
+      }
+    } else {
+      _analogTapCount = 0;
+      if (_analogSingleTapTimer) {
+        clearTimeout(_analogSingleTapTimer);
+        _analogSingleTapTimer = null;
+      }
+    }
     
     // 長押しリングは200ms以上指を動かさずに押し続けた時だけ表示開始する
     // (スワイプや軽いタップでリングが一瞬チラつくのを完全に防ぐ)
@@ -7752,9 +7799,11 @@ function initAnalogHold() {
     const touch = e.touches ? e.touches[0] : e;
     const diffX = touch.clientX - _analogStartX;
     const diffY = touch.clientY - _analogStartY;
-    // 8px以上移動したらスワイプ/ドラッグと判定し、長押しを即座に完全キャンセル
-    if (Math.abs(diffX) > 8 || Math.abs(diffY) > 8) {
+    // 15px以上移動したらスワイプ/ドラッグと判定し、長押し・タップを即座に完全キャンセル
+    if (Math.abs(diffX) > 15 || Math.abs(diffY) > 15) {
       _analogHasMoved = true;
+      _analogTapCount = 0;
+      _analogLastTapEndTime = 0;
       cancelHold();
     }
   };
@@ -7776,17 +7825,15 @@ function initAnalogHold() {
     // スワイプまたはドラッグで移動していた場合はタップ判定を完全にスキップ！
     if (_analogHasMoved || _analogSwipeDirection || _analogIs2FingerDragging) {
       _analogHasMoved = false;
+      _analogTapCount = 0;
+      _analogLastTapEndTime = 0;
       return;
     }
     
-    // タップ判定（移動なし、かつ350ms以内のリリース）
-    if (elapsed < 350) {
-      const now = Date.now();
-      if (_analogLastTapTime > 0 && now - _analogLastTapTime > 400) {
-        _analogTapCount = 0;
-      }
-      _analogLastTapTime = now;
+    // タップ判定（移動なし、かつ400ms以内のリリース）
+    if (elapsed < 400) {
       _analogTapCount++;
+      _analogLastTapEndTime = Date.now();
 
       // タップされた要素がカレンダー上かどうかを判定
       const isCalendar = _analogLastTouchTarget && Boolean(
@@ -7800,10 +7847,10 @@ function initAnalogHold() {
         _analogSingleTapTimer = null;
       }
       
-      if (_analogTapCount === 2) {
+      if (_analogTapCount >= 2) {
         // ダブルタップ実行
         _analogTapCount = 0;
-        _analogLastTapTime = 0;
+        _analogLastTapEndTime = 0;
         if (isCalendar && _analogInfoState === 2) {
           // カレンダー上のダブルタップ: 1ヶ月 ⇔ 2ヶ月 表示切替
           _analogCalendar2Month = !_analogCalendar2Month;
@@ -7844,36 +7891,37 @@ function initAnalogHold() {
           if (eclipseSec) eclipseSec.style.opacity = _analogShowSecondHand ? "1" : "0";
         }
       } else {
-        // 1回目のタップ: 350ms待ってダブルタップが来なければシングルタップ確定
+        // 1回目のタップ: 300ms待ってダブルタップが来なければシングルタップ確定
         _analogSingleTapTimer = setTimeout(() => {
-          const count = _analogTapCount;
           _analogTapCount = 0;
-          _analogLastTapTime = 0;
-          if (count === 1) {
-            if (isCalendar && _analogInfoState === 2) {
-              // カレンダー上のシングルタップ: ギューンと高速スライドしてスーッとなめらかに今月に戻る
-              if (_analogCalendarMonthOffset !== 0) {
-                _animateCalendarSnapToCurrent();
-              }
-            } else {
-              // アナログ時計上のシングルタップ: 情報ステート切替 (0:なし -> 1:デジタル -> 2:カレンダー+デジタル -> 0)
-              _analogInfoState = (_analogInfoState + 1) % 3;
-              analogScreen.classList.remove("info-state-0", "info-state-1", "info-state-2");
-              analogScreen.classList.add(`info-state-${_analogInfoState}`);
+          _analogLastTapEndTime = 0;
+          _analogSingleTapTimer = null;
+          if (isCalendar && _analogInfoState === 2) {
+            // カレンダー上のシングルタップ: ギューンと高速スライドしてスーッとなめらかに今月に戻る
+            if (_analogCalendarMonthOffset !== 0) {
+              _animateCalendarSnapToCurrent();
+            }
+          } else {
+            // アナログ時計上のシングルタップ: 情報ステート切替 (0:なし -> 1:デジタル -> 2:カレンダー+デジタル -> 0)
+            _analogInfoState = (_analogInfoState + 1) % 3;
+            analogScreen.classList.remove("info-state-0", "info-state-1", "info-state-2");
+            analogScreen.classList.add(`info-state-${_analogInfoState}`);
 
-              if (_analogInfoState === 0) {
-                // 最初のサイクル（時計の中央表示）に戻った時、任意の位置に置いた時計とカレンダーの位置をリセット
-                _analogIsSwapped = false;
-                analogScreen.classList.remove("analog-layout-swapped");
-                document.documentElement.style.setProperty('--drag-analog-x', '0px');
-                document.documentElement.style.setProperty('--drag-analog-y', '0px');
-                document.documentElement.style.setProperty('--drag-info-x', '0px');
-                document.documentElement.style.setProperty('--drag-info-y', '0px');
-              }
+            if (_analogInfoState === 0) {
+              // 最初のサイクル（時計の中央表示）に戻った時、任意の位置に置いた時計とカレンダーの位置をリセット
+              _analogIsSwapped = false;
+              analogScreen.classList.remove("analog-layout-swapped");
+              document.documentElement.style.setProperty('--drag-analog-x', '0px');
+              document.documentElement.style.setProperty('--drag-analog-y', '0px');
+              document.documentElement.style.setProperty('--drag-info-x', '0px');
+              document.documentElement.style.setProperty('--drag-info-y', '0px');
             }
           }
-        }, 350);
+        }, 300);
       }
+    } else {
+      _analogTapCount = 0;
+      _analogLastTapEndTime = 0;
     }
   };
   
@@ -8030,7 +8078,7 @@ function initAnalogSwipe() {
     const diffX = currentX - _analogStartX;
     const diffY = currentY - _analogStartY;
 
-    if (Math.abs(diffX) > 8 || Math.abs(diffY) > 8) {
+    if (Math.abs(diffX) > 15 || Math.abs(diffY) > 15) {
       _analogHasMoved = true;
       if (_analogHoldTimer) {
         clearTimeout(_analogHoldTimer);
@@ -8069,9 +8117,9 @@ function initAnalogSwipe() {
     } else {
       const step = 0.05;
       if (diffY < 0) {
-        _analogGlowIntensity = Math.min(5.0, _analogGlowIntensity + step);
+        _analogGlowIntensity = Math.min(5.0, Math.round((_analogGlowIntensity + step) * 100) / 100);
       } else {
-        _analogGlowIntensity = Math.max(0.2, _analogGlowIntensity - step);
+        _analogGlowIntensity = Math.max(0.0, Math.round((_analogGlowIntensity - step) * 100) / 100);
       }
       _analogStartY = currentY;
       document.documentElement.style.setProperty("--analog-glow", _analogGlowIntensity);

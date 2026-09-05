@@ -5406,6 +5406,10 @@ let _viewLockHoldTimer = null;
 let _viewLockStyleInterval = null;
 let _viewLockCurrentFormat = 'standard';
 let _viewLockScaleFactor = 1.0;
+let _viewLockUserScale = 1.0;          // 2本指ピンチ / ホイールによる拡大縮小倍率
+let _vlIsPinching = false;
+let _vlPinchStartDist = 0;
+let _vlPinchBaseScale = 1.0;
 // viewLockScreen 長押しジェスチャー用モジュールレベル状態
 // クロージャの代わりに名前付き関数を使うことで removeEventListener が確実に機能する
 let _vlPressStartTime = 0;
@@ -5551,14 +5555,53 @@ function changeViewLockStyle(reason = "tick") {
       const w = clockEl.offsetWidth;
       const h = clockEl.offsetHeight;
       
-      const maxX = Math.max(0, (winW - w) / 2);
-      const maxY = Math.max(0, (winH - h) / 2);
+      const safeMarginX = 16;
+      const safeMarginY = 16;
+      const maxX = Math.max(0, (winW - w) / 2 - safeMarginX);
+      const maxY = Math.max(0, (winH - h) / 2 - safeMarginY);
       
-      const randomX = (Math.random() * 2 - 1) * maxX;
-      const randomY = (Math.random() * 2 - 1) * maxY;
+      const randomX = maxX > 0 ? (Math.random() * 2 - 1) * maxX : 0;
+      const randomY = maxY > 0 ? (Math.random() * 2 - 1) * maxY : 0;
       
       clockEl.style.transform = `translate(${randomX}px, ${randomY}px)`;
     }, 350);
+  }
+}
+
+// 文字サイズ拡大時・画面リサイズ時・日付トグル時の画面はみ出し防止補正
+function _clampViewLockPosition() {
+  const clockEl = document.getElementById("viewLockClock");
+  if (!clockEl || clockEl.style.display === "none") return;
+
+  const winW = window.innerWidth;
+  const winH = window.innerHeight;
+  const w = clockEl.offsetWidth;
+  const h = clockEl.offsetHeight;
+
+  const transformStr = clockEl.style.transform;
+  let currentX = 0;
+  let currentY = 0;
+
+  if (transformStr) {
+    const match = transformStr.match(/translate\(([^p]+)px,\s*([^p]+)px\)/);
+    if (match) {
+      currentX = parseFloat(match[1]);
+      currentY = parseFloat(match[2]);
+    }
+  }
+
+  if (isNaN(currentX) || isNaN(currentY)) return;
+
+  const safeMarginX = 16;
+  const safeMarginY = 16;
+  const maxX = Math.max(0, (winW - w) / 2 - safeMarginX);
+  const maxY = Math.max(0, (winH - h) / 2 - safeMarginY);
+
+  const cx = Math.max(-maxX, Math.min(maxX, currentX));
+  const cy = Math.max(-maxY, Math.min(maxY, currentY));
+
+  if (cx !== currentX || cy !== currentY) {
+    clockEl.style.transform = `translate(${cx}px, ${cy}px)`;
   }
 }
 
@@ -5566,46 +5609,9 @@ let _viewLockResizeTimer = null;
 function _handleViewLockResize() {
   clearTimeout(_viewLockResizeTimer);
   _viewLockResizeTimer = setTimeout(() => {
-    const clockEl = document.getElementById("viewLockClock");
-    if (!clockEl || clockEl.style.display === "none") return;
-    
     // ★【バグ修正】画面の回転・リサイズに合わせてフォントサイズを再計算させる
     _updateViewLockClock();
-    
-    const winW = window.innerWidth;
-    const winH = window.innerHeight;
-    const w = clockEl.offsetWidth;
-    const h = clockEl.offsetHeight;
-    
-    // Flexboxのtransform方式に対応した画面外はみ出し補正
-    const transformStr = clockEl.style.transform;
-    let currentX = 0;
-    let currentY = 0;
-    
-    if (transformStr) {
-      const match = transformStr.match(/translate\(([^p]+)px,\s*([^p]+)px\)/);
-      if (match) {
-        currentX = parseFloat(match[1]);
-        currentY = parseFloat(match[2]);
-      }
-    }
-    
-    if (isNaN(currentX) || isNaN(currentY)) return;
-    
-    const maxX = Math.max(0, (winW - w) / 2);
-    const maxY = Math.max(0, (winH - h) / 2);
-    
-    let changed = false;
-    
-    if (currentX < -maxX) { currentX = -maxX; changed = true; }
-    if (currentX > maxX) { currentX = maxX; changed = true; }
-    
-    if (currentY < -maxY) { currentY = -maxY; changed = true; }
-    if (currentY > maxY) { currentY = maxY; changed = true; }
-    
-    if (changed) {
-      clockEl.style.transform = `translate(${currentX}px, ${currentY}px)`;
-    }
+    _clampViewLockPosition();
   }, 100);
 }
 
@@ -5626,6 +5632,8 @@ function showViewLockScreen() {
   _vlRandomMode = 0;       // ランダムモードは必ずOFFでスタート（前セッションの状態を持ち越さない）
   _vlLastTapTime = 0;
   _vlTapCount = 0;
+  _viewLockUserScale = 1.0;
+  _vlIsPinching = false;
   changeViewLockStyle("init");
   
   // setInterval(changeViewLockStyle, 60000) は削除。
@@ -5762,8 +5770,8 @@ function _updateViewLockClock() {
     let fontSizePx = (calculatedVw / 100) * winW;
     let maxFontSizePxByVh = (vhLimit / 100) * winH;
     
-    let finalPx = Math.min(fontSizePx, maxFontSizePxByVh);
-    if (finalPx < 60) finalPx = 60; // 下限 60px
+    let finalPx = Math.min(fontSizePx, maxFontSizePxByVh) * _viewLockUserScale;
+    if (finalPx < 20) finalPx = 20; // 下限 20px
     
     // ★【バグ修正】CSSアニメーション（transition）が設定されていると、
     // offsetWidthの測定値がアニメーション途中の値になってしまい、サイズが振動するバグを防ぐ
@@ -5772,12 +5780,11 @@ function _updateViewLockClock() {
     
     clockEl.style.fontSize = finalPx + 'px';
     
-    // ★【はみ出し完全防止】フォントごとの文字幅・高さの違い（複数行や特殊フォント対策）
-    // 実際にブラウザが計算した文字幅と高さを取得し、画面サイズを超えていたら縮小する
+    // ★【はみ出し防止】ユーザーの拡大率に合わせて制限幅・高さを動的に拡張
     const actualWidth = clockEl.offsetWidth;
     const actualHeight = clockEl.offsetHeight;
-    const targetMaxWidth = winW * 0.95;
-    const targetMaxHeight = winH * 0.95;
+    const targetMaxWidth = winW * 0.95 * Math.max(1.0, _viewLockUserScale);
+    const targetMaxHeight = winH * 0.95 * Math.max(1.0, _viewLockUserScale);
     
     let scaleDownRatio = 1;
     if (actualWidth > targetMaxWidth) {
@@ -5792,9 +5799,12 @@ function _updateViewLockClock() {
       clockEl.style.fontSize = finalPx + 'px';
     }
     
-    // 変更をブラウザに反映（強制リフロー）させた後、アニメーション設定を元に戻す
+    // 変更をブラウザに反映（強制リフロー）させた後、ピンチ操作中でなければアニメーション設定を元に戻す
     void clockEl.offsetWidth;
-    clockEl.style.transition = originalTransition;
+    _clampViewLockPosition();
+    if (!_vlIsPinching) {
+      clockEl.style.transition = originalTransition;
+    }
   }
 }
 
@@ -5910,6 +5920,19 @@ function _vlClickBlocker(e) {
 
 // 指離し（touchend / mouseup）ハンドラ
 function _vlEndHold(e) {
+  // ★ ピンチ操作終了時の処理（タップやスワイプを誤爆させない）
+  if (_vlIsPinching) {
+    if (!e.touches || e.touches.length < 2) {
+      _vlIsPinching = false;
+      _vlPinchStartDist = 0;
+      _vlPressStartTime = 0;
+      _vlTapCount = 0;
+      const clockEl = document.getElementById("viewLockClock");
+      if (clockEl) clockEl.style.transition = '';
+    }
+    return;
+  }
+
   if (_vlIsLongPressSuccess) return;
   clearTimeout(_viewLockHoldTimer);
   _viewLockHoldTimer = null;
@@ -5992,26 +6015,7 @@ function _vlEndHold(e) {
           _updateViewLockClock();
           // 日付追加で要素が上に拡大しても画面外にはみ出さないよう位置を再クランプ
           setTimeout(() => {
-            const clockEl = document.getElementById("viewLockClock");
-            if (!clockEl) return;
-            const winW = window.innerWidth;
-            const winH = window.innerHeight;
-            const transformStr = clockEl.style.transform;
-            let currentX = 0, currentY = 0;
-            if (transformStr) {
-              const match = transformStr.match(/translate\(([^p]+)px,\s*([^p]+)px\)/);
-              if (match) { currentX = parseFloat(match[1]); currentY = parseFloat(match[2]); }
-            }
-            if (isNaN(currentX) || isNaN(currentY)) return;
-            const w = clockEl.offsetWidth;
-            const h = clockEl.offsetHeight;
-            const maxX = Math.max(0, (winW - w) / 2);
-            const maxY = Math.max(0, (winH - h) / 2);
-            let cx = Math.max(-maxX, Math.min(maxX, currentX));
-            let cy = Math.max(-maxY, Math.min(maxY, currentY));
-            if (cx !== currentX || cy !== currentY) {
-              clockEl.style.transform = `translate(${cx}px, ${cy}px)`;
-            }
+            _clampViewLockPosition();
           }, 50);
         } else if (count === 2) {
           // ダブルタップ → ネオンカラー順次変更
@@ -6027,6 +6031,42 @@ function _vlEndHold(e) {
 
 // スワイプ中の指移動（touchmove / mousemove）ハンドラ：長押しをキャンセル
 function _vlMoveHold(e) {
+  // ★ 2本指タッチの検出・ピンチ拡大縮小処理
+  if (e.touches && e.touches.length >= 2) {
+    if (e.cancelable) e.preventDefault();
+    if (!_vlIsPinching) {
+      _vlIsPinching = true;
+      _vlPinchStartDist = Math.hypot(
+        e.touches[1].clientX - e.touches[0].clientX,
+        e.touches[1].clientY - e.touches[0].clientY
+      );
+      _vlPinchBaseScale = _viewLockUserScale;
+      _vlPressStartTime = 0;
+      if (_viewLockHoldTimer) {
+        clearTimeout(_viewLockHoldTimer);
+        _viewLockHoldTimer = null;
+      }
+      const ring = document.getElementById("viewLockHoldRing");
+      const circle = document.getElementById("viewLockRingCircle");
+      if (ring) ring.style.opacity = "0";
+      if (circle) {
+        circle.style.transition = "stroke-dashoffset 0.1s linear";
+        circle.style.strokeDashoffset = "164";
+      }
+    } else {
+      const currentDist = Math.hypot(
+        e.touches[1].clientX - e.touches[0].clientX,
+        e.touches[1].clientY - e.touches[0].clientY
+      );
+      if (_vlPinchStartDist > 0) {
+        const factor = currentDist / _vlPinchStartDist;
+        _viewLockUserScale = Math.max(0.3, Math.min(3.0, Math.round((_vlPinchBaseScale * factor) * 100) / 100));
+        _updateViewLockClock();
+      }
+    }
+    return;
+  }
+
   if (!_vlPressStartTime) return;
   const touch = e.touches ? e.touches[0] : e;
   const moveY = touch.clientY;
@@ -6056,6 +6096,25 @@ function _vlStartHold(e) {
   if (_viewLockHoldTimer) {
     clearTimeout(_viewLockHoldTimer);
     _viewLockHoldTimer = null;
+  }
+
+  // ★ 2本指タッチの検出：ピンチ操作として初期化
+  if (e.touches && e.touches.length >= 2) {
+    _vlIsPinching = true;
+    _vlPinchStartDist = Math.hypot(
+      e.touches[1].clientX - e.touches[0].clientX,
+      e.touches[1].clientY - e.touches[0].clientY
+    );
+    _vlPinchBaseScale = _viewLockUserScale;
+    _vlPressStartTime = 0;
+    const ring = document.getElementById("viewLockHoldRing");
+    const circle = document.getElementById("viewLockRingCircle");
+    if (ring) ring.style.opacity = "0";
+    if (circle) {
+      circle.style.transition = "stroke-dashoffset 0.1s linear";
+      circle.style.strokeDashoffset = "164";
+    }
+    return;
   }
 
   _vlIsLongPressSuccess = false;
@@ -6098,6 +6157,15 @@ function _vlStartHold(e) {
   }, 1000);
 }
 
+// マウスホイールによる拡大縮小ハンドラ
+function _vlWheel(e) {
+  e.preventDefault();
+  // 上スクロール（deltaY < 0）で拡大、下スクロール（deltaY > 0）で縮小
+  const step = e.deltaY < 0 ? 0.05 : -0.05;
+  _viewLockUserScale = Math.max(0.3, Math.min(3.0, Math.round((_viewLockUserScale + step) * 100) / 100));
+  _updateViewLockClock();
+}
+
 function initViewLockHold() {
   const viewLock = document.getElementById("viewLockScreen");
   if (!viewLock) return;
@@ -6112,6 +6180,7 @@ function initViewLockHold() {
   viewLock.removeEventListener('mouseleave',  _vlEndHold);
   viewLock.removeEventListener('touchend',    _vlEndHold);
   viewLock.removeEventListener('touchcancel', _vlEndHold);
+  viewLock.removeEventListener('wheel',       _vlWheel);
   // 状態をリセット
   _vlPressStartTime = 0;
   _vlIsLongPressSuccess = false;
@@ -6120,16 +6189,19 @@ function initViewLockHold() {
   _vlTapCount = 0;
   _vlSwipeStartY = 0;
   _vlSwipeStartX = 0;
+  _vlIsPinching = false;
+  _vlPinchStartDist = 0;
   // リスナーを登録
   viewLock.addEventListener('click',       _vlClickBlocker, true);
   viewLock.addEventListener('mousedown',   _vlStartHold);
   viewLock.addEventListener('mousemove',   _vlMoveHold);
   viewLock.addEventListener('touchstart',  _vlStartHold, { passive: false });
-  viewLock.addEventListener('touchmove',   _vlMoveHold, { passive: true });
+  viewLock.addEventListener('touchmove',   _vlMoveHold, { passive: false });
   viewLock.addEventListener('mouseup',     _vlEndHold);
   viewLock.addEventListener('mouseleave',  _vlEndHold);
   viewLock.addEventListener('touchend',    _vlEndHold);
   viewLock.addEventListener('touchcancel', _vlEndHold);
+  viewLock.addEventListener('wheel',       _vlWheel, { passive: false });
   viewLock.addEventListener('contextmenu', (e) => e.preventDefault());
 }
 

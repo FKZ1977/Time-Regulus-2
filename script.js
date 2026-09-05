@@ -2942,6 +2942,12 @@ function triggerModeTransition(modeKey, callback) {
   if (navigator.vibrate) {
     try { navigator.vibrate(20); } catch(e){}
   }
+
+  // ボタンを押した瞬間に長押し判定を即座に破棄・無効化
+  if (typeof window._cancelHoldToReturn === 'function') {
+    window._cancelHoldToReturn();
+  }
+  window._isModeTransitioning = true;
   
   const btn = document.querySelector(`.btn-calc-${modeKey}`);
   if (btn) btn.classList.add('is-pressed');
@@ -2974,6 +2980,7 @@ function showErrorMode() {
   } else {
     document.getElementById("modeSelect").style.display = "none";
     document.getElementById("errorMode").style.display = "block";
+    window._isModeTransitioning = false;
 
     if (typeof window.updateLabelWidths === 'function') {
       window.updateLabelWidths();
@@ -3009,6 +3016,7 @@ function showCorrectionMode() {
   } else {
     document.getElementById("modeSelect").style.display = "none"; 
     document.getElementById("correctionMode").style.display = "block";
+    window._isModeTransitioning = false;
     if (lastError) { 
       applyLastErrorToReverseInputs();
     }
@@ -3043,6 +3051,7 @@ function showTimeCalcMode() {
   } else {
     document.getElementById("modeSelect").style.display = "none";
     document.getElementById("timeCalcMode").style.display = "block";
+    window._isModeTransitioning = false;
     if (typeof TimeCalc !== 'undefined' && typeof TimeCalc.init === 'function') {
       TimeCalc.init();
     }
@@ -3092,7 +3101,8 @@ function backToModeSelect() {
     const tcMode = document.getElementById("timeCalcMode");
     if (tcMode) tcMode.style.display = "none";
     document.getElementById("modeSelect").style.display = "block";
-    document.getElementById("resetConfirmContainer").style.display = "none"; 
+    document.getElementById("resetConfirmContainer").style.display = "none";
+    window._isModeTransitioning = false;
   }
 }
 
@@ -4556,6 +4566,9 @@ document.addEventListener("focusin", function(e) {
 
   // ボタン押下時などのプログラム遷移用スライドアニメーション関数
   window.slideTransition = function(fromId, toId, direction, onPrepare, onComplete) {
+    if (typeof window._cancelHoldToReturn === 'function') {
+      window._cancelHoldToReturn();
+    }
     if (isTransitioning) return;
     const fEl = getEl(fromId);
     const tEl = getEl(toId);
@@ -4565,6 +4578,7 @@ document.addEventListener("focusin", function(e) {
       if (typeof onPrepare === 'function') onPrepare();
       if (typeof onComplete === 'function') onComplete();
       afterSwipe(toId, fromId);
+      window._isModeTransitioning = false;
       return;
     }
 
@@ -4621,7 +4635,10 @@ document.addEventListener("focusin", function(e) {
 
       afterSwipe(toId, fromId);
       if (typeof onComplete === 'function') onComplete();
-      setTimeout(() => { isTransitioning = false; }, 50);
+      setTimeout(() => {
+        isTransitioning = false;
+        window._isModeTransitioning = false;
+      }, 50);
     }, 300);
   };
 
@@ -5183,7 +5200,11 @@ function returnToLockScreenFromHold() {
   const returnTo = window._readmeReturnTo || null;
   window._readmeReturnTo = null;
 
-  const pagesToHide = ['readmePage', 'informationPage', 'qrCodePage', 'modeSelect'];
+  const pagesToHide = [
+    'readmePage', 'informationPage', 'qrCodePage', 'modeSelect',
+    'errorMode', 'correctionMode', 'timeCalcMode', 'resultListPage',
+    'decoyScreen', 'viewLockScreen', 'analogLockScreen'
+  ];
   pagesToHide.forEach(id => {
     const el = document.getElementById(id);
     if (el) el.style.display = 'none';
@@ -5262,12 +5283,24 @@ function initHoldToReturn() {
   const ring = document.getElementById('readmeRingCircle');
   const hint = document.getElementById('readmeHoldHint');
 
+  let holdDelayTimer = null;
   let holdStartTime = 0;
-  let holdDuration = 1000;
+  const holdDelay = 350;     // 350ms押し続けて初めて「長押しモード」として出現（通常のタップや軽いスクロールでリングが出ないよう遅延）
+  const holdDuration = 750;  // 出現後、750msかけて円が100%まで満ちて解錠（合計約1.1秒の快適な長押し時間）
   let isHolding = false;
+  let isHoldActive = false;
+  let startX = 0, startY = 0;
+  let activePageEl = null;
 
   const updateRing = () => {
-    if (!isHolding) return;
+    if (!isHoldActive) return;
+
+    // 画面遷移中、または長押しを開始したページが途中で非表示になった場合は即時中断
+    if (window._isModeTransitioning || (activePageEl && (activePageEl.style.display === 'none' || activePageEl.offsetParent === null))) {
+      cancelHold();
+      return;
+    }
+
     const now = Date.now();
     const elapsed = now - holdStartTime;
     let progress = elapsed / holdDuration;
@@ -5275,6 +5308,8 @@ function initHoldToReturn() {
     if (progress >= 1) {
       progress = 1;
       isHolding = false;
+      isHoldActive = false;
+      activePageEl = null;
       if (_readmeHoldRaf) cancelAnimationFrame(_readmeHoldRaf);
       _readmeHoldRaf = null;
       if (ringContainer) ringContainer.style.display = 'none';
@@ -5295,6 +5330,11 @@ function initHoldToReturn() {
   };
 
   const startHold = (e) => {
+    // モード遷移中、または現在のページが非表示の場合は長押しを一切受け付けない
+    if (window._isModeTransitioning) return;
+    const page = e.currentTarget;
+    if (page && (page.style.display === 'none' || page.offsetParent === null)) return;
+
     if (e.target) {
       const targetTag = e.target.tagName.toLowerCase();
       if (['select', 'input', 'button', 'a'].includes(targetTag)) return;
@@ -5302,7 +5342,8 @@ function initHoldToReturn() {
     }
     
     isHolding = true;
-    holdStartTime = Date.now();
+    isHoldActive = false;
+    activePageEl = page;
 
     let x, y;
     if (e.touches && e.touches.length > 0) {
@@ -5312,34 +5353,55 @@ function initHoldToReturn() {
       x = e.clientX;
       y = e.clientY;
     }
+    startX = x;
+    startY = y;
 
-    if (ringContainer) {
-      ringContainer.style.display = 'block';
-      ringContainer.style.left = x + 'px';
-      ringContainer.style.top = y + 'px';
-    }
-    if (ring) {
-      ring.style.transition = 'none';
-      ring.style.strokeDashoffset = '163.4';
-    }
-    if (hint) {
-      hint.style.transition = 'color 0.2s ease';
-      hint.style.display = 'block';
-      hint.style.left = x + 'px';
-      hint.style.top = (y - 80) + 'px';
-      hint.innerText = '長押しで戻る';
-      requestAnimationFrame(() => {
-        hint.style.color = 'rgba(0, 255, 224, 0.8)';
-      });
-    }
-
+    if (holdDelayTimer) clearTimeout(holdDelayTimer);
     if (_readmeHoldRaf) cancelAnimationFrame(_readmeHoldRaf);
-    _readmeHoldRaf = requestAnimationFrame(updateRing);
+    _readmeHoldRaf = null;
+
+    // 触れた瞬間に即表示するのではなく、350ms押し続けた時だけ長押しリング＆テキストを表示！
+    holdDelayTimer = setTimeout(() => {
+      // 遅延時間経過時に、遷移中になったりページが消えていたら表示しない
+      if (!isHolding || window._isModeTransitioning) return;
+      if (activePageEl && (activePageEl.style.display === 'none' || activePageEl.offsetParent === null)) return;
+
+      isHoldActive = true;
+      holdStartTime = Date.now();
+
+      if (ringContainer) {
+        ringContainer.style.display = 'block';
+        ringContainer.style.left = x + 'px';
+        ringContainer.style.top = y + 'px';
+      }
+      if (ring) {
+        ring.style.transition = 'none';
+        ring.style.strokeDashoffset = '163.4';
+      }
+      if (hint) {
+        hint.style.transition = 'color 0.2s ease';
+        hint.style.display = 'block';
+        hint.style.left = x + 'px';
+        hint.style.top = (y - 80) + 'px';
+        hint.innerText = '長押しで戻る';
+        requestAnimationFrame(() => {
+          hint.style.color = 'rgba(0, 255, 224, 0.8)';
+        });
+      }
+
+      _readmeHoldRaf = requestAnimationFrame(updateRing);
+    }, holdDelay);
   };
 
   const cancelHold = () => {
-    if (!isHolding) return;
+    if (holdDelayTimer) {
+      clearTimeout(holdDelayTimer);
+      holdDelayTimer = null;
+    }
+    if (!isHolding && !isHoldActive) return;
     isHolding = false;
+    isHoldActive = false;
+    activePageEl = null;
     if (_readmeHoldRaf) cancelAnimationFrame(_readmeHoldRaf);
     _readmeHoldRaf = null;
 
@@ -5358,15 +5420,35 @@ function initHoldToReturn() {
     }
   };
 
+  window._cancelHoldToReturn = cancelHold;
+
+  const handleMove = (e) => {
+    if (!isHolding) return;
+    let curX, curY;
+    if (e.touches && e.touches.length > 0) {
+      curX = e.touches[0].clientX;
+      curY = e.touches[0].clientY;
+    } else {
+      curX = e.clientX;
+      curY = e.clientY;
+    }
+    const dist = Math.hypot(curX - startX, curY - startY);
+    if (dist > 15) { // 15px以上の指の移動（スワイプやスクロール）は長押しキャンセル
+      cancelHold();
+    }
+  };
+
   pagesToBind.forEach(id => {
     const page = document.getElementById(id);
     if (!page) return;
     page.addEventListener('mousedown', startHold);
     page.addEventListener('mouseup', cancelHold);
     page.addEventListener('mouseleave', cancelHold);
+    page.addEventListener('mousemove', handleMove);
     page.addEventListener('touchstart', startHold, { passive: true });
     page.addEventListener('touchend', cancelHold);
     page.addEventListener('touchcancel', cancelHold);
+    page.addEventListener('touchmove', handleMove, { passive: true });
     
     // 長押し時のネイティブコンテキストメニューや画像保存ポップアップを無効化（長押しのキャンセルを防ぐため）
     page.addEventListener('contextmenu', (e) => {

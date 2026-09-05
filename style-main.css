@@ -3786,6 +3786,7 @@ body:not(.lang-ja):not(.lang-zh):not(.lang-ko) .warning-msg {
   background: var(--bg-dark);
   user-select: none;
   -webkit-user-select: none;
+  touch-action: manipulation;
   z-index: 1000;
 }
 

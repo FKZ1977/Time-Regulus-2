@@ -6140,8 +6140,10 @@ function initViewLockHold() {
 let _decoyClockTimer     = null; // 時計更新タイマー
 let _decoyHoldTimer      = null; // 長押し完了タイマー (1000ms)
 let _decoyHoldDelayTimer = null; // 長押し開始判定ディレイ (260ms)
-let _decoyTapTimer       = null; // シングルタップ確定ディレイ (250ms)
+let _decoyTapTimer       = null; // シングルタップ確定ディレイ (300ms)
 let _decoyTapCount       = 0;
+let _decoyLastTapEndTime = 0;    // 前回タップ終了時刻
+let _decoyLastTouchTime  = 0;    // ゴーストクリック（疑似マウスイベント）排除用
 let _decoyPressStartTime = 0;
 let _decoyStartX         = 0;
 let _decoyStartY         = 0;
@@ -6165,8 +6167,16 @@ function showDecoyScreen() {
   _decoyClockPaused = false;
   _decoyDisplayMode = 0;
   _decoyHoldStarted = false;
+  _decoyHoldActive = false;
   _decoyPressStartTime = 0;
   _decoyHasMoved = false;
+  _decoyTapCount = 0;
+  _decoyLastTapEndTime = 0;
+  _decoyLastTouchTime = 0;
+  if (_decoyTapTimer) {
+    clearTimeout(_decoyTapTimer);
+    _decoyTapTimer = null;
+  }
   // Google Analytics: ダミー画面への遷移をカウント（国別データなどもAnalytics上で確認可能）
   if (typeof gtag === 'function') {
     gtag('event', 'view_decoy_screen', {
@@ -6239,6 +6249,8 @@ function hideDecoyScreen() {
   clearTimeout(_decoyTapTimer);
   _decoyTapTimer = null;
   _decoyTapCount = 0;
+  _decoyLastTapEndTime = 0;
+  _decoyLastTouchTime = 0;
   _decoyHoldStarted = false;
   _decoyHoldActive = false;
   _decoyPressStartTime = 0;
@@ -6439,11 +6451,34 @@ function _decoyHoldStart(e) {
   // ボタン類（タイマー操作など）がタップされた場合は長押し判定を除外
   if (e && e.target && (e.target.tagName === 'BUTTON' || e.target.closest('button'))) return;
 
+  // タッチデバイスでの疑似マウスイベント（ゴーストクリック）を排除
+  if (e.type.startsWith('touch')) {
+    _decoyLastTouchTime = Date.now();
+  } else if (e.type.startsWith('mouse') && Date.now() - _decoyLastTouchTime < 800) {
+    return;
+  }
+
   if (_decoyHoldStarted) return;
   _decoyHoldStarted = true;
   _decoyHoldActive = false; // まだ長押しモードではない
   _decoyHasMoved = false;
   _decoyPressStartTime = Date.now();
+
+  // 1回目のタップ後の待ち受け時間内（350ms以内）に2回目のタップが開始されたら、
+  // シングルタップの確定タイマーを一旦停止してダブルタップの成立を待つ
+  const now = Date.now();
+  if (_decoyTapCount === 1 && (now - _decoyLastTapEndTime) < 350) {
+    if (_decoyTapTimer) {
+      clearTimeout(_decoyTapTimer);
+      _decoyTapTimer = null;
+    }
+  } else {
+    _decoyTapCount = 0;
+    if (_decoyTapTimer) {
+      clearTimeout(_decoyTapTimer);
+      _decoyTapTimer = null;
+    }
+  }
 
   // タッチまたはマウス位置を取得
   const touch = (e.touches && e.touches.length > 0) ? e.touches[0] : e;
@@ -6459,6 +6494,8 @@ function _decoyHoldStart(e) {
     if (!_decoyHoldStarted || _decoyHasMoved) return;
 
     _decoyHoldActive = true; // 長押しモード確定
+    _decoyTapCount = 0;      // 長押しモードに入ったらタップカウントをリセット
+    _decoyLastTapEndTime = 0;
 
     const ring = document.getElementById("decoyHoldRing");
     const circle = document.getElementById("decoyRingCircle");
@@ -6510,14 +6547,21 @@ function _decoyHoldStart(e) {
 }
 
 function _decoyHoldMove(e) {
+  if (e.type.startsWith('touch')) {
+    _decoyLastTouchTime = Date.now();
+  } else if (e.type.startsWith('mouse') && Date.now() - _decoyLastTouchTime < 800) {
+    return;
+  }
   if (!_decoyHoldStarted) return;
   const touch = (e.touches && e.touches.length > 0) ? e.touches[0] : e;
   if (!touch) return;
   const curX = touch.clientX !== undefined ? touch.clientX : _decoyStartX;
   const curY = touch.clientY !== undefined ? touch.clientY : _decoyStartY;
-  // 15px以上動いたらスワイプ/ドラッグと判定し、長押しを即座にキャンセル
+  // 15px以上動いたらスワイプ/ドラッグと判定し、長押し・タップを即座にキャンセル
   if (Math.abs(curX - _decoyStartX) > 15 || Math.abs(curY - _decoyStartY) > 15) {
     _decoyHasMoved = true;
+    _decoyTapCount = 0;
+    _decoyLastTapEndTime = 0;
     if (_decoyHoldDelayTimer) {
       clearTimeout(_decoyHoldDelayTimer);
       _decoyHoldDelayTimer = null;
@@ -6562,6 +6606,16 @@ function _decoyHoldEnd(e) {
   const decoy = document.getElementById("decoyScreen");
   if (!decoy || decoy.style.display === "none") return;
   if (e && e.target && (e.target.tagName === 'BUTTON' || e.target.closest('button'))) return;
+
+  if (e.type.startsWith('touch')) {
+    _decoyLastTouchTime = Date.now();
+    if (e.type === 'touchend' && e.cancelable) {
+      e.preventDefault();
+    }
+  } else if (e.type.startsWith('mouse') && Date.now() - _decoyLastTouchTime < 800) {
+    return;
+  }
+
   if (!_decoyHoldStarted) return;
 
   const wasHoldActive = _decoyHoldActive;
@@ -6578,22 +6632,37 @@ function _decoyHoldEnd(e) {
   // 長押しモードが開始されておらず、かつ指を動かしていない場合（タップ判定！）
   if (!wasHoldActive && !hadMoved && elapsed < 450) {
     _decoyTapCount++;
-    if (_decoyTapTimer) clearTimeout(_decoyTapTimer);
+    _decoyLastTapEndTime = Date.now();
 
     if (_decoyTapCount >= 2) {
       // 【ダブルタップ（素早く2回タップ）】：時分秒の三段階切り替え！
       // 0: 時分秒.ミリ秒 → 1: 時分秒 → 2: 時分 → 0: 時分秒.ミリ秒
+      if (_decoyTapTimer) {
+        clearTimeout(_decoyTapTimer);
+        _decoyTapTimer = null;
+      }
       _decoyTapCount = 0;
+      _decoyLastTapEndTime = 0;
       _decoyTimeFormat = (_decoyTimeFormat + 1) % 3;
       _updateDecoyClock(); // 即時反映
     } else {
-      // 【シングルタップ（1回タップ）】：250ms待って次のタップが来なければ実行！
+      // 【シングルタップ（1回タップ）】：300ms待って次のタップが来なければ実行！
       // 0: 通常表示 → 1: 一日の終わりまで → 2: 日の出・日没 → 0: 通常表示
+      if (_decoyTapTimer) clearTimeout(_decoyTapTimer);
       _decoyTapTimer = setTimeout(() => {
         _decoyTapCount = 0;
+        _decoyLastTapEndTime = 0;
+        _decoyTapTimer = null;
         _decoyDisplayMode = (_decoyDisplayMode + 1) % 3;
         _updateDecoyClock(); // 即時反映
-      }, 250);
+      }, 300);
+    }
+  } else {
+    _decoyTapCount = 0;
+    _decoyLastTapEndTime = 0;
+    if (_decoyTapTimer) {
+      clearTimeout(_decoyTapTimer);
+      _decoyTapTimer = null;
     }
   }
 }
@@ -7610,6 +7679,7 @@ function initAnalogHold() {
   
   const ring = document.getElementById("analogHoldRing");
   const circle = document.getElementById("analogRingCircle");
+  let _analogLastTouchTime = 0;
   
   const cancelHold = () => {
     if (_analogRingShowTimer) {
@@ -7628,6 +7698,12 @@ function initAnalogHold() {
   };
 
   const onHoldStart = (e) => {
+    if (e.type.startsWith('touch')) {
+      _analogLastTouchTime = Date.now();
+    } else if (e.type.startsWith('mouse') && Date.now() - _analogLastTouchTime < 800) {
+      return;
+    }
+
     if (e.touches && e.touches.length > 1) return;
     
     _analogPressStartTime = Date.now();
@@ -7666,6 +7742,12 @@ function initAnalogHold() {
   };
   
   const onHoldMove = (e) => {
+    if (e.type.startsWith('touch')) {
+      _analogLastTouchTime = Date.now();
+    } else if (e.type.startsWith('mouse') && Date.now() - _analogLastTouchTime < 800) {
+      return;
+    }
+
     if (!_analogPressStartTime) return;
     const touch = e.touches ? e.touches[0] : e;
     const diffX = touch.clientX - _analogStartX;
@@ -7678,6 +7760,12 @@ function initAnalogHold() {
   };
 
   const onHoldEnd = (e) => {
+    if (e.type.startsWith('touch')) {
+      _analogLastTouchTime = Date.now();
+    } else if (e.type.startsWith('mouse') && Date.now() - _analogLastTouchTime < 800) {
+      return;
+    }
+
     cancelHold();
     
     if (_analogIsLongPressSuccess) return;

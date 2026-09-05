@@ -97,9 +97,11 @@ body {
 
 /* ─── メインタイトル h1.fkz ─── */
 h1.fkz {
+  font-family: 'Courier New', Courier, monospace;
+  font-weight: bold;
   font-size: 40px;
   color: var(--accent);
-  text-shadow: 0 0 12px var(--accent);
+  text-shadow: 0 0 12px rgba(0, 255, 224, 0.8), 0 0 24px rgba(0, 255, 224, 0.45);
   margin-top: 60px;
   letter-spacing: 4px;
 }

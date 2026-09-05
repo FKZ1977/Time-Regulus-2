@@ -189,9 +189,11 @@ input:focus, select:focus, button:focus {
 }
 
 h1.fkz {
+  font-family: 'Courier New', Courier, monospace;
+  font-weight: bold;
   font-size: 40px;
   color: var(--accent);
-  text-shadow: 0 0 12px var(--accent);
+  text-shadow: 0 0 12px rgba(0, 255, 224, 0.8), 0 0 24px rgba(0, 255, 224, 0.45);
   margin-top: 60px;
   letter-spacing: 4px;
 }
@@ -3785,7 +3787,11 @@ body:not(.lang-ja):not(.lang-zh):not(.lang-ko) .warning-msg {
 }
 
 #decoyScreen .decoy-title {
+  font-family: 'Courier New', Courier, monospace;
+  font-weight: bold;
   font-size: 36px;
+  color: #00ffe0;
+  text-shadow: 0 0 12px rgba(0, 255, 224, 0.8), 0 0 24px rgba(0, 255, 224, 0.45), 0 0 36px rgba(0, 136, 255, 0.3);
   letter-spacing: 4px;
   padding-left: 4px; /* letter-spacingの右側余白を相殺して完全中央配置 */
   margin-top: 10px;
@@ -6195,9 +6201,9 @@ body:not(.lang-ja):not(.lang-zh):not(.lang-ko) .warning-msg {
   margin-bottom: 12px;
 }
 .mode-select-app-title {
-  font-family: 'Share Tech Mono', 'Courier New', monospace;
+  font-family: 'Courier New', Courier, monospace;
   font-size: 38px;
-  font-weight: 900;
+  font-weight: bold;
   letter-spacing: 3px;
   color: #00ffe0;
   text-shadow: 0 0 12px rgba(0, 255, 224, 0.8), 0 0 24px rgba(0, 255, 224, 0.45), 0 0 36px rgba(0, 136, 255, 0.3);

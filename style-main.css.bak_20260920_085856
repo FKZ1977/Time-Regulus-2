@@ -1,4 +1,4 @@
-
+﻿
 
 
 
@@ -146,17 +146,12 @@ input, textarea {
 .animate-down-in { animation: slideDownIn   0.15s ease-out forwards; }
 
 /* 記録成功メッセージのアニメーション */
-@keyframes fadeIn {
-    0%   { opacity: 0; }
-    100% { opacity: 1; }
-}
 @keyframes fadeOut {
     0%   { opacity: 1; }
     100% { opacity: 0; }
 }
 .fade-in-out {
     animation: fadeIn 0.1s ease-in forwards;
-    opacity: 1;
 }
 .fade-out {
     animation: fadeOut 0.5s ease-out forwards;
@@ -1338,19 +1333,6 @@ input:checked + .switch-slider:before {
   margin-top: 4px !important;
   padding: 8px 16px !important;
   font-size: 14px !important;
-  transition: all 0.2s ease;
-}
-#correctionMode #addToListButton.recorded {
-  background: rgba(0, 255, 136, 0.3) !important;
-  border-color: #00ff88 !important;
-  color: #00ff88 !important;
-  box-shadow: 0 0 12px rgba(0, 255, 136, 0.4) !important;
-}
-#correctionMode #addToListButton.already-recorded {
-  background: rgba(230, 195, 0, 0.25) !important;
-  border-color: #e6c300 !important;
-  color: #e6c300 !important;
-  box-shadow: 0 0 12px rgba(230, 195, 0, 0.4) !important;
 }
 #correctionMode #reverseModeToggleBtn {
   margin-top: 0 !important;
@@ -1608,7 +1590,6 @@ input[type="time"]::-webkit-calendar-picker-indicator {
 
 /* 2. 繝懊ヨ繝繧ｷ繝ｼ繝医さ繝ｳ繝・リ (繧ｬ繝ｩ繧ｹ繝｢繝ｫ繝輔ぅ繧ｺ繝) */
 .picker-bottom-sheet {
-  pointer-events: auto !important;
   position: fixed;
   bottom: 0;
   left: 50%;
@@ -1623,7 +1604,7 @@ input[type="time"]::-webkit-calendar-picker-indicator {
   border-right: 1px solid rgba(0, 255, 224, 0.15);
   border-radius: 20px 20px 0 0;
   box-shadow: 0 -10px 35px rgba(0, 0, 0, 0.6);
-  z-index: 100010 !important; /* テンキー・ドラムピッカー本体を最前面（100010）に配置して、入力グループ（100001）やオーバーレイ（99999）より常に上にする！ */
+  z-index: 100000;
   transform: translate(-50%, 100%); /* 蛻晄悄縺ｯ逕ｻ髱｢荳九↓髫縺・*/
   transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
   box-sizing: border-box;
@@ -1881,13 +1862,6 @@ select.seconds-fixed-00,
   background: rgba(0, 255, 136, 0.3) !important;
   border-color: #00ff88 !important;
   color: #00ff88 !important;
-}
-
-.keypad-record-btn.already-recorded {
-  background: rgba(230, 195, 0, 0.25) !important;
-  border-color: #e6c300 !important;
-  color: #e6c300 !important;
-  box-shadow: 0 0 12px rgba(230, 195, 0, 0.4) !important;
 }
 
 .keypad-nav-btn {
@@ -2729,8 +2703,7 @@ input[type="time"]:focus::-webkit-datetime-edit-minute-field {
    ピッカー表示中の裏画面タッチスクロール完全ロック制御
    ========================================================================== */
 body.scroll-locked {
-  overflow-y: hidden !important;
-  overflow-x: visible !important;
+  overflow: hidden !important;
   touch-action: pan-x !important; /* 縦スクロールは禁止しつつ、左右スワイプ遷移を確実に許可 */
 }
 
@@ -2755,8 +2728,7 @@ body.result-highlighted #reverseResult {
 }
 
 /* テンキー展開中、オーバーレイはタップを遮断しない（入力枠群をダイレクトに選択可能にする） */
-body.keypad-open .picker-overlay,
-body.picker-open .picker-overlay {
+body.keypad-open .picker-overlay {
   touch-action: pan-x; /* 左右スワイプジェスチャーを許可 */
   pointer-events: none !important;
 }
@@ -6678,13 +6650,13 @@ body:not(.lang-ja):not(.lang-zh):not(.lang-ko) .warning-msg {
 .btn-calc-correction {
   min-width: 120px;
   padding: 17px 15px;
-  border-color: #00d2ff;
+  border-color: #0088ff;
 }
 .btn-calc-multi {
   min-width: 95px;
   padding: 13px 12px;
   font-size: 14px;
-  border-color: #00d2ff;
+  border-color: #00ffe0;
 }
 
 /* ホバーエフェクト */
@@ -6769,82 +6741,6 @@ body.is-swiping .orbit-planet-btn:active {
   box-shadow: 0 0 18px rgba(255, 0, 170, 0.6);
   color: #fff !important;
   transform: translateY(-1px);
-}
-
-/* 結果一覧：左下の「↑ TOPへ」フローティングボタン */
-.scroll-to-top-btn {
-  position: fixed;
-  bottom: 24px;
-  left: 18px;
-  z-index: 150;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 4px;
-  padding: 7px 15px;
-  font-size: 13px;
-  font-weight: bold;
-  letter-spacing: 0.5px;
-  color: var(--accent, #00ffe0);
-  background: rgba(17, 17, 24, 0.88);
-  border: 1.5px solid var(--accent, #00ffe0);
-  border-radius: 20px;
-  box-shadow: 0 4px 15px rgba(0, 255, 224, 0.25), 0 2px 6px rgba(0, 0, 0, 0.5);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  cursor: pointer;
-  opacity: 0;
-  pointer-events: none;
-  transform: translateY(12px);
-  transition: opacity 0.25s ease, transform 0.25s ease, background-color 0.2s, box-shadow 0.2s;
-  user-select: none;
-  -webkit-tap-highlight-color: transparent;
-}
-.scroll-to-top-btn.visible {
-  opacity: 1;
-  pointer-events: auto;
-  transform: translateY(0);
-}
-.scroll-to-top-btn:active {
-  transform: translateY(2px) scale(0.96);
-  background: rgba(0, 255, 224, 0.15);
-  box-shadow: 0 2px 8px rgba(0, 255, 224, 0.4);
-}
-
-/* 結果一覧：ダブルタップで復元ガイドと各行のインタラクション */
-.result-list-guide {
-  text-align: center;
-  color: var(--text-sub, #888);
-  font-size: 13px;
-  margin: 2px 0 12px 0;
-  letter-spacing: 0.5px;
-}
-.result-entry-line {
-  border-radius: 4px;
-  padding: 3px 6px;
-  transition: background-color 0.15s ease, box-shadow 0.15s ease, transform 0.1s ease;
-  cursor: pointer;
-  user-select: none;
-  -webkit-tap-highlight-color: transparent;
-}
-.result-entry-line:hover {
-  background-color: rgba(255, 255, 255, 0.06);
-}
-.result-entry-line:active {
-  background-color: rgba(0, 255, 224, 0.15);
-  box-shadow: 0 0 8px rgba(0, 255, 224, 0.3);
-  transform: scale(0.99);
-}
-.result-entry-line.restoring-flash {
-  background-color: rgba(0, 255, 224, 0.3) !important;
-  box-shadow: 0 0 15px rgba(0, 255, 224, 0.6) !important;
-}
-
-/* 適合する誤差グループ枠への到達ハイライト */
-.result-list-group-outer.group-highlight-pulse {
-  border-color: var(--accent, #00ffe0) !important;
-  box-shadow: 0 0 16px rgba(0, 255, 224, 0.5) !important;
-  transition: border-color 0.4s ease, box-shadow 0.4s ease;
 }
 
 

@@ -1,4 +1,4 @@
-const currentVersion = "3.3.2";
+const currentVersion = "3.3.1";
 let lastError = null;
 let hasCalculated = false;
 let reverseMode = "toStandard";
@@ -258,35 +258,7 @@ function buildTimeString(h, min) {
   return `${padH}:${padM}`;
 }
 
-// 各グループごとに最後にアクティブだった直接入力枠IDを記憶
-let lastActiveTimeGroup = 'display';
-const lastActiveFieldByGroup = {
-  display: 'displayHour_direct',
-  standard: 'standardHour_direct',
-  reverseDisplay: 'reverseDisplayHour_direct',
-  error: 'errorHours_direct'
-};
-
-function getDirectFieldId(group, type = 'hour') {
-  if (group === 'display') {
-    return type === 'hour' ? 'displayHour_direct' : (type === 'min' ? 'displayMin_direct' : 'displaySec_direct');
-  } else if (group === 'standard') {
-    return type === 'hour' ? 'standardHour_direct' : (type === 'min' ? 'standardMin_direct' : 'standardSec_direct');
-  } else if (group === 'reverseDisplay') {
-    return type === 'hour' ? 'reverseDisplayHour_direct' : (type === 'min' ? 'reverseDisplayMin_direct' : 'reverseDisplaySec_direct');
-  } else if (group === 'error') {
-    return type === 'hour' ? 'errorHours_direct' : (type === 'min' ? 'errorMinutes_direct' : 'errorSeconds_direct');
-  }
-  return 'displayHour_direct';
-}
-
 function toggleInputHelper(enabled) {
-  // 現在開いているピッカーまたはテンキーの状態を記録
-  const keypadWasOpen = typeof RegulusKeypad !== 'undefined' && RegulusKeypad.isOpen;
-  const keypadActiveEl = keypadWasOpen ? RegulusKeypad.activeInput : null;
-  const pickerWasOpen = typeof activeTimePickerGroup !== 'undefined' && activeTimePickerGroup !== null;
-  const pickerGroup = pickerWasOpen ? activeTimePickerGroup : null;
-
   inputHelperEnabled = enabled;
   const toggleErr = document.getElementById("inputHelperToggleError");
   const toggleCorr = document.getElementById("inputHelperToggleCorrection");
@@ -301,25 +273,25 @@ function toggleInputHelper(enabled) {
     document.body.classList.remove("input-helper-on-mode");
   }
 
-  // すべての直接入力フィールドに対して、OSキーボードの出現を完全に抑止するため inputmode="none" を設定
-  const allDirectFields = [
-    "displayYear_direct", "displayMonth_direct", "displayDay_direct",
+  // 入力補助ONのときは、テンキー左上の「∧∨」キーボードナビゲーションを完全に無効化（グレーアウト）するため、
+  // すべての直接入力時分秒フィールドを readonly ＆ tabindex="-1" に設定。
+  // 入力補助OFFのときは、手動入力できるように readonly を解除し tabindex="0" に戻す。
+  const timeFields = [
     "displayHour_direct", "displayMin_direct", "displaySec_direct",
-    "standardYear_direct", "standardMonth_direct", "standardDay_direct",
     "standardHour_direct", "standardMin_direct", "standardSec_direct",
-    "errorDays_direct", "errorHours_direct", "errorMinutes_direct", "errorSeconds_direct",
-    "reverseDisplayYear_direct", "reverseDisplayMonth_direct", "reverseDisplayDay_direct",
+    "errorHours_direct", "errorMinutes_direct", "errorSeconds_direct",
     "reverseDisplayHour_direct", "reverseDisplayMin_direct", "reverseDisplaySec_direct"
   ];
-  allDirectFields.forEach(id => {
+  timeFields.forEach(id => {
     const el = document.getElementById(id);
     if (el) {
-      el.setAttribute("inputmode", "none"); // OSネイティブキーボードを完全抑止！
       // どのルート（ON/OFF）でも、初回実行時に元の tabindex を確実に保存する
       if (!el.hasAttribute('data-orig-tabindex') && el.hasAttribute('tabindex')) {
         el.setAttribute('data-orig-tabindex', el.getAttribute('tabindex'));
       }
 
+      // 入力補助ONのときでも、テンキー左上の「∧∨」キーボードナビゲーションで到達できるように、
+      // readonly と tabindex="-1" には「しない」。常にフォーカス可能（ネイティブキーボードは touchstart 等で抑止済）
       el.readOnly = false;
       if (el.hasAttribute('data-orig-tabindex')) {
         el.setAttribute('tabindex', el.getAttribute('data-orig-tabindex'));
@@ -338,63 +310,6 @@ function toggleInputHelper(enabled) {
   // 切り替え後に再計算を走らせる
   calculateError();
   handleReverseCalculation();
-
-  // ★ヒロさん仕様：テンキー入力中と三連ドラムロールのシームレス即時相互切り替え★
-  if (enabled) {
-    // テンキー入力中にトグルONにした場合 → 三連ドラムロールピッカーへパッと即時切り替え
-    if (keypadWasOpen && keypadActiveEl) {
-      let group = "display";
-      if (keypadActiveEl.closest("#errorModeDisplayInputGroup")) {
-        group = "display";
-      } else if (keypadActiveEl.closest("#errorModeStandardInputGroup")) {
-        group = "standard";
-      } else if (keypadActiveEl.closest("#reverseTimeBlock")) {
-        group = "reverseDisplay";
-      } else if (keypadActiveEl.closest("#correctionMode")) {
-        group = "error";
-      }
-
-      // 下に引っ込むアニメーションや画面ガタつきを完全防止：
-      // bodyのresult-highlightedや余白を維持したまま、シートのみ即座に交代！
-      const keypadSheet = document.getElementById('regulusCustomKeypad');
-      if (keypadSheet) keypadSheet.classList.remove('show');
-      RegulusKeypad.isOpen = false;
-      if (RegulusKeypad.activeInput) {
-        try {
-          RegulusKeypad.activeInput.removeAttribute('inputmode');
-          RegulusKeypad.activeInput.blur();
-        } catch(e) {}
-        RegulusKeypad.activeInput = null;
-      }
-
-      // ドラムロールを即座に開く
-      openTimePicker(group);
-    }
-  } else {
-    // 三連ドラムロールをオフにした場合 → テンキー入力へパッと即時切り替え！
-    const isModeSelectVisible = document.getElementById("modeSelect") && document.getElementById("modeSelect").style.display !== "none";
-    const isErrorModeVisible = document.getElementById("errorMode") && document.getElementById("errorMode").style.display !== "none";
-    const isCorrectionModeVisible = document.getElementById("correctionMode") && document.getElementById("correctionMode").style.display !== "none";
-
-    if (pickerWasOpen && !isModeSelectVisible && (isErrorModeVisible || isCorrectionModeVisible)) {
-      const targetGroup = pickerGroup || lastActiveTimeGroup || "display";
-      let targetId = lastActiveFieldByGroup[targetGroup];
-      if (!targetId || !document.getElementById(targetId)) {
-        targetId = getDirectFieldId(targetGroup, 'hour');
-      }
-      const targetInput = document.getElementById(targetId);
-
-      // ドラムロールシートのみ非表示にし、画面の高さ・余白・ハイライトを完全維持！
-      const pickerSheet = document.getElementById('regulusTimePicker');
-      if (pickerSheet) pickerSheet.classList.remove('show');
-      activeTimePickerGroup = null;
-
-      if (targetInput && targetInput.offsetParent !== null) {
-        RegulusKeypad.hasScrolled = true; // 持ち上がり高さを維持
-        RegulusKeypad.open(targetInput);
-      }
-    }
-  }
 }
 
 function syncInputValues(toON) {
@@ -512,19 +427,8 @@ class TimeRegulusDrum {
       this.wheel.appendChild(div);
     });
 
-    // タッチやスクロール時に、このホイールの種類（hour, min, sec）を記憶
-    const recordWheelFocus = () => {
-      if (activeTimePickerGroup) {
-        lastActiveTimeGroup = activeTimePickerGroup;
-        lastActiveFieldByGroup[activeTimePickerGroup] = getDirectFieldId(activeTimePickerGroup, this.type);
-      }
-    };
-    this.wheel.addEventListener("touchstart", recordWheelFocus, { passive: true });
-    this.wheel.addEventListener("mousedown", recordWheelFocus);
-
     // スクロールイベント監視による「無限座標ワープ」と「アクティブハイライト」
     this.wheel.addEventListener("scroll", () => {
-      recordWheelFocus();
       if (this.isWarping) return;
 
       const top = this.wheel.scrollTop;
@@ -640,51 +544,6 @@ class TimeRegulusDrum {
 
     this.scrollToIndex(targetIdx, false);
   }
-
-  // リアルタイム連動用のスムーズ更新メソッド
-  syncToValue(value) {
-    if (!this.wheel) return;
-    const num = parseInt(value, 10) || 0;
-    const viewportHeight = this.wheel.clientHeight || 252;
-    const currentActive = this.wheel.querySelector(".picker-item.active");
-    const currentIdx = currentActive ? parseInt(currentActive.getAttribute("data-index"), 10) : -1;
-    const currentVal = currentActive ? parseInt(currentActive.getAttribute("data-val"), 10) : -1;
-
-    if (currentVal === num) return; // 既に同じ値なら何もしない
-
-    const baseCount = this.totalItemsCount;
-    let targetIdx;
-
-    if (currentIdx !== -1) {
-      // 順方向に1つ進む場合（例: 58→59、または 59→00）
-      if ((currentVal + 1) % baseCount === num) {
-        targetIdx = currentIdx + 1;
-      } else {
-        targetIdx = num + baseCount; // 予期せぬジャンプ時は真ん中のセットへ
-      }
-    } else {
-      targetIdx = num + baseCount;
-    }
-
-    // スムーズスクロールで自然に回転
-    const targetScrollTop = targetIdx * this.ITEM_HEIGHT - viewportHeight / 2 + this.ITEM_HEIGHT / 2;
-    this.isWarping = true;
-    this.wheel.scrollTo({
-      top: targetScrollTop,
-      behavior: "smooth"
-    });
-
-    setTimeout(() => {
-      // 末尾セット（第3セット）に達したら、中央セット（第2セット）へ静かに座標ワープ
-      if (targetIdx >= baseCount * 2) {
-        const warpedIdx = targetIdx - baseCount;
-        const warpedScrollTop = warpedIdx * this.ITEM_HEIGHT - viewportHeight / 2 + this.ITEM_HEIGHT / 2;
-        this.wheel.scrollTop = warpedScrollTop;
-      }
-      this.isWarping = false;
-      this.updateActiveItem();
-    }, 180);
-  }
 }
 
 // ドラムで値が変更されたときに背後のHTML要素にリアルタイムに書き込む同期ロジック
@@ -772,134 +631,45 @@ function onDrumValueChange() {
   }
 }
 
-// ピッカー／テンキー共通の画面持ち上げ制御
-let hasPickerScrolled = false;
-
-// 要素のページ最上部からの純粋な絶対Y座標（ドキュメントTop）を算出する関数
-// （現在の window.scrollY や一時的な transform、トランジション中のブレに左右されない真の絶対値）
-function getElementDocumentTop(el) {
-  if (!el) return 0;
-  let top = 0;
-  let curr = el;
-  while (curr && curr !== document.body && curr !== document.documentElement) {
-    top += curr.offsetTop || 0;
-    curr = curr.offsetParent;
-  }
-  return top;
-}
-
-// 補正時刻計算モードにおける絶対スクロール目標値
-// （非表示状態からテンキーまたは三連ドラムロールを表示させたときと100%同一の絶対値：入力補助トグルが画面上端から8px下に見える位置）
-function getCorrectionModeScrollTarget() {
-  const toggleEl = document.querySelector("#correctionMode .helper-toggle-wrapper");
-  if (!toggleEl) return 0;
-  
-  // correctionMode内のオフセット（通常約80〜90px）＋ カード上部マージン（約20px）
-  const card = document.getElementById("correctionMode");
-  let cardTop = 20;
-  if (card) {
-    const errorMode = document.getElementById("errorMode");
-    // errorModeが非表示のときは実際のoffsetTopを使用、表示中・遷移中のときは静止時マージン20pxを安全に適用
-    if (!errorMode || errorMode.style.display === "none") {
-      cardTop = card.offsetTop || 20;
-    }
-  }
-  const pureDocTop = toggleEl.offsetTop + cardTop;
-  return Math.max(0, pureDocTop - 8);
-}
-
-// 誤差計算モードにおける絶対スクロール目標値
-// （入力補助トグルが画面上端から8px下に見える絶対位置）
-function getErrorModeScrollTarget() {
-  const toggleEl = document.querySelector("#errorMode .helper-toggle-wrapper");
-  if (!toggleEl) return 0;
-  
-  const card = document.getElementById("errorMode");
-  const cardTop = card ? (card.offsetTop || 20) : 20;
-  const pureDocTop = toggleEl.offsetTop + cardTop;
-  return Math.max(0, pureDocTop - 8);
-}
-
-function scrollScreenToRevealResult(isReverse = false) {
-  document.body.classList.add("picker-open-padding");
-  document.body.classList.remove("scroll-locked"); // スクロール可能にするためロックを一時解除
-  document.body.offsetHeight; // 強制リフロー
-
-  // ★ヒロさん仕様：補正モードも誤差モードも、常にドキュメント絶対座標に基づく絶対値位置へスクロール★
-  const targetScrollTop = isReverse ? getCorrectionModeScrollTarget() : getErrorModeScrollTarget();
-
-  if (targetScrollTop > 0) {
-    window.scrollTo({ top: targetScrollTop, left: 0, behavior: "smooth" });
-    return;
-  }
-
-  // 万一 toggleEl が見つからない場合のフォールバック
-  const targetEl = isReverse ? document.getElementById("reverseResult") : document.getElementById("result");
-  if (targetEl) {
-    const rect = targetEl.getBoundingClientRect();
-    const targetVisibleLimit = window.innerHeight - 320; // 310pxボトムシート + 10px余白
-    if (rect.bottom > targetVisibleLimit) {
-      const fbScroll = Math.max(0, window.scrollY + (rect.bottom - targetVisibleLimit));
-      window.scrollTo({ top: fbScroll, left: 0, behavior: "smooth" });
-    }
-  }
-}
-
-// テンキーおよび三連ドラムロール内の「結果一覧に記録する」ボタンの表示制御
-function updateKeypadAndPickerRecordButtons() {
-  const isCorrectionMode = !document.getElementById('errorMode') || 
-                           document.getElementById('errorMode').style.display === 'none' || 
-                           (document.getElementById('correctionMode') && document.getElementById('correctionMode').style.display !== 'none');
-  
-  // 補正計算結果が存在するかどうか（window.latestResult があり、かつ画面上の addToListButton が表示状態）
-  const addToListBtn = document.getElementById("addToListButton");
-  const hasResult = isCorrectionMode && !!window.latestResult && (addToListBtn ? addToListBtn.style.display !== "none" : false);
-
-  const keypadRecordBtn = document.getElementById('keypadRecordBtn');
-  if (keypadRecordBtn) {
-    const isKeypadForCorrection = typeof RegulusKeypad !== 'undefined' && RegulusKeypad.isOpen && RegulusKeypad.activeInput && 
-      (RegulusKeypad.activeInput.closest('#reverseTimeBlock') || RegulusKeypad.activeInput.closest('#correctionMode'));
-    keypadRecordBtn.style.display = (isKeypadForCorrection && hasResult) ? 'block' : 'none';
-  }
-
-  const pickerRecordBtn = document.getElementById('pickerRecordBtn');
-  if (pickerRecordBtn) {
-    const isPickerForCorrection = (typeof activeTimePickerGroup !== 'undefined') && 
-      (activeTimePickerGroup === 'reverseDisplay' || activeTimePickerGroup === 'error');
-    pickerRecordBtn.style.display = (isPickerForCorrection && hasResult) ? 'block' : 'none';
-  }
-}
-
 function openTimePicker(group) {
   if (isPickerClosing) return; // 閉じる処理中のゴースト起動を完全ブロック！
 
   activeTimePickerGroup = group;
-  lastActiveTimeGroup = group;
 
   // 既存 of picker-focused をクリア
   document.querySelectorAll(".picker-focused").forEach(el => el.classList.remove("picker-focused"));
 
-  // ★ヒロさん仕様：ドラムロール操作中の入力枠（カプセル枠全体）をネオン発光させてどこを選択中か明瞭化★
+  // 対象の要素に picker-focused クラスを付与して一体発光を維持（指示①）
   if (group === "display") {
-    const row = document.querySelector("#errorModeDisplayInputGroup .direct-capsule-wrapper, #errorModeDisplayInputGroup .time-capsule-wrapper");
+    const row = document.querySelector("#errorModeDisplayInputGroup .time-capsule-wrapper");
     if (row) row.classList.add("picker-focused");
   } else if (group === "standard") {
-    const row = document.querySelector("#errorModeStandardInputGroup .direct-capsule-wrapper, #errorModeStandardInputGroup .time-capsule-wrapper");
+    const row = document.querySelector("#errorModeStandardInputGroup .time-capsule-wrapper");
     if (row) row.classList.add("picker-focused");
   } else if (group === "reverseDisplay") {
-    const row = document.querySelector("#reverseTimeBlock .direct-capsule-wrapper, #reverseTimeBlock .time-capsule-wrapper");
+    const row = document.querySelector("#reverseTimeBlock .time-capsule-wrapper");
     if (row) row.classList.add("picker-focused");
   } else if (group === "error") {
-    const row = document.querySelector("#correctionMode .unit-capsule-wrapper, #correctionMode .direct-capsule-wrapper");
+    const row = document.querySelector("#correctionMode .flex-wrap.input-helper-on .unit-capsule-wrapper");
     if (row) row.classList.add("picker-focused");
   }
 
   const overlay = document.getElementById("pickerOverlay");
   const sheet = document.getElementById("regulusTimePicker");
+  const titleEl = document.getElementById("pickerTitle");
   if (!overlay || !sheet) return;
 
-  // 記録ボタンの表示制御（結果がある時のみ表示）
-  updateKeypadAndPickerRecordButtons();
+  // タイトルのネーム変更
+  if (group === "display") {
+    if (titleEl) titleEl.innerText = t("select_display_time");
+  } else if (group === "standard") {
+    if (titleEl) titleEl.innerText = t("select_standard_time");
+  } else if (group === "reverseDisplay") {
+    const labelEl = document.getElementById("reverseTimeLabel");
+    if (titleEl) titleEl.innerText = (labelEl ? labelEl.innerText.replace(":", "") : t("display_time").replace(":", "")) + t("select_time").replace("時刻", "");
+  } else if (group === "error") {
+    if (titleEl) titleEl.innerText = t("select_error_time");
+  }
 
   // 標準時刻が上の場合の秒ホイールロック制御
   const secContainer = document.getElementById("pickerWheelSec").parentElement;
@@ -914,19 +684,26 @@ function openTimePicker(group) {
   document.body.classList.add("result-highlighted"); // ぼかし解除を即時適用
   document.body.classList.add("picker-open-padding"); // スクロール限界に達しないよう最下部に余白を追加
 
-  // ★ヒロさん仕様：上の入力枠でも下の入力枠でも、結果（進んでいます/遅れています）が見える位置まで同じ高さに持ち上げる！★
-  const isReverse = (group === "reverseDisplay" || group === "error");
-  if (!hasPickerScrolled) {
-    document.body.offsetHeight; 
+  // 【バグ修正】強制リフローを実行して、ブラウザに「余白が追加された後の高さ」を即座に認識させる
+  document.body.offsetHeight; 
+
+  // 【バグ修正】ディレイを10msから80msに延ばし、ブラウザのスクロール最大上限の更新を確実に待ってから実行
+  setTimeout(() => {
+    const targetResultId = (group === "display" || group === "standard") ? "result" : "reverseResult";
+    const targetEl = document.getElementById(targetResultId);
+    if (targetEl) {
+      const rect = targetEl.getBoundingClientRect();
+      const pickerHeight = 390; // ピッカーの高さ350px + 余白
+      if (rect.bottom > window.innerHeight - pickerHeight) {
+        window.scrollBy({ top: rect.bottom - (window.innerHeight - pickerHeight), behavior: "smooth" });
+      }
+    }
+    
+    // スムーズスクロール完了後に画面ロックを適用
     setTimeout(() => {
-      scrollScreenToRevealResult(isReverse);
-      hasPickerScrolled = true;
-      // スムーズスクロール完了後に画面ロックを適用
-      setTimeout(() => {
-        document.body.classList.add("scroll-locked");
-      }, 400);
-    }, 80);
-  }
+      document.body.classList.add("scroll-locked");
+    }, 400);
+  }, 80);
 
   // 現在の入力値を読み取り
   let hNum = 0;
@@ -956,14 +733,7 @@ function openTimePicker(group) {
   if (directMin && directMin.value !== "") mNum = parseInt(directMin.value, 10);
   if (directSec && directSec.value !== "") sVal = parseInt(directSec.value, 10);
 
-  // リアルタイムONで標準時刻を開いた場合は、現在時刻を確実に適用
-  const isRealTimeOn = document.getElementById('realTimeCheckbox') && document.getElementById('realTimeCheckbox').checked;
-  if (group === "standard" && isRealTimeOn) {
-    const now = new Date();
-    hNum = now.getHours();
-    mNum = now.getMinutes();
-    sVal = now.getSeconds();
-  } else if (group === "standard" && isStandardOnTop && !_standardSecUnlocked) {
+  if (group === "standard" && isStandardOnTop && !_standardSecUnlocked) {
     sVal = "0"; // ロック時は00固定
   }
 
@@ -973,32 +743,19 @@ function openTimePicker(group) {
   if (drumSec) drumSec.setValue(sVal);
 }
 
-function closeTimePicker(keepScroll = false) {
+function closeTimePicker() {
   const overlay = document.getElementById("pickerOverlay");
   const sheet = document.getElementById("regulusTimePicker");
   if (overlay) overlay.classList.remove("show");
   if (sheet) sheet.classList.remove("show");
   document.body.classList.remove("scroll-locked"); // 裏画面スクロールロック解除！
   document.body.classList.remove("result-highlighted");
-
-  // スクロール位置を維持しない場合のみ、余白解除とスクロールリセットを行う
-  if (!keepScroll) {
-    if (hasPickerScrolled) {
-      hasPickerScrolled = false;
-      window.scrollTo({ top: 0, left: 0, behavior: "smooth" });
-      setTimeout(() => {
-        document.body.classList.remove("picker-open-padding");
-      }, 500);
-    } else {
-      document.body.classList.remove("picker-open-padding");
-    }
-  }
+  document.body.classList.remove("picker-open-padding"); // 余白を解除
 
   // picker-focused をクリア（指示①）
   document.querySelectorAll(".picker-focused").forEach(el => el.classList.remove("picker-focused"));
 
   activeTimePickerGroup = null;
-  updateKeypadAndPickerRecordButtons();
 
   // 強制的に入力フォーカスを外してキーボードやiOSスクロールの誤動作を防止
   if (document.activeElement && document.activeElement.tagName === "INPUT") {
@@ -1011,363 +768,6 @@ function closeTimePicker(keepScroll = false) {
     isPickerClosing = false;
   }, 400);
 }
-
-/* ==========================================================================
-   オリジナルカスタムテンキー制御オブジェクト (RegulusKeypad)
-   ========================================================================== */
-const RegulusKeypad = {
-  isOpen: false,
-  activeInput: null,
-  hasScrolled: false,
-  resetTimer: null,
-  touchCleanup: null,
-
-  open(inputEl) {
-    if (!inputEl) return;
-    this._clearAutoResetTimer(); // 新規入力時は5秒復帰タイマーをキャンセル
-
-    this.isOpen = true;
-    this.activeInput = inputEl;
-
-    // どのグループに属しているかを判定して最後にアクティブだった枠として記憶
-    let grp = null;
-    if (inputEl.closest('#errorModeDisplayInputGroup')) grp = 'display';
-    else if (inputEl.closest('#errorModeStandardInputGroup')) grp = 'standard';
-    else if (inputEl.closest('#reverseTimeBlock')) grp = 'reverseDisplay';
-    else if (inputEl.closest('#correctionMode')) grp = 'error';
-
-    if (grp) {
-      lastActiveTimeGroup = grp;
-      lastActiveFieldByGroup[grp] = inputEl.id;
-    }
-
-    // ネイティブキーボードを出さずにブラウザ標準のキャレット（縦線）を表示させるため inputmode="none" を指定して focus
-    inputEl.setAttribute('inputmode', 'none');
-    try {
-      inputEl.focus({ preventScroll: true });
-      const len = inputEl.value.length;
-      inputEl.setSelectionRange(len, len);
-    } catch (e) {}
-
-    // 記録ボタンの表示制御（結果が存在する時のみ表示）
-    updateKeypadAndPickerRecordButtons();
-
-    // 既存のフォーカス発光枠およびアクティブ入力枠をクリア
-    document.querySelectorAll('.picker-focused').forEach(el => el.classList.remove('picker-focused'));
-    document.querySelectorAll('.keypad-active-field').forEach(el => el.classList.remove('keypad-active-field'));
-
-    // 親カプセル枠を発光させ、選択中のinput自体にネオン点滅インジケーター（カーソル）を付与
-    const capsule = inputEl.closest('.direct-capsule-wrapper, .unit-capsule-wrapper, .direct-group-date, .direct-group');
-    if (capsule) capsule.classList.add('picker-focused');
-    inputEl.classList.add('keypad-active-field');
-
-    // ボトムシートとオーバーレイを表示
-    const overlay = document.getElementById('pickerOverlay');
-    const sheet = document.getElementById('regulusCustomKeypad');
-    if (overlay) overlay.classList.add('show');
-    if (sheet) sheet.classList.add('show');
-    document.body.classList.add('result-highlighted');
-    document.body.classList.add('keypad-open'); // 入力枠群をオーバーレイ手前に配置して直接タップ可能にする！
-
-    // ★ヒロさん仕様の画面持ち上げ制御★
-    // 誤差の計算モード・補正モードで、上の枠でも下の枠でも、どちらを選択した時も全く同じだけ持ち上げる！
-    // 一度持ち上がった後は、上下の枠を切り替えてもそのちょうどいい高さを完全維持！
-    const isErrorMode = document.getElementById('errorMode') && document.getElementById('errorMode').style.display !== 'none';
-    const isErrorInput = isErrorMode && (inputEl.closest('#errorModeDisplayInputGroup') || inputEl.closest('#errorModeStandardInputGroup'));
-    const isReverseInput = !isErrorMode && (inputEl.closest('#reverseTimeBlock') || inputEl.closest('#correctionMode'));
-
-    if (isErrorInput || isReverseInput) {
-      document.body.classList.add('picker-open-padding');
-      if (!this.hasScrolled) {
-        document.body.offsetHeight; // 強制リフロー
-        setTimeout(() => {
-          scrollScreenToRevealResult(isReverseInput);
-          this.hasScrolled = true;
-        }, 80);
-      }
-    }
-
-    // 新規入力開始フラグ（最初の数字で既存の値を上書きできるようにする）
-    inputEl.dataset.freshFocus = 'true';
-  },
-
-  close() {
-    if (!this.isOpen) return;
-    this.isOpen = false;
-
-    const overlay = document.getElementById('pickerOverlay');
-    const sheet = document.getElementById('regulusCustomKeypad');
-    if (overlay) overlay.classList.remove('show');
-    if (sheet) sheet.classList.remove('show');
-
-    document.querySelectorAll('.picker-focused').forEach(el => el.classList.remove('picker-focused'));
-    document.querySelectorAll('.keypad-active-field').forEach(el => el.classList.remove('keypad-active-field'));
-    document.body.classList.remove('result-highlighted');
-    document.body.classList.remove('keypad-open'); // オーバーレイ手前化を解除
-
-    if (this.activeInput) {
-      try {
-        this.activeInput.removeAttribute('inputmode');
-        this.activeInput.blur();
-      } catch (e) {}
-      this.activeInput = null;
-    }
-    updateKeypadAndPickerRecordButtons();
-
-    // ★ヒロさん仕様：テンキー消失後、画面の高さを戻さずキープし、触らなければ5秒後に自動復帰★
-    if (this.hasScrolled) {
-      this._startAutoResetTimer();
-    }
-  },
-
-  _startAutoResetTimer() {
-    this._clearAutoResetTimer();
-
-    const doReset = () => {
-      this._clearAutoResetTimer();
-      if (this.hasScrolled) {
-        this.hasScrolled = false;
-        // 余白を維持したまま、まず滑らかにスーッと最上部へ戻す！
-        window.scrollTo({ top: 0, left: 0, behavior: 'smooth' });
-        // スムーズスクロール完了後（500ms後）に余白を解除！
-        setTimeout(() => {
-          document.body.classList.remove('picker-open-padding');
-        }, 500);
-      }
-    };
-
-    // 5秒タイマー：何も触らなければ5秒後に元の高さにスムーズに戻す
-    this.resetTimer = setTimeout(() => {
-      doReset();
-    }, 5000);
-
-    // 画面を触った（タッチ/クリック/ホイール操作）場合の検知
-    const onUserTouch = (e) => {
-      // 入力枠やその親グループ、入力補助トグル、スワップボタン等をタップした場合は、タイマー制御を優先するため無視
-      if (e.target && e.target.closest && (
-        e.target.closest('.mode-card .input-group') ||
-        e.target.closest('.datetime-row') ||
-        e.target.closest('.datetime-direct-row') ||
-        e.target.closest('.direct-capsule-wrapper') ||
-        e.target.closest('.unit-capsule-wrapper') ||
-        e.target.closest('.direct-group') ||
-        e.target.closest('.direct-group-date') ||
-        e.target.closest('.helper-toggle-wrapper') ||
-        e.target.closest('#inputHelperToggleError, #inputHelperToggleCorrection') ||
-        e.target.closest('#swap-button-wrapper, #swapButton, .swap-btn') ||
-        e.target.closest('#reverseModeToggleBtn') ||
-        (e.target.tagName === 'INPUT' && e.target.id && e.target.id.includes('direct'))
-      )) {
-        return;
-      }
-      // それ以外の画面タップやユーザー操作があった場合は、即座にタイマーを解除してスムーズに戻す
-      doReset();
-    };
-
-    this.touchCleanup = () => {
-      window.removeEventListener('touchstart', onUserTouch, { capture: true, passive: true });
-      window.removeEventListener('mousedown', onUserTouch, { capture: true });
-      window.removeEventListener('wheel', onUserTouch, { capture: true, passive: true });
-    };
-
-    // テンキーを閉じる操作自体のタップイベントを誤検知しないよう、少し遅延して登録
-    setTimeout(() => {
-      if (this.resetTimer) {
-        window.addEventListener('touchstart', onUserTouch, { capture: true, passive: true });
-        window.addEventListener('mousedown', onUserTouch, { capture: true });
-        window.addEventListener('wheel', onUserTouch, { capture: true, passive: true });
-      }
-    }, 120);
-  },
-
-  _clearAutoResetTimer() {
-    if (this.resetTimer) {
-      clearTimeout(this.resetTimer);
-      this.resetTimer = null;
-    }
-    if (this.touchCleanup) {
-      this.touchCleanup();
-      this.touchCleanup = null;
-    }
-  },
-
-  press(num) {
-    const el = this.activeInput;
-    if (!el) return;
-
-    el.dataset.keyPressed = 'true';
-    let val = el.value.replace(/[^0-9]/g, '');
-
-    // 新しい入力開始時は古い値をクリア
-    if (el.dataset.freshFocus === 'true') {
-      el.dataset.freshFocus = 'false';
-      val = '';
-    }
-
-    // maxLengthに達している場合は一旦クリアして新数字
-    if (el.maxLength && val.length >= el.maxLength) {
-      val = '';
-    }
-
-    el.value = val + num;
-    el.dispatchEvent(new Event('input', { bubbles: true }));
-
-    // ジャンプが発生しておらず同じ枠に留まっている場合のみ、キャレット位置を末尾に合わせる
-    if (this.activeInput === el) {
-      try {
-        const nextLen = el.value.length;
-        el.setSelectionRange(nextLen, nextLen);
-      } catch (e) {}
-    }
-  },
-
-  backspace() {
-    const el = this.activeInput;
-    if (!el) return;
-    el.dataset.freshFocus = 'false';
-    el.dataset.keyPressed = 'true';
-    el.value = el.value.slice(0, -1);
-    el.dispatchEvent(new Event('input', { bubbles: true }));
-
-    if (this.activeInput === el) {
-      try {
-        const nextLen = el.value.length;
-        el.setSelectionRange(nextLen, nextLen);
-      } catch (e) {}
-    }
-  },
-
-  clear() {
-    const el = this.activeInput;
-    if (!el) return;
-    el.dataset.freshFocus = 'true';
-    el.value = '';
-    el.dispatchEvent(new Event('input', { bubbles: true }));
-
-    if (this.activeInput === el) {
-      try {
-        el.setSelectionRange(0, 0);
-      } catch (e) {}
-    }
-  },
-
-  nextField() {
-    if (!this.activeInput) return;
-    const inputs = this._getCurrentGroupInputs();
-    const idx = inputs.indexOf(this.activeInput);
-    if (idx !== -1 && idx < inputs.length - 1) {
-      this.open(inputs[idx + 1]);
-    }
-  },
-
-  prevField() {
-    if (!this.activeInput) return;
-    const inputs = this._getCurrentGroupInputs();
-    const idx = inputs.indexOf(this.activeInput);
-    if (idx > 0) {
-      this.open(inputs[idx - 1]);
-    }
-  },
-
-  recordToList() {
-    if (typeof addResultToList === 'function') {
-      addResultToList();
-    }
-  },
-
-  _getCurrentGroupInputs() {
-    const visibleMode = document.querySelector('#errorMode:not([style*="display: none"]), #correctionMode:not([style*="display: none"])');
-    if (!visibleMode) return [];
-    return Array.from(visibleMode.querySelectorAll('.direct-group input, .unit-capsule-wrapper input, .direct-capsule-wrapper input'))
-      .filter(el => el.offsetParent !== null);
-  }
-};
-
-// テンキー展開中の外側（余白）タップ検知：テンキー本体および入力枠群以外がタップされたら閉じる
-// ※スワイプジェスチャー（左右・上下のドラッグ）時はテンキーを閉じず、画面遷移を優先する
-(function() {
-  let touchStartX = 0;
-  let touchStartY = 0;
-  let isTouchMoved = false;
-
-  const onTouchStart = (e) => {
-    if (!RegulusKeypad.isOpen) return;
-    if (e.touches && e.touches.length > 0) {
-      touchStartX = e.touches[0].clientX;
-      touchStartY = e.touches[0].clientY;
-      isTouchMoved = false;
-    }
-  };
-
-  const onTouchMove = (e) => {
-    if (!RegulusKeypad.isOpen) return;
-    if (e.touches && e.touches.length > 0) {
-      const dX = e.touches[0].clientX - touchStartX;
-      const dY = e.touches[0].clientY - touchStartY;
-      if (Math.abs(dX) > 10 || Math.abs(dY) > 10) {
-        isTouchMoved = true;
-      }
-    }
-  };
-
-  const onTouchEnd = (e) => {
-    if (!RegulusKeypad.isOpen) return;
-    // スワイプ操作が行われた場合はテンキーを閉じない（スワイプによる画面遷移を優先）
-    if (isTouchMoved || document.body.classList.contains('is-swiping')) return;
-
-    const keypad = document.getElementById('regulusCustomKeypad');
-    if (keypad && keypad.contains(e.target)) return;
-
-    // 入力枠やその親カプセル・グループ、入力補助トグル、スワップボタン等をタップした場合は閉じない（ダイレクト操作させるため）
-    if (e.target.closest && (
-      e.target.closest('.mode-card .input-group') ||
-      e.target.closest('.datetime-row') ||
-      e.target.closest('.datetime-direct-row') ||
-      e.target.closest('.direct-capsule-wrapper') ||
-      e.target.closest('.unit-capsule-wrapper') ||
-      e.target.closest('.direct-group') ||
-      e.target.closest('.direct-group-date') ||
-      e.target.closest('.helper-toggle-wrapper') ||
-      e.target.closest('#inputHelperToggleError, #inputHelperToggleCorrection') ||
-      e.target.closest('#swap-button-wrapper, #swapButton, .swap-btn') ||
-      e.target.closest('#reverseModeToggleBtn') ||
-      e.target.closest('#toReverseButton, .to-reverse-link') ||
-      (e.target.tagName === 'INPUT' && e.target.id && e.target.id.includes('direct'))
-    )) {
-      return;
-    }
-
-    // 指を動かさずにポンとタップされた場合のみテンキーを閉じる
-    RegulusKeypad.close();
-  };
-
-  window.addEventListener('touchstart', onTouchStart, { passive: true });
-  window.addEventListener('touchmove', onTouchMove, { passive: true });
-  window.addEventListener('touchend', onTouchEnd, { passive: true });
-  window.addEventListener('mousedown', (e) => {
-    if (!RegulusKeypad.isOpen) return;
-    const keypad = document.getElementById('regulusCustomKeypad');
-    if (keypad && keypad.contains(e.target)) return;
-    if (e.target.closest && (
-      e.target.closest('.mode-card .input-group') ||
-      e.target.closest('.datetime-row') ||
-      e.target.closest('.datetime-direct-row') ||
-      e.target.closest('.direct-capsule-wrapper') ||
-      e.target.closest('.unit-capsule-wrapper') ||
-      e.target.closest('.direct-group') ||
-      e.target.closest('.direct-group-date') ||
-      e.target.closest('.helper-toggle-wrapper') ||
-      e.target.closest('#inputHelperToggleError, #inputHelperToggleCorrection') ||
-      e.target.closest('#swap-button-wrapper, #swapButton, .swap-btn') ||
-      e.target.closest('#reverseModeToggleBtn') ||
-      e.target.closest('#toReverseButton, .to-reverse-link') ||
-      (e.target.tagName === 'INPUT' && e.target.id && e.target.id.includes('direct'))
-    )) {
-      return;
-    }
-    RegulusKeypad.close();
-  });
-})();
 
 function checkPass() {
   const inputField = document.getElementById("passcode");
@@ -2871,7 +2271,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
   // 起動時のバージョンポップアップ
   if (localStorage.getItem("lastVersion") !== currentVersion) {
-    alert("タイムレグルスがv3.3.2にアップデートされました！");
+    alert("タイムレグルスがv3.3.1にアップデートされました！");
     localStorage.setItem("lastVersion", currentVersion);
   }
 
@@ -2920,11 +2320,7 @@ document.addEventListener("DOMContentLoaded", function () {
       if (!el) return;
       const handler = (e) => {
         if (isDirectField && !inputHelperEnabled) {
-          // 直接入力枠で、かつ入力補助OFFのときはオリジナルカスタムテンキーを起動！
-          e.preventDefault();
-          e.stopPropagation();
-          el.blur();
-          RegulusKeypad.open(el);
+          // 直接入力枠で、かつ入力補助OFFのときはフックしない（テンキーを出す）
           return;
         }
         e.preventDefault();
@@ -3054,9 +2450,6 @@ document.addEventListener("DOMContentLoaded", function () {
           result: new Date(entry.result)
         }))
       }));
-      if (typeof normalizeResultHistory === 'function') {
-        normalizeResultHistory();
-      }
     }
     if (resultHistory.length > 0) {
       document.getElementById("showListLink").style.display = "block";
@@ -3114,18 +2507,6 @@ document.addEventListener("DOMContentLoaded", function () {
     function setupDirectInputField({ id, nextId, maxVal, customEnterHandler }) {
       const el = document.getElementById(id);
       if (!el) return;
-
-      // タップ時にオリジナルカスタムテンキーを起動（ネイティブキーボードを完全抑止）
-      const directKeypadOpen = (e) => {
-        if (!inputHelperEnabled) {
-          e.preventDefault();
-          e.stopPropagation();
-          el.blur();
-          RegulusKeypad.open(el);
-        }
-      };
-      el.addEventListener("mousedown", directKeypadOpen);
-      el.addEventListener("touchstart", directKeypadOpen);
 
       // ④ タップ時はクリアせず、入力開始時までクリアを待つためのフラグ ＆ 手動選択時の全選択
       el.addEventListener("focus", function() {
@@ -3189,21 +2570,14 @@ document.addEventListener("DOMContentLoaded", function () {
           const nextEl = document.getElementById(nextId);
           if (nextEl) {
             if (autoJumpTimer) clearTimeout(autoJumpTimer);
-            if (RegulusKeypad.isOpen) {
-              // テンキー操作時はディレイなしで即座に次の枠へジャンプ！
-              RegulusKeypad.open(nextEl);
-            } else {
-              autoJumpTimer = setTimeout(() => {
-                nextEl.focus();
-                if (nextEl.select) nextEl.select();
-                autoJumpTimer = null;
-              }, 60); // iOSのキーボード昇降アニメーションに合わせるためのわずかなディレイ
-            }
+            autoJumpTimer = setTimeout(() => {
+              nextEl.focus();
+              if (nextEl.select) nextEl.select();
+              autoJumpTimer = null;
+            }, 60); // iOSのキーボード昇降アニメーションに合わせるためのわずかなディレイ
           }
         } else {
-          if (!RegulusKeypad.isOpen) {
-            el.blur(); // 通常キーボードなら閉じる（テンキーは完了ボタンで閉じるため自動では消さない）
-          }
+          el.blur(); // 最後の要素ならキーボードを閉じる
         }
       }
 
@@ -3245,14 +2619,11 @@ document.addEventListener("DOMContentLoaded", function () {
           const nextId = !includeDateEnabled ? "standardHour_direct" : "standardYear_direct";
           const nextEl = document.getElementById(nextId);
           if (nextEl) {
-            if (RegulusKeypad.isOpen) RegulusKeypad.open(nextEl);
-            else { nextEl.focus(); if (nextEl.select) nextEl.select(); }
+            nextEl.focus();
+            if (nextEl.select) nextEl.select();
           }
         } else {
-          // 下段の秒入力完了時：テンキーは閉じずに維持
-          if (!RegulusKeypad.isOpen) {
-            document.getElementById("displaySec_direct").blur();
-          }
+          document.getElementById("displaySec_direct").blur();
         }
       }
     });
@@ -3270,14 +2641,14 @@ document.addEventListener("DOMContentLoaded", function () {
           const nextId = !includeDateEnabled ? "displayHour_direct" : "displayYear_direct";
           const nextEl = document.getElementById(nextId);
           if (nextEl) {
-            if (RegulusKeypad.isOpen) RegulusKeypad.open(nextEl);
-            else { nextEl.focus(); if (nextEl.select) nextEl.select(); }
+            nextEl.focus();
+            if (nextEl.select) nextEl.select();
           }
         } else {
           const nextEl = document.getElementById("standardSec_direct");
           if (nextEl) {
-            if (RegulusKeypad.isOpen) RegulusKeypad.open(nextEl);
-            else { nextEl.focus(); if (nextEl.select) nextEl.select(); }
+            nextEl.focus();
+            if (nextEl.select) nextEl.select();
           }
         }
       }
@@ -3287,10 +2658,7 @@ document.addEventListener("DOMContentLoaded", function () {
       maxVal: 59,
       customEnterHandler: function() {
         if (!isStandardOnTop) {
-          // 下段の秒入力完了時：テンキーは閉じずに維持
-          if (!RegulusKeypad.isOpen) {
-            document.getElementById("standardSec_direct").blur();
-          }
+          document.getElementById("standardSec_direct").blur();
         }
       }
     });
@@ -3308,8 +2676,8 @@ document.addEventListener("DOMContentLoaded", function () {
         } else {
           const nextEl = document.getElementById("errorHours_direct");
           if (nextEl) {
-            if (RegulusKeypad.isOpen) RegulusKeypad.open(nextEl);
-            else { nextEl.focus(); if (nextEl.select) nextEl.select(); }
+            nextEl.focus();
+            if (nextEl.select) nextEl.select();
           }
         }
       }
@@ -3323,8 +2691,8 @@ document.addEventListener("DOMContentLoaded", function () {
         const nextId = !includeDateEnabledCorrection ? "reverseDisplayHour_direct" : "reverseDisplayYear_direct";
         const nextEl = document.getElementById(nextId);
         if (nextEl) {
-          if (RegulusKeypad.isOpen) RegulusKeypad.open(nextEl);
-          else { nextEl.focus(); if (nextEl.select) nextEl.select(); }
+          nextEl.focus();
+          if (nextEl.select) nextEl.select();
         }
       }
     });
@@ -3565,27 +2933,6 @@ function _applyRealTimeToStandard() {
   const sDate = document.getElementById('standardDate');
   if (sDate) sDate.value = `${yyyy}-${mm}-${dd}`;
 
-  // ★ヒロさん仕様：三連ドラムロールで標準時刻を開いている場合、ドラムロールもリアルタイムに完全連動！★
-  if (activeTimePickerGroup === "standard") {
-    if (drumSec && typeof drumSec.syncToValue === 'function') {
-      drumSec.syncToValue(sec);
-    } else if (drumSec) {
-      drumSec.setValue(sec);
-    }
-
-    if (drumMin && typeof drumMin.syncToValue === 'function') {
-      drumMin.syncToValue(min);
-    } else if (drumMin) {
-      drumMin.setValue(min);
-    }
-
-    if (drumHour && typeof drumHour.syncToValue === 'function') {
-      drumHour.syncToValue(hh);
-    } else if (drumHour) {
-      drumHour.setValue(hh);
-    }
-  }
-
   calculateError();
   syncAllPlaceholderColors();
 }
@@ -3658,43 +3005,23 @@ function showErrorMode() {
 }
 
 function showCorrectionMode() { 
-  // 遷移前の不要なテンキー・ドラムロール・余白クラスを完全クリア
-  if (typeof RegulusKeypad !== 'undefined' && RegulusKeypad.isOpen) {
-    RegulusKeypad.close();
-  }
-  if (typeof closeTimePicker === 'function') {
-    closeTimePicker();
-  }
-  document.body.classList.remove('picker-open-padding');
-  document.body.classList.remove('scroll-locked');
-  document.body.classList.remove('keypad-open');
-  document.body.classList.remove('result-highlighted');
-
   if (window.slideTransition && document.getElementById("modeSelect").style.display !== "none") {
     window.slideTransition("modeSelect", "correctionMode", "left", () => {
-      try {
-        if (lastError) { 
-          applyLastErrorToReverseInputs();
-        }
-        reverseMode = "toStandard";
-        toggleReverseMode(false);
-      } catch (err) {
-        console.error("showCorrectionMode onPrepare error:", err);
-      }
-    });
-  } else {
-    document.getElementById("modeSelect").style.display = "none"; 
-    document.getElementById("correctionMode").style.display = "block";
-    window._isModeTransitioning = false;
-    try {
       if (lastError) { 
         applyLastErrorToReverseInputs();
       }
       reverseMode = "toStandard";
       toggleReverseMode(false);
-    } catch (err) {
-      console.error("showCorrectionMode fallback error:", err);
+    });
+  } else {
+    document.getElementById("modeSelect").style.display = "none"; 
+    document.getElementById("correctionMode").style.display = "block";
+    window._isModeTransitioning = false;
+    if (lastError) { 
+      applyLastErrorToReverseInputs();
     }
+    reverseMode = "toStandard";
+    toggleReverseMode(false);
 
     if (!inputHelperEnabled) {
       setTimeout(() => {
@@ -3744,19 +3071,6 @@ function disableRealTimeIfActive() {
 function backToModeSelect() {
   disableRealTimeIfActive();
 
-  // ★モード選択画面に戻る時は、開いているテンキーやドラムピッカーを即座に完全クローズ！★
-  if (typeof RegulusKeypad !== 'undefined' && RegulusKeypad.isOpen) {
-    RegulusKeypad.close();
-  }
-  if (typeof closeTimePicker === 'function') {
-    closeTimePicker();
-  }
-  document.body.classList.remove('picker-open-padding');
-  document.body.classList.remove('scroll-locked');
-  document.body.classList.remove('keypad-open');
-  document.body.classList.remove('result-highlighted');
-  window.scrollTo({ top: 0, left: 0 });
-
   // 現在表示中の画面とスライド方向を特定
   let fromId = null;
   let direction = "right"; // デフォルト: 右スライド（errorMode, correctionMode, resultListPageから左側のmodeSelectへ）
@@ -3793,9 +3107,6 @@ function backToModeSelect() {
 }
 
 function backToCorrectionMode() {
-  const topBtn = document.getElementById("scrollToTopBtn");
-  if (topBtn) topBtn.classList.remove("visible");
-  window.scrollTo({ top: 0, left: 0 });
   if (window.slideTransition && document.getElementById("resultListPage").style.display !== "none") {
     window.slideTransition("resultListPage", "correctionMode", "right");
   } else {
@@ -3852,11 +3163,7 @@ function resetApp(onlyInputs = false) {
   hasCalculatedError = false;
 
   if (typeof TimeCalc !== 'undefined') {
-    if (typeof TimeCalc.resetAllTabs === 'function') {
-      TimeCalc.resetAllTabs();
-    } else {
-      TimeCalc.allClear();
-    }
+    TimeCalc.allClear();
   }
 
   // isStandardOnTop の同期リセット（アニメーションなしで確実に初期のDOM順序へ戻す）
@@ -4079,14 +3386,6 @@ function swapErrorModeInputs() {
       
       displayGroup.className = `input-group ${displayOmitClass}`.trim();
       standardGroup.className = `input-group ${standardOmitClass}`.trim();
-
-      // ★テンキーが開いている場合、スワップ後も選択中入力枠のフォーカス・ネオン発光を確実に維持★
-      if (typeof RegulusKeypad !== 'undefined' && RegulusKeypad.isOpen && RegulusKeypad.activeInput) {
-        const activeEl = RegulusKeypad.activeInput;
-        activeEl.classList.add('keypad-active-field');
-        const cap = activeEl.closest('.direct-capsule-wrapper, .unit-capsule-wrapper, .direct-group-date, .direct-group');
-        if (cap) cap.classList.add('picker-focused');
-      }
     }, 150);
 
   }, 150);
@@ -4375,41 +3674,11 @@ function applyLastErrorToReverseInputs() {
 
 function switchToCorrectionMode() {
   disableRealTimeIfActive();
-
-  const isKeypadOpen = typeof RegulusKeypad !== 'undefined' && RegulusKeypad.isOpen;
-  const isPickerOpen = typeof activeTimePickerGroup !== 'undefined' && activeTimePickerGroup !== null;
-
   if (window.slideTransition && document.getElementById("errorMode").style.display !== "none") {
     window.slideTransition("errorMode", "correctionMode", "left", () => {
       applyLastErrorToReverseInputs();
       reverseMode = "toStandard";
       toggleReverseMode(false);
-    }, () => {
-      // 遷移完了後の処理
-      if (isKeypadOpen || isPickerOpen) {
-        // ① テンキー・ドラムロールが表示されていた場合は消さずに維持！
-        document.body.classList.remove("scroll-locked");
-        hasPickerScrolled = false;
-        if (typeof RegulusKeypad !== 'undefined') RegulusKeypad.hasScrolled = false;
-
-        // ② 画面持ち上がり目標値（入力補助トグルが画面上端から8px下に見える絶対値）にピタッと合わせる！
-        const targetScrollTop = getCorrectionModeScrollTarget();
-        window.scrollTo({ top: targetScrollTop, left: 0, behavior: "auto" });
-
-        // 入力枠への連動
-        if (isPickerOpen) {
-          openTimePicker('reverseDisplay');
-        } else if (isKeypadOpen) {
-          const targetKeypadId = (typeof includeDateEnabledCorrection !== 'undefined' && includeDateEnabledCorrection) ? "errorDays_direct" : "errorHours_direct";
-          const targetEl = getEl(targetKeypadId);
-          if (targetEl) RegulusKeypad.open(targetEl);
-        }
-      } else {
-        // ① テンキー・ドラムロールが非表示の時は、持ち上げる前の状態（一番上）にする！
-        document.body.classList.remove("picker-open-padding");
-        document.body.classList.remove("scroll-locked");
-        window.scrollTo({ top: 0, left: 0, behavior: "auto" });
-      }
     });
   } else {
     document.getElementById("errorMode").style.display = "none";
@@ -4418,26 +3687,6 @@ function switchToCorrectionMode() {
     applyLastErrorToReverseInputs();
     reverseMode = "toStandard";
     toggleReverseMode(false); 
-
-    if (isKeypadOpen || isPickerOpen) {
-      document.body.classList.remove("scroll-locked");
-      hasPickerScrolled = false;
-      if (typeof RegulusKeypad !== 'undefined') RegulusKeypad.hasScrolled = false;
-      const targetScrollTop = getCorrectionModeScrollTarget();
-      window.scrollTo({ top: targetScrollTop, left: 0, behavior: "auto" });
-
-      if (isPickerOpen) {
-        openTimePicker('reverseDisplay');
-      } else if (isKeypadOpen) {
-        const targetKeypadId = (typeof includeDateEnabledCorrection !== 'undefined' && includeDateEnabledCorrection) ? "errorDays_direct" : "errorHours_direct";
-        const targetEl = getEl(targetKeypadId);
-        if (targetEl) RegulusKeypad.open(targetEl);
-      }
-    } else {
-      document.body.classList.remove("picker-open-padding");
-      document.body.classList.remove("scroll-locked");
-      window.scrollTo({ top: 0, left: 0, behavior: "auto" });
-    }
   }
 }
 
@@ -4539,11 +3788,6 @@ function handleReverseCalculation() {
   const hasTime = (includeDateEnabledCorrection ? timeDateVal : true) && timeTimeVal && timeSec !== "" && timeSec !== "ss" && timeSec !== "--";
 
   document.getElementById("addToListButton").style.display = hasTime && hasError ? "inline-block" : "none";
-
-  if (!hasTime || !hasError) {
-    window.latestResult = null;
-    updateKeypadAndPickerRecordButtons();
-  }
 
   const correctionWarningEl = document.getElementById("correctionWarning");
   if (correctionWarningEl) correctionWarningEl.style.visibility = "hidden";
@@ -4700,147 +3944,54 @@ function handleReverseCalculation() {
     includeDateCorrection: includeDateEnabledCorrection
   };
   window.latestResult = result;
-  updateKeypadAndPickerRecordButtons();
-}
-
-let _recordFeedbackTimer = null;
-
-function showRecordFeedback(status) {
-  const isDuplicate = (status === 'duplicate');
-  const targetText = isDuplicate 
-    ? (typeof t === 'function' ? t('already_recorded') : '既に記録されています')
-    : (typeof t === 'function' ? t('added_to_list') : '✔ 記録しました');
-  const defaultText = (typeof t === 'function' ? t('record_to_list') : '結果一覧に記録する');
-
-  // すべての記録ボタン（画面上、テンキー上、ピッカー上）を更新
-  const btns = [
-    document.getElementById('addToListButton'),
-    document.getElementById('keypadRecordBtn'),
-    document.getElementById('pickerRecordBtn')
-  ].filter(Boolean);
-
-  btns.forEach(btn => {
-    btn.textContent = targetText;
-    if (isDuplicate) {
-      btn.classList.add('already-recorded');
-      btn.classList.remove('recorded');
-    } else {
-      btn.classList.add('recorded');
-      btn.classList.remove('already-recorded');
-    }
-  });
-
-  // 既存タイマーをクリア
-  if (_recordFeedbackTimer) clearTimeout(_recordFeedbackTimer);
-
-  // 1500ms後に元のボタン表示に戻す
-  _recordFeedbackTimer = setTimeout(() => {
-    btns.forEach(btn => {
-      btn.textContent = defaultText;
-      btn.classList.remove('recorded');
-      btn.classList.remove('already-recorded');
-    });
-  }, 1500);
-}
-
-/**
- * 2つの誤差オブジェクトが同一かどうかを数値・正規化して厳密に判定
- */
-function isSameError(e1, e2) {
-  if (!e1 || !e2) return false;
-  const d1 = Number(e1.days) || 0;
-  const d2 = Number(e2.days) || 0;
-  const h1 = Number(e1.hours) || 0;
-  const h2 = Number(e2.hours) || 0;
-  const m1 = Number(e1.minutes) || 0;
-  const m2 = Number(e2.minutes) || 0;
-  const s1 = Number(e1.seconds) || 0;
-  const s2 = Number(e2.seconds) || 0;
-  const dir1 = String(e1.direction || "late").trim().toLowerCase();
-  const dir2 = String(e2.direction || "late").trim().toLowerCase();
-
-  return d1 === d2 && h1 === h2 && m1 === m2 && s1 === s2 && dir1 === dir2;
-}
-
-/**
- * 履歴内に同一誤差のグループが複数存在する場合、1つのグループに統合する
- */
-function normalizeResultHistory() {
-  if (!Array.isArray(resultHistory) || resultHistory.length <= 1) return;
-  const mergedHistory = [];
-
-  resultHistory.forEach(group => {
-    if (!group || !group.error) return;
-    let existing = mergedHistory.find(g => isSameError(g.error, group.error));
-    if (!existing) {
-      existing = {
-        error: {
-          days: Number(group.error.days) || 0,
-          hours: Number(group.error.hours) || 0,
-          minutes: Number(group.error.minutes) || 0,
-          seconds: Number(group.error.seconds) || 0,
-          direction: String(group.error.direction || "late").trim().toLowerCase()
-        },
-        entries: []
-      };
-      mergedHistory.push(existing);
-    }
-    if (Array.isArray(group.entries)) {
-      group.entries.forEach(entry => {
-        const isEntryDup = existing.entries.some(e => e.id === entry.id || (
-          new Date(e.base).getTime() === new Date(entry.base).getTime() &&
-          new Date(e.result).getTime() === new Date(entry.result).getTime() &&
-          e.mode === entry.mode
-        ));
-        if (!isEntryDup) {
-          existing.entries.push(entry);
-        }
-      });
-    }
-  });
-
-  resultHistory = mergedHistory;
-  saveResultHistory();
 }
 
 function addResultToList() {
   const r = window.latestResult;
-  if (!r || !r.error) return;
+  if (!r) return;
 
-  const currentError = {
-    days: Number(r.error.days) || 0,
-    hours: Number(r.error.hours) || 0,
-    minutes: Number(r.error.minutes) || 0,
-    seconds: Number(r.error.seconds) || 0,
-    direction: String(r.error.direction || "late").trim().toLowerCase()
-  };
-
-  // 既存の同じ誤差を持つグループを検索
-  let group = resultHistory.find(g => isSameError(g.error, currentError));
+  const padH = String(r.error.hours || 0).padStart(2, '0');
+  const padM = String(r.error.minutes || 0).padStart(2, '0');
+  const errorKey = `${r.error.days}-${padH}-${padM}-${r.error.seconds}-${r.error.direction}`;
+  
+  let group = resultHistory.find(g => g.errorKey === errorKey);
 
   if (!group) {
     group = {
-      error: currentError,
+      errorKey,
+      error: r.error,
       entries: []
     };
     resultHistory.push(group);
   }
   
   // 重複チェック
-  const baseMs = (r.base instanceof Date) ? r.base.getTime() : new Date(r.base).getTime();
-  const resultMs = (r.result instanceof Date) ? r.result.getTime() : new Date(r.result).getTime();
-  const isDuplicate = group.entries.some(entry => {
-    const eBaseMs = (entry.base instanceof Date) ? entry.base.getTime() : new Date(entry.base).getTime();
-    const eResultMs = (entry.result instanceof Date) ? entry.result.getTime() : new Date(entry.result).getTime();
-    return eBaseMs === baseMs && 
-           eResultMs === resultMs && 
-           entry.mode === r.mode &&
-           entry.includeDateCorrection === r.includeDateCorrection;
-  });
+  const baseMs = r.base.getTime();
+  const resultMs = r.result.getTime();
+  const isDuplicate = group.entries.some(entry => 
+    entry.base.getTime() === baseMs && 
+    entry.result.getTime() === resultMs && 
+    entry.mode === r.mode &&
+    entry.includeDateCorrection === r.includeDateCorrection
+  );
 
   if (isDuplicate) {
-    showRecordFeedback('duplicate');
-    return 'duplicate';
+    const msg = document.getElementById("recordSuccessMessage");
+    const originalText = msg.innerText;
+    msg.innerText = t("already_recorded");
+    msg.style.display = 'inline-block';
+    msg.classList.remove('fade-out');
+    msg.classList.add('fade-in-out');
+    setTimeout(() => {
+        msg.classList.remove('fade-in-out');
+        msg.classList.add('fade-out');
+        setTimeout(() => {
+            msg.style.display = 'none';
+            msg.classList.remove('fade-out');
+            msg.innerText = originalText; 
+        }, 500); 
+    }, 3050); 
+    return;
   }
   
   const newEntry = {
@@ -4854,249 +4005,45 @@ function addResultToList() {
   
   saveResultHistory();
 
-  if (typeof gtag === 'function') {
-    gtag('event', 'add_to_list'); 
-  }
+  gtag('event', 'add_to_list'); 
 
   renderResultList();
   
   if (resultHistory.length > 0) {
       const listLink = document.getElementById("showListLink");
-      if (listLink) {
-        listLink.style.display = "block"; 
-        listLink.innerText = t("show_list_arrow"); 
-      }
+      listLink.style.display = "block"; 
+      listLink.innerText = t("show_list_arrow"); 
   }
 
-  showRecordFeedback('added');
-  return 'added';
-}
-
-function scrollToTopResultList() {
-  window.scrollTo({
-    top: 0,
-    behavior: 'smooth'
-  });
-}
-
-function updateScrollToTopBtn() {
-  const btn = document.getElementById("scrollToTopBtn");
-  if (!btn) return;
-  const resultListPage = document.getElementById("resultListPage");
-  const isResultListVisible = resultListPage && resultListPage.style.display !== "none";
-
-  // タイトルが隠れた場合（スクロール量が70px以上）に左下に表示
-  if (isResultListVisible && window.scrollY > 70) {
-    btn.classList.add("visible");
-  } else {
-    btn.classList.remove("visible");
-  }
-}
-
-window.addEventListener("scroll", updateScrollToTopBtn, { passive: true });
-
-function getCurrentCorrectionError() {
-  if (window.latestResult && window.latestResult.error) {
-    return {
-      days: Number(window.latestResult.error.days) || 0,
-      hours: Number(window.latestResult.error.hours) || 0,
-      minutes: Number(window.latestResult.error.minutes) || 0,
-      seconds: Number(window.latestResult.error.seconds) || 0,
-      direction: String(window.latestResult.error.direction || "late").trim().toLowerCase()
-    };
-  }
-
-  // 画面の入力枠から取得
-  const daysEl = document.getElementById("errorDays_direct");
-  const hoursEl = document.getElementById("errorHours_direct");
-  const minEl = document.getElementById("errorMinutes_direct");
-  const secEl = document.getElementById("errorSeconds_direct");
-  const dirEl = document.getElementById("errorDirection");
-
-  const days = (typeof includeDateEnabledCorrection !== 'undefined' && !includeDateEnabledCorrection) 
-    ? 0 
-    : Number(daysEl ? daysEl.value : 0) || 0;
-  const hours = Number(hoursEl ? hoursEl.value : 0) || 0;
-  const minutes = Number(minEl ? minEl.value : 0) || 0;
-  const seconds = Number(secEl ? secEl.value : 0) || 0;
-  const direction = String(dirEl ? dirEl.value : "late").trim().toLowerCase();
-
-  const hasError = (days > 0) || (hours > 0) || (minutes > 0) || (seconds > 0);
-  if (!hasError) return null;
-
-  return { days, hours, minutes, seconds, direction };
-}
-
-function scrollResultListToEndIfOverflow() {
-  // 一番上を表示した直後、今扱い中の誤差の位置、または一番下までぎゅーんとスクロール
+  // 成功メッセージ表示アニメーション
+  const msg = document.getElementById("recordSuccessMessage");
+  msg.innerText = t("added_to_list");
+  msg.style.display = 'inline-block';
+  msg.classList.remove('fade-out');
+  msg.classList.add('fade-in-out');
   setTimeout(() => {
-    const scrollHeight = Math.max(document.documentElement.scrollHeight, document.body.scrollHeight);
-    const clientHeight = window.innerHeight || document.documentElement.clientHeight;
-    
-    // スクロール可能な高さがない場合は何もしない
-    if (scrollHeight <= clientHeight + 30) return;
-
-    const currentErr = getCurrentCorrectionError();
-    const groupBoxes = Array.from(document.querySelectorAll(".result-list-group-outer"));
-
-    let targetEl = null;
-
-    if (currentErr && groupBoxes.length > 0) {
-      // 現在扱い中の誤差に合致するグループ枠を探す
-      targetEl = groupBoxes.find(box => box._groupError && isSameError(box._groupError, currentErr));
-    }
-
-    if (targetEl) {
-      // 適合する誤差の位置にとどまるようにぎゅーんとスクロール！
-      const rect = targetEl.getBoundingClientRect();
-      const currentScrollTop = window.pageYOffset || document.documentElement.scrollTop;
-      const targetTop = Math.max(0, currentScrollTop + rect.top - 16);
-
-      window.scrollTo({
-        top: targetTop,
-        behavior: 'smooth'
-      });
-
-      // 適合位置がわかりやすいよう、わずかにハイライトパルス
-      targetEl.classList.add("group-highlight-pulse");
+      msg.classList.remove('fade-in-out');
+      msg.classList.add('fade-out');
       setTimeout(() => {
-        targetEl.classList.remove("group-highlight-pulse");
-      }, 1200);
-    } else {
-      // 適合する誤差がない場合は一番下までぎゅーんとスクロール
-      window.scrollTo({
-        top: scrollHeight,
-        behavior: 'smooth'
-      });
-    }
-  }, 200);
+          msg.style.display = 'none';
+          msg.classList.remove('fade-out');
+      }, 500); 
+  }, 3050); 
 }
 
 function showResultList() {
-  if (typeof RegulusKeypad !== 'undefined' && RegulusKeypad.isOpen) {
-    RegulusKeypad.close();
-  }
-  if (typeof closeTimePicker === 'function') {
-    closeTimePicker();
-  }
-  document.body.classList.remove('picker-open-padding');
-  document.body.classList.remove('scroll-locked');
-  window.scrollTo({ top: 0, left: 0 });
-
   if (window.slideTransition && document.getElementById("correctionMode").style.display !== "none") {
     window.slideTransition("correctionMode", "resultListPage", "left", () => {
       renderResultList();
-    }, () => {
-      scrollResultListToEndIfOverflow();
     });
   } else {
     document.getElementById("correctionMode").style.display = "none";
     document.getElementById("resultListPage").style.display = "block";
     renderResultList();
-    scrollResultListToEndIfOverflow();
-  }
-}
-
-function restoreCorrectionFromEntry(entry, group, fallbackMode) {
-  if (!entry || !group) return;
-
-  // 1. 誤差入力の復元
-  const err = group.error || {};
-  const eDays = err.days || 0;
-  const eHours = err.hours || 0;
-  const eMinutes = err.minutes || 0;
-  const eSeconds = err.seconds || 0;
-  const eDirection = err.direction || "late";
-
-  const errorDaysEl = document.getElementById("errorDays_direct");
-  if (errorDaysEl) errorDaysEl.value = eDays;
-
-  const errorHoursEl = document.getElementById("errorHours_direct");
-  if (errorHoursEl) errorHoursEl.value = String(eHours).padStart(2, '0');
-
-  const errorMinutesEl = document.getElementById("errorMinutes_direct");
-  if (errorMinutesEl) errorMinutesEl.value = String(eMinutes).padStart(2, '0');
-
-  const errorSecondsEl = document.getElementById("errorSeconds_direct");
-  if (errorSecondsEl) errorSecondsEl.value = String(eSeconds).padStart(2, '0');
-
-  const errorDirectionEl = document.getElementById("errorDirection");
-  if (errorDirectionEl) errorDirectionEl.value = eDirection;
-
-  // ヘルパー用（存在する場合）
-  const hiddenErrorDays = document.getElementById("errorDays");
-  if (hiddenErrorDays) hiddenErrorDays.value = eDays;
-  const hiddenErrorTime = document.getElementById("errorTime");
-  if (hiddenErrorTime) hiddenErrorTime.value = `${String(eHours).padStart(2, '0')}:${String(eMinutes).padStart(2, '0')}`;
-  const hiddenErrorSec = document.getElementById("errorSeconds");
-  if (hiddenErrorSec) hiddenErrorSec.value = eSeconds;
-
-  // 2. 年月日トグルの復元
-  const incDate = (entry.includeDateCorrection !== undefined) ? entry.includeDateCorrection : false;
-  if (typeof toggleIncludeDateCorrection === 'function') {
-    toggleIncludeDateCorrection(incDate);
-  }
-
-  // 3. 対象時刻の復元
-  const baseDate = (entry.base instanceof Date) ? entry.base : new Date(entry.base);
-  if (!isNaN(baseDate.getTime())) {
-    const bY = baseDate.getFullYear();
-    const bM = String(baseDate.getMonth() + 1).padStart(2, '0');
-    const bD = String(baseDate.getDate()).padStart(2, '0');
-    const bH = String(baseDate.getHours()).padStart(2, '0');
-    const bMin = String(baseDate.getMinutes()).padStart(2, '0');
-    const bS = String(baseDate.getSeconds()).padStart(2, '0');
-
-    const rY = document.getElementById("reverseDisplayYear_direct");
-    if (rY) rY.value = bY;
-    const rM = document.getElementById("reverseDisplayMonth_direct");
-    if (rM) rM.value = bM;
-    const rD = document.getElementById("reverseDisplayDay_direct");
-    if (rD) rD.value = bD;
-    const rH = document.getElementById("reverseDisplayHour_direct");
-    if (rH) rH.value = bH;
-    const rMin = document.getElementById("reverseDisplayMin_direct");
-    if (rMin) rMin.value = bMin;
-    const rSec = document.getElementById("reverseDisplaySec_direct");
-    if (rSec) rSec.value = bS;
-
-    // ヘルパー用
-    const hiddenDate = document.getElementById("reverseDisplayDate");
-    if (hiddenDate) hiddenDate.value = `${bY}-${bM}-${bD}`;
-    const hiddenTime = document.getElementById("reverseDisplayTime");
-    if (hiddenTime) hiddenTime.value = `${bH}:${bMin}`;
-    const hiddenSec = document.getElementById("reverseDisplaySeconds");
-    if (hiddenSec) hiddenSec.value = bS;
-  }
-
-  // 4. 計算モードの復元
-  const targetMode = entry.mode || fallbackMode || "toStandard";
-  reverseMode = targetMode;
-  if (typeof toggleReverseMode === 'function') {
-    toggleReverseMode(false);
-  }
-
-  // 5. 再計算を実行
-  if (typeof handleReverseCalculation === 'function') {
-    handleReverseCalculation();
-  }
-
-  // 6. 補正時刻モードへの画面遷移（右スライドで戻る）
-  if (typeof backToCorrectionMode === 'function') {
-    backToCorrectionMode();
-  } else {
-    const topBtn = document.getElementById("scrollToTopBtn");
-    if (topBtn) topBtn.classList.remove("visible");
-    document.getElementById("resultListPage").style.display = "none";
-    document.getElementById("correctionMode").style.display = "block";
-    window.scrollTo({ top: 0, left: 0 });
   }
 }
 
 function renderResultList() {
-  if (typeof normalizeResultHistory === 'function') {
-    normalizeResultHistory();
-  }
   const container = document.getElementById("resultListContainer");
   container.innerHTML = "";
   
@@ -5142,7 +4089,6 @@ function renderResultList() {
     // 縦つぶしレイアウト圧縮の適用
     const outerBox = document.createElement("div");
     outerBox.className = "result-list-group-outer";
-    outerBox._groupError = group.error;
     outerBox.style.padding = "8px 10px";
     outerBox.style.marginBottom = "12px";
     outerBox.style.border = '2px solid var(--text-sub)';
@@ -5191,34 +4137,10 @@ function renderResultList() {
 
       modeEntries.forEach(entry => {
         const line = document.createElement("div");
-        line.className = "result-entry-line";
         line.style.marginBottom = "3px";
         line.style.display = "flex";
         line.style.justifyContent = "space-between";
         line.style.alignItems = "center";
-
-        // ダブルクリック（PC）で補正時刻モードに復元
-        line.addEventListener("dblclick", (e) => {
-          if (e.target.closest(".delete-btn")) return;
-          line.classList.add("restoring-flash");
-          setTimeout(() => line.classList.remove("restoring-flash"), 300);
-          restoreCorrectionFromEntry(entry, group, mode);
-        });
-
-        // ダブルタップ（スマホ・タッチデバイス）で補正時刻モードに復元
-        let lastTapTime = 0;
-        line.addEventListener("touchend", (e) => {
-          if (e.target.closest(".delete-btn")) return;
-          const currentTime = Date.now();
-          const tapLength = currentTime - lastTapTime;
-          if (tapLength < 350 && tapLength > 0) {
-            e.preventDefault();
-            line.classList.add("restoring-flash");
-            setTimeout(() => line.classList.remove("restoring-flash"), 300);
-            restoreCorrectionFromEntry(entry, group, mode);
-          }
-          lastTapTime = currentTime;
-        }, { passive: false });
         
         let baseStr, resultStr;
         if (entry.includeDateCorrection === undefined || entry.includeDateCorrection) {
@@ -5279,10 +4201,7 @@ function renderResultList() {
         const deleteBtn = document.createElement("button");
         deleteBtn.className = "delete-btn";
         deleteBtn.innerText = t("delete");
-        deleteBtn.onclick = (e) => {
-          e.stopPropagation();
-          deleteResultById(entry.id);
-        };
+        deleteBtn.onclick = () => deleteResultById(entry.id); 
         line.appendChild(deleteBtn);
         
         innerBox.appendChild(line);
@@ -5471,9 +4390,7 @@ if (document.readyState === "loading") {
 
 /* ==========================================================================
    テンキーキーボード表示時の自動スクロール（入力補助OFF時など）
-   ※画面上昇の挙動を初期状態から完全に見直すため、一旦無効化
    ========================================================================== */
-/*
 let _lastTextInputBlurTime = 0;
 document.addEventListener("focusout", function(e) {
   if (e.target && e.target.tagName === "INPUT" && 
@@ -5516,7 +4433,12 @@ document.addEventListener("focusin", function(e) {
     }, 400);
   }
 });
-*/
+
+
+
+
+
+
 
 
 /* ==========================================================================
@@ -5568,32 +4490,18 @@ document.addEventListener("focusin", function(e) {
   }
 
   // 左スワイプ(dX<0)=進む(右隣へ), 右スワイプ(dX>0)=戻る(左隣へ)
-  // 配置: [割り勘] ⇄ [レート] ⇄ [電卓] ⇄ [時間電卓] ⇄ [モード選択] ⇄ [誤差の計算] ⇄ [補正時刻の計算] ⇄ [結果一覧]
-  // '__MULTI_TAB__' = timeCalcMode内のタブ切り替え（画面遷移なし）
-  const MULTI_TAB_ORDER = ['split', 'currency', 'precision', 'time'];
+  // 配置: [時間電卓] ⇄ [モード選択] ⇄ [誤差の計算] ⇄ [補正時刻の計算] ⇄ [結果一覧]
   function getDestId(srcId, dX) {
-    if (srcId === 'timeCalcMode') {
-      const mode = (typeof TimeCalc !== 'undefined') ? TimeCalc.engineMode : 'time';
-      const idx  = MULTI_TAB_ORDER.indexOf(mode);
-      if (dX < 0) {
-        // 左スワイプ: タブ右へ。time(最右)のときだけmodeSelectへ進む
-        if (idx < MULTI_TAB_ORDER.length - 1) return '__MULTI_TAB__';
-        return 'modeSelect';
-      } else {
-        // 右スワイプ: タブ左へ。split(最左)のときは行き先なし
-        if (idx > 0) return '__MULTI_TAB__';
-        return null;
-      }
-    }
     if (dX < 0) {
       // 左スワイプ → 右隣の画面へ進む
+      if (srcId === 'timeCalcMode')   return 'modeSelect';
       if (srcId === 'modeSelect')     return 'errorMode';
       if (srcId === 'errorMode')      return 'correctionMode';
       if (srcId === 'correctionMode') return 'resultListPage';
     } else {
       // 右スワイプ → 左隣の画面へ戻る
       if (srcId === 'resultListPage') return 'correctionMode';
-      if (srcId === 'correctionMode') return 'modeSelect'; // 補正時刻モードから右スワイプでモード選択画面へ遷移
+      if (srcId === 'correctionMode') return 'modeSelect'; // ※縛り: 補正時刻からモード選択へ直接戻る
       if (srcId === 'errorMode')      return 'modeSelect';
       if (srcId === 'modeSelect')     return 'timeCalcMode';
     }
@@ -5603,85 +4511,29 @@ document.addEventListener("focusin", function(e) {
   // 遷移完了後の副作用・初期化処理
   function afterSwipe(destId, srcId) {
     if (destId === 'resultListPage') {
-      if (typeof RegulusKeypad !== 'undefined' && RegulusKeypad.isOpen) {
-        RegulusKeypad.close();
-      }
-      if (typeof closeTimePicker === 'function') {
-        closeTimePicker();
-      }
-      document.body.classList.remove('picker-open-padding');
-      document.body.classList.remove('scroll-locked');
-      document.body.classList.remove('keypad-open');
-      window.scrollTo({ top: 0, left: 0 });
       if (typeof renderResultList === 'function') renderResultList();
-      if (typeof scrollResultListToEndIfOverflow === 'function') {
-        scrollResultListToEndIfOverflow();
-      }
-    } else {
-      const topBtn = document.getElementById("scrollToTopBtn");
-      if (topBtn) topBtn.classList.remove("visible");
     }
     if (destId === 'timeCalcMode') {
-      if (typeof TimeCalc !== 'undefined') {
-        if (typeof TimeCalc.init === 'function') TimeCalc.init();
-        if (typeof TimeCalc.syncSlider === 'function') TimeCalc.syncSlider(true);
+      if (typeof TimeCalc !== 'undefined' && typeof TimeCalc.init === 'function') {
+        TimeCalc.init();
       }
     }
     if (destId === 'errorMode') {
       if (typeof window.updateLabelWidths === 'function') window.updateLabelWidths();
       if (typeof calculateError === 'function') calculateError();
-
-      const isKeypadOpen = typeof RegulusKeypad !== 'undefined' && RegulusKeypad.isOpen;
-      const isPickerOpen = typeof activeTimePickerGroup !== 'undefined' && activeTimePickerGroup !== null;
-
-      if (isKeypadOpen || isPickerOpen) {
-        // ① テンキー・ドラムロールが表示されていた場合は消さずに維持！
-        document.body.classList.remove("scroll-locked");
-        hasPickerScrolled = false;
-        if (typeof RegulusKeypad !== 'undefined') RegulusKeypad.hasScrolled = false;
-        const targetScrollTop = getErrorModeScrollTarget();
-        window.scrollTo({ top: targetScrollTop, left: 0, behavior: "auto" });
-
-        // ドラムロールまたはテンキーの対象枠を誤差モードの入力枠にスムーズ連動
-        if (isPickerOpen) {
-          const targetPickerGroup = (typeof isStandardOnTop !== 'undefined' && isStandardOnTop) ? 'standard' : 'display';
-          openTimePicker(targetPickerGroup);
-        } else if (isKeypadOpen) {
-          const targetKeypadId = (typeof isStandardOnTop !== 'undefined' && isStandardOnTop) ? 'standardHour_direct' : 'displayHour_direct';
-          const targetEl = getEl(targetKeypadId);
-          if (targetEl) RegulusKeypad.open(targetEl);
-        }
-      } else {
-        // ① テンキー・ドラムロールが非表示の時は、持ち上げる前の状態（一番上）にする！
-        document.body.classList.remove("picker-open-padding");
-        document.body.classList.remove("scroll-locked");
-        window.scrollTo({ top: 0, left: 0, behavior: "auto" });
-
-        if (typeof inputHelperEnabled !== 'undefined' && !inputHelperEnabled) {
-          setTimeout(() => {
-            let target;
-            if (!includeDateEnabled) {
-              target = (typeof isStandardOnTop !== 'undefined' && isStandardOnTop) ? getEl("standardHour_direct") : getEl("displayHour_direct");
-            } else {
-              target = (typeof isStandardOnTop !== 'undefined' && isStandardOnTop) ? getEl("standardYear_direct") : getEl("displayYear_direct");
-            }
-            if (target && target.focus) { target.focus(); if (target.select) target.select(); }
-          }, 100);
-        }
+      if (typeof inputHelperEnabled !== 'undefined' && !inputHelperEnabled) {
+        setTimeout(() => {
+          let target;
+          if (!includeDateEnabled) {
+            target = (typeof isStandardOnTop !== 'undefined' && isStandardOnTop) ? getEl("standardHour_direct") : getEl("displayHour_direct");
+          } else {
+            target = (typeof isStandardOnTop !== 'undefined' && isStandardOnTop) ? getEl("standardYear_direct") : getEl("displayYear_direct");
+          }
+          if (target && target.focus) { target.focus(); if (target.select) target.select(); }
+        }, 100);
       }
     }
     if (destId === 'modeSelect') {
-      // モード選択画面へスワイプで戻る時も、テンキーやドラムピッカーを確実にクローズ
-      if (typeof RegulusKeypad !== 'undefined' && RegulusKeypad.isOpen) {
-        RegulusKeypad.close();
-      }
-      if (typeof closeTimePicker === 'function') {
-        closeTimePicker();
-      }
-      document.body.classList.remove('picker-open-padding');
-      document.body.classList.remove('scroll-locked');
-      window.scrollTo({ top: 0, left: 0 });
-
       const rc = getEl('resetConfirmContainer');
       if (rc) rc.style.display = 'none';
       if (srcId === 'errorMode' && typeof disableRealTimeIfActive === 'function') {
@@ -5700,43 +4552,14 @@ document.addEventListener("focusin", function(e) {
       }
     }
     if (destId === 'correctionMode') {
-      if (srcId !== 'resultListPage') {
-        if (typeof reverseMode !== 'undefined') reverseMode = "toStandard";
-      }
+      if (typeof reverseMode !== 'undefined') reverseMode = "toStandard";
       if (typeof toggleReverseMode === 'function') toggleReverseMode(false);
-
-      const isKeypadOpen = typeof RegulusKeypad !== 'undefined' && RegulusKeypad.isOpen;
-      const isPickerOpen = typeof activeTimePickerGroup !== 'undefined' && activeTimePickerGroup !== null;
-
-      if (isKeypadOpen || isPickerOpen) {
-        // ① テンキー・ドラムロールが表示されていた場合は消さずに維持！
-        document.body.classList.remove("scroll-locked");
-        hasPickerScrolled = false;
-        if (typeof RegulusKeypad !== 'undefined') RegulusKeypad.hasScrolled = false;
-        const targetScrollTop = getCorrectionModeScrollTarget();
-        window.scrollTo({ top: targetScrollTop, left: 0, behavior: "auto" });
-
-        // ドラムロールまたはテンキーの対象枠を補正モードの入力枠にスムーズ連動
-        if (isPickerOpen) {
-          openTimePicker('reverseDisplay');
-        } else if (isKeypadOpen) {
-          const targetKeypadId = (typeof includeDateEnabledCorrection !== 'undefined' && includeDateEnabledCorrection) ? "errorDays_direct" : "errorHours_direct";
-          const targetEl = getEl(targetKeypadId);
-          if (targetEl) RegulusKeypad.open(targetEl);
-        }
-      } else {
-        // ① テンキー・ドラムロールが非表示の時は、持ち上げる前の状態（一番上）にする！
-        document.body.classList.remove("picker-open-padding");
-        document.body.classList.remove("scroll-locked");
-        window.scrollTo({ top: 0, left: 0, behavior: "auto" });
-
-        if (typeof inputHelperEnabled !== 'undefined' && !inputHelperEnabled) {
-          setTimeout(() => {
-            const targetId = (typeof includeDateEnabledCorrection !== 'undefined' && includeDateEnabledCorrection) ? "errorDays_direct" : "errorHours_direct";
-            const target = getEl(targetId);
-            if (target && target.focus) { target.focus(); if (target.select) target.select(); }
-          }, 100);
-        }
+      if (typeof inputHelperEnabled !== 'undefined' && !inputHelperEnabled) {
+        setTimeout(() => {
+          const targetId = (typeof includeDateEnabledCorrection !== 'undefined' && includeDateEnabledCorrection) ? "errorDays_direct" : "errorHours_direct";
+          const target = getEl(targetId);
+          if (target && target.focus) { target.focus(); if (target.select) target.select(); }
+        }, 100);
       }
     }
   }
@@ -5746,20 +4569,15 @@ document.addEventListener("focusin", function(e) {
     if (typeof window._cancelHoldToReturn === 'function') {
       window._cancelHoldToReturn();
     }
-    // 安全装置: 既にフラグが立っていた場合でもデッドロックを防ぐためリセットして続行
-    if (isTransitioning) {
-      isTransitioning = false;
-      window._isModeTransitioning = false;
-    }
+    if (isTransitioning) return;
     const fEl = getEl(fromId);
     const tEl = getEl(toId);
     if (!fEl || !tEl) {
       if (fEl) fEl.style.display = 'none';
       if (tEl) tEl.style.display = 'block';
-      if (typeof onPrepare === 'function') { try { onPrepare(); } catch (e) {} }
-      if (typeof onComplete === 'function') { try { onComplete(); } catch (e) {} }
+      if (typeof onPrepare === 'function') onPrepare();
+      if (typeof onComplete === 'function') onComplete();
       afterSwipe(toId, fromId);
-      isTransitioning = false;
       window._isModeTransitioning = false;
       return;
     }
@@ -5784,9 +4602,7 @@ document.addEventListener("focusin", function(e) {
     tEl.style.transform  = `translateX(${initBase}px)`;
     tEl.style.display    = 'block';
 
-    if (typeof onPrepare === 'function') {
-      try { onPrepare(); } catch (err) { console.error('slideTransition onPrepare error:', err); }
-    }
+    if (typeof onPrepare === 'function') onPrepare();
 
     // 強制リフロー（初期位置を確実にレンダリング）
     void tEl.offsetHeight;
@@ -5796,7 +4612,7 @@ document.addEventListener("focusin", function(e) {
     fEl.style.transform  = `translateX(${direction === 'left' ? -w : w}px)`;
     tEl.style.transform  = 'translateX(0)';
 
-    const finishTransition = () => {
+    setTimeout(() => {
       fEl.style.display    = 'none';
       fEl.style.transform  = '';
       fEl.style.transition = '';
@@ -5817,32 +4633,18 @@ document.addEventListener("focusin", function(e) {
       tEl.style.transition = '';
       tEl.style.display    = 'block';
 
-      // 通常配置復帰後の強制リフロー（DOM配置を確定させてからスクロール位置調整を実行）
-      void tEl.offsetHeight;
-
       afterSwipe(toId, fromId);
-      if (typeof onComplete === 'function') {
-        try { onComplete(); } catch (err) { console.error('slideTransition onComplete error:', err); }
-      }
-      isTransitioning = false;
-      window._isModeTransitioning = false;
-    };
-
-    setTimeout(finishTransition, 300);
-    // 万が一のアニメーション未完タイムアウト保証
-    setTimeout(() => {
-      isTransitioning = false;
-      window._isModeTransitioning = false;
-    }, 450);
+      if (typeof onComplete === 'function') onComplete();
+      setTimeout(() => {
+        isTransitioning = false;
+        window._isModeTransitioning = false;
+      }, 50);
+    }, 300);
   };
 
-  // スワイプ操作中のみクリック誤作動を防ぐ（テンキー・ピッカー内は絶対に阻害しない）
+  // スワイプ/遷移中はボタン誤作動を防ぐ
   document.addEventListener('click', function(e) {
-    if (isSwiping) {
-      // テンキーやドラムロール内の操作でなければキャンセル
-      if (e.target && e.target.closest && e.target.closest('#regulusCustomKeypad, .picker-bottom-sheet')) {
-        return;
-      }
+    if (isSwiping || isTransitioning) {
       e.preventDefault();
       e.stopPropagation();
     }
@@ -5854,6 +4656,7 @@ document.addEventListener("focusin", function(e) {
   document.addEventListener('touchstart', function(e) {
     if (isTransitioning) return;
     if (e.touches.length > 1) return;
+    if (typeof activeTimePickerGroup !== 'undefined' && activeTimePickerGroup) return;
 
     // 現在の画面を確定（toElを表示する前のクリーンな状態で検出）
     currentId      = detectCurrentId();
@@ -5882,12 +4685,8 @@ document.addEventListener("focusin", function(e) {
       return;
     }
 
-    // 電卓液晶画面内でのスクロール優先判定:
-    // 文字列がはみ出ていて実際に左右スクロール可能な要素を直接なぞった場合は、テキスト閲覧スクロールを優先
-    const scrollableDisplay = (e.target && e.target.closest)
-      ? e.target.closest('.time-calc-sub-display, .time-calc-main-display, .time-calc-formula')
-      : null;
-    if (scrollableDisplay && scrollableDisplay.scrollWidth > scrollableDisplay.clientWidth + 1) {
+    // 電卓液晶画面（.time-calc-screen）内のタッチは横スクロールを優先するため画面切り替えスワイプを除外
+    if (e.target && e.target.closest && e.target.closest('.time-calc-screen')) {
       isSwiping = false;
       fromEl = null;
       return;
@@ -5924,34 +4723,13 @@ document.addEventListener("focusin", function(e) {
 
     // 軸を確定（10px動くまで待つ）
     if (!axisLocked) {
-      // 三連ドラムロールのホイール部分で縦に数字を回している最中の誤判定を防ぐ
-      const isOverDrumWheel = e.target && e.target.closest && e.target.closest('.picker-wheel-container, .picker-wheel');
-      const minMove = isOverDrumWheel ? 20 : 10;
-      if (Math.abs(dX) < minMove && Math.abs(dY) < minMove) return;
-
-      // ドラムロールのホイール上の場合は、縦スクロール優先のため横移動が縦移動より明確に大きい場合のみ水平スワイプとする
-      const isHorizontal = isOverDrumWheel
-        ? (Math.abs(dX) > Math.abs(dY) * 1.5)
-        : (Math.abs(dX) >= Math.abs(dY));
-
-      axisLocked = isHorizontal ? 'horizontal' : 'vertical';
+      if (Math.abs(dX) < 10 && Math.abs(dY) < 10) return;
+      axisLocked = Math.abs(dX) >= Math.abs(dY) ? 'horizontal' : 'vertical';
       if (axisLocked === 'vertical') {
         isSwiping = false;
         fromEl = null;
         return;
       } else {
-        // 水平スワイプ確定時: 開いているテンキーやドラムロールを即座に閉じる！
-        if (typeof RegulusKeypad !== 'undefined' && RegulusKeypad.isOpen) {
-          RegulusKeypad.close();
-        }
-        if (typeof closeTimePicker === 'function') {
-          closeTimePicker();
-        }
-        document.body.classList.remove('picker-open-padding');
-        document.body.classList.remove('scroll-locked');
-        document.body.classList.remove('keypad-open');
-        document.body.classList.remove('result-highlighted');
-
         // 水平スワイプ確定時のみtransitionを解除（タップ時のDOM操作によるフォーカス消失バグ回避）
         fromEl.style.transition = 'none';
         // ボタンの :active 視覚効果を抑制（長押し誤判定防止）
@@ -5967,14 +4745,6 @@ document.addEventListener("focusin", function(e) {
     if (!destId) {
       // 行き先なし: 少しだけ引っ張られる感触
       fromEl.style.transform = `translateX(${dX * 0.15}px)`;
-      return;
-    }
-
-    // マルチ電卓タブ切り替え: 画面は動かさずジェスチャー検出のみ（目が疲れないようぶれなし）
-    if (destId === '__MULTI_TAB__') {
-      toId = '__MULTI_TAB__';
-      toEl = null;
-      // fromEl.style.transform は変更しない（画面固定）
       return;
     }
 
@@ -6019,12 +4789,6 @@ document.addEventListener("focusin", function(e) {
       // display:blockより先にtransformで画面外へ → 表示時に一瞬でも中央に見えない
       toEl.style.transform  = `translateX(${initBase + dX}px)`;
       toEl.style.display    = 'block';
-
-      // マルチ電卓画面がスワイプで出現する際、スライダーの初期位置を即座に同期して縦線ちらつきを防止
-      if (toId === 'timeCalcMode' && typeof TimeCalc !== 'undefined') {
-        if (typeof TimeCalc.init === 'function') TimeCalc.init();
-        if (typeof TimeCalc.syncSlider === 'function') TimeCalc.syncSlider(true);
-      }
     }
 
     const w    = window.innerWidth;
@@ -6050,27 +4814,6 @@ document.addEventListener("focusin", function(e) {
     const w         = window.innerWidth;
     const threshold = w * 0.25;
 
-    // __MULTI_TAB__は !toEl より先に判定（toEl=nullのため）
-    if (toId === '__MULTI_TAB__') {
-      fromEl.style.transition = 'transform 0.2s ease';
-      fromEl.style.transform  = 'translateX(0)';
-      const f = fromEl;
-      fromEl = null; toEl = null; toId = null; currentId = null;
-      setTimeout(() => { f.style.transform = ''; f.style.transition = ''; }, 200);
-      // しきい値以上ならタブ切り替え
-      if (Math.abs(dX) > threshold && typeof TimeCalc !== 'undefined') {
-        const mode = TimeCalc.engineMode;
-        const idx  = MULTI_TAB_ORDER.indexOf(mode);
-        const nextIdx = dX < 0
-          ? Math.min(idx + 1, MULTI_TAB_ORDER.length - 1)
-          : Math.max(idx - 1, 0);
-        if (nextIdx !== idx) TimeCalc.setEngineMode(MULTI_TAB_ORDER[nextIdx]);
-      }
-      axisLocked = null;
-      document.body.classList.remove('is-swiping');
-      return;
-    }
-
     if (!toEl) {
       // 行き先なし: 元に戻す
       if (fromEl) {
@@ -6089,40 +4832,6 @@ document.addEventListener("focusin", function(e) {
 
     if (Math.abs(dX) > threshold) {
       // ===== 遷移確定 =====
-
-      // マルチ電卓タブ切り替え（画面遷移なし）
-      if (toId === '__MULTI_TAB__') {
-        // toElのスタイルをリセット
-        if (toEl) {
-          toEl.style.display    = 'none';
-          toEl.style.position   = '';
-          toEl.style.zIndex     = '';
-          toEl.style.transform  = '';
-          toEl.style.transition = '';
-        }
-        // fromElを元の位置に戻す
-        fromEl.style.transition = 'transform 0.2s ease';
-        fromEl.style.transform  = 'translateX(0)';
-        const f = fromEl;
-        fromEl = null; toEl = null; toId = null; currentId = null;
-        setTimeout(() => {
-          f.style.transform  = '';
-          f.style.transition = '';
-        }, 200);
-        // タブを切り替える
-        if (typeof TimeCalc !== 'undefined') {
-          const mode = TimeCalc.engineMode;
-          const idx  = MULTI_TAB_ORDER.indexOf(mode);
-          const nextIdx = dX < 0
-            ? Math.min(idx + 1, MULTI_TAB_ORDER.length - 1)
-            : Math.max(idx - 1, 0);
-          if (nextIdx !== idx) TimeCalc.setEngineMode(MULTI_TAB_ORDER[nextIdx]);
-        }
-        axisLocked = null;
-        document.body.classList.remove('is-swiping');
-        return;
-      }
-
       isTransitioning = true;
       if (currentId === 'errorMode' && typeof disableRealTimeIfActive === 'function') {
         disableRealTimeIfActive();
@@ -6217,28 +4926,14 @@ document.addEventListener("focusin", function(e) {
 
   document.addEventListener('mousedown', function(e) {
     if (e.button !== 0) return; // 左クリックのみ
-    if (isTransitioning) isTransitioning = false; // 万が一残っていても自己修復
+    if (isTransitioning) return;
+    if (typeof activeTimePickerGroup !== 'undefined' && activeTimePickerGroup) return;
 
     // クリックされた要素が入力コントロールやボタン等の場合はドラッグスワイプを開始しない
     const target = e.target;
     if (target && target.closest) {
-      if (target.closest('#timeCalcMode')) {
-        // マルチ電卓内: キーパッド・ディスプレイ等からもドラッグ可能にする
-        // 入力欄・ドラッグハンドル・モーダルのみ除外（button/.calc-btn/.time-calc-screenは除外しない）
-        if (target.closest('input, textarea, select, a, .currency-drag-handle, .currency-slot-card, .currency-palette-item, .custom-rate-modal-box, .rate-modal-backdrop, .lang-selector')) {
-          return;
-        }
-        // 文字列がはみ出ていて左右スクロール可能なテキスト要素上ではマウスドラッグスクロールを優先
-        const scrollableDisplay = target.closest('.time-calc-sub-display, .time-calc-main-display, .time-calc-formula');
-        if (scrollableDisplay && scrollableDisplay.scrollWidth > scrollableDisplay.clientWidth + 1) {
-          return;
-        }
-      } else {
-        // ボタン・入力枠そのものをクリックした場合はスワイプを開始しない（通常のタップ/クリックを優先）
-        // ※テンキーのヘッダーや余白、カードの余白などはドラッグ可能
-        if (target.closest('input, textarea, select, button, a, .action-btn, .orbit-planet-btn, .calc-btn, .custom-keypad-btn, .picker-confirm-btn, .keypad-nav-btn, .keypad-record-btn, .currency-drag-handle, .currency-slot-card, .currency-palette-item, .time-calc-screen, .custom-rate-modal-box, .rate-modal-backdrop, .key-cell, .lang-selector')) {
-          return;
-        }
+      if (target.closest('input, textarea, select, button, a, .action-btn, .orbit-planet-btn, .calc-btn, .currency-drag-handle, .currency-slot-card, .currency-palette-item, .time-calc-screen, .custom-rate-modal-box, .rate-modal-backdrop, .key-cell, .lang-selector')) {
+        return;
       }
     }
 
@@ -6281,18 +4976,6 @@ document.addEventListener("focusin", function(e) {
         fromEl = null;
         return;
       } else {
-        // 水平スワイプ確定時: 開いているテンキーやドラムロールを即座に閉じる！
-        if (typeof RegulusKeypad !== 'undefined' && RegulusKeypad.isOpen) {
-          RegulusKeypad.close();
-        }
-        if (typeof closeTimePicker === 'function') {
-          closeTimePicker();
-        }
-        document.body.classList.remove('picker-open-padding');
-        document.body.classList.remove('scroll-locked');
-        document.body.classList.remove('keypad-open');
-        document.body.classList.remove('result-highlighted');
-
         isSwiping = true;
         fromEl.style.transition = 'none';
         // 水平スワイプ確定: ボタンの :active 視覚効果を抑制
@@ -6305,14 +4988,6 @@ document.addEventListener("focusin", function(e) {
     const destId = getDestId(currentId, dX);
     if (!destId) {
       fromEl.style.transform = `translateX(${dX * 0.15}px)`;
-      return;
-    }
-
-    // マルチ電卓タブ切り替え: 画面は動かさずジェスチャー検出のみ（目が疲れないようぶれなし）
-    if (destId === '__MULTI_TAB__') {
-      toId = '__MULTI_TAB__';
-      toEl = null;
-      // fromEl.style.transform は変更しない（画面固定）
       return;
     }
 
@@ -6349,12 +5024,6 @@ document.addEventListener("focusin", function(e) {
       toEl.style.zIndex     = '100';
       toEl.style.transform  = `translateX(${initBase + dX}px)`;
       toEl.style.display    = 'block';
-
-      // マルチ電卓画面がスワイプで出現する際、スライダーの初期位置を即座に同期して縦線ちらつきを防止
-      if (toId === 'timeCalcMode' && typeof TimeCalc !== 'undefined') {
-        if (typeof TimeCalc.init === 'function') TimeCalc.init();
-        if (typeof TimeCalc.syncSlider === 'function') TimeCalc.syncSlider(true);
-      }
     }
 
     const w    = window.innerWidth;
@@ -6377,28 +5046,6 @@ document.addEventListener("focusin", function(e) {
     const w         = window.innerWidth;
     const threshold = w * 0.2; // マウスの場合は約20%の移動でスワイプ成立
 
-    // __MULTI_TAB__は !toEl より先に判定（toEl=nullのため）
-    if (toId === '__MULTI_TAB__') {
-      fromEl.style.transition = 'transform 0.2s ease';
-      fromEl.style.transform  = 'translateX(0)';
-      const f = fromEl;
-      fromEl = null; toEl = null; toId = null; currentId = null;
-      setTimeout(() => { f.style.transform = ''; f.style.transition = ''; }, 200);
-      // しきい値以上ならタブ切り替え
-      if (Math.abs(dX) > threshold && typeof TimeCalc !== 'undefined') {
-        const mode = TimeCalc.engineMode;
-        const idx  = MULTI_TAB_ORDER.indexOf(mode);
-        const nextIdx = dX < 0
-          ? Math.min(idx + 1, MULTI_TAB_ORDER.length - 1)
-          : Math.max(idx - 1, 0);
-        if (nextIdx !== idx) TimeCalc.setEngineMode(MULTI_TAB_ORDER[nextIdx]);
-      }
-      axisLocked = null;
-      setTimeout(() => { isSwiping = false; isMouseDragging = false; }, 80);
-      document.body.classList.remove('is-swiping');
-      return;
-    }
-
     if (!toEl) {
       if (fromEl) {
         fromEl.style.transition = 'transform 0.3s ease';
@@ -6416,37 +5063,6 @@ document.addEventListener("focusin", function(e) {
     }
 
     if (Math.abs(dX) > threshold) {
-      // マウス: マルチ電卓タブ切り替え（画面遷移なし）
-      if (toId === '__MULTI_TAB__') {
-        if (toEl) {
-          toEl.style.display    = 'none';
-          toEl.style.position   = '';
-          toEl.style.zIndex     = '';
-          toEl.style.transform  = '';
-          toEl.style.transition = '';
-        }
-        fromEl.style.transition = 'transform 0.2s ease';
-        fromEl.style.transform  = 'translateX(0)';
-        const f = fromEl;
-        fromEl = null; toEl = null; toId = null; currentId = null;
-        setTimeout(() => {
-          f.style.transform  = '';
-          f.style.transition = '';
-        }, 200);
-        if (typeof TimeCalc !== 'undefined') {
-          const mode = TimeCalc.engineMode;
-          const idx  = MULTI_TAB_ORDER.indexOf(mode);
-          const nextIdx = dX < 0
-            ? Math.min(idx + 1, MULTI_TAB_ORDER.length - 1)
-            : Math.max(idx - 1, 0);
-          if (nextIdx !== idx) TimeCalc.setEngineMode(MULTI_TAB_ORDER[nextIdx]);
-        }
-        axisLocked = null;
-        setTimeout(() => { isSwiping = false; isMouseDragging = false; }, 80);
-        document.body.classList.remove('is-swiping');
-        return;
-      }
-
       // 遷移確定
       isTransitioning = true;
       if (currentId === 'errorMode' && typeof disableRealTimeIfActive === 'function') {
@@ -9827,7 +8443,6 @@ const TimeCalc = {
   memoryType: 'time',       // 'time' または 'scalar'
   displayFormat: 'COLON',   // 'COLON' (HH:MM:SS) または 'HMS' (X時間Y分Z秒)
   isNewInput: true,         // 次のキー入力で currentInput を上書きするか
-  tabStates: null,          // タブごとの入力保持用ステート辞書
   history: [],              // 履歴配列
 
   // 割り勘計算用ステート (ヒロさん仕様: 多通貨対応)
@@ -10060,20 +8675,6 @@ const TimeCalc = {
     this.renderHistory();
     this.setupDisplayDragScroll();
     this.setupCurrencyDragAndDrop();
-    // タブ切り替えはグローバルスワイプシステムに統合済み（setupSwipeNavigation不要）
-
-    // グロースライダーの初期位置をアニメーションなしで即時設定
-    this.syncSlider(true);
-
-    if (!this._resizeBound) {
-      this._resizeBound = true;
-      window.addEventListener('resize', () => {
-        const tc = document.getElementById('timeCalcMode');
-        if (tc && tc.style.display !== 'none') {
-          this.syncSlider(true);
-        }
-      });
-    }
 
     // ネットワーク状態の変化を自動監視
     window.addEventListener('online', () => {
@@ -10149,315 +8750,11 @@ const TimeCalc = {
     });
   },
 
-  // スワイプによるタブ切り替え（左右スワイプでナビゲーションタブを順に切り替え）
-  // タブ順（画面左→右）: currency → split → precision → time
-  setupSwipeNavigation() {
-    const el = document.getElementById('timeCalcMode');
-    if (!el || el._swipeNavInitialized) return;
-    el._swipeNavInitialized = true;
-
-    // タブ順（HTMLの左→右の並び順に一致）
-    const TAB_ORDER = ['split', 'currency', 'precision', 'time'];
-    const SWIPE_THRESHOLD = 50;   // タブ切り替えに必要な最小水平移動量(px)
-    const ANGLE_THRESHOLD = 35;   // 水平スワイプとみなす最大傾き角度(°)
-
-    // ─── タッチ操作（スマホ）───────────────────────────
-    let touchStartX = 0;
-    let touchStartY = 0;
-    let touchStartTime = 0;
-    let swiping = false;
-
-    el.addEventListener('touchstart', (e) => {
-      // マルチタッチは無視
-      if (e.touches.length !== 1) { swiping = false; return; }
-
-      // 液晶画面内の長文表示要素（サブディスプレイ、メインディスプレイ、数式など）の上をタッチした場合、
-      // 左右スクロール可能な長文であれば文字スクロールを最優先し、タブ切り替えスワイプを無効化
-      const scrollableDisplay = (e.target && e.target.closest)
-        ? e.target.closest('.time-calc-sub-display, .time-calc-main-display, .time-calc-formula')
-        : null;
-      if (scrollableDisplay && scrollableDisplay.scrollWidth > scrollableDisplay.clientWidth + 1) {
-        swiping = false;
-        return;
-      }
-
-      touchStartX = e.touches[0].clientX;
-      touchStartY = e.touches[0].clientY;
-      touchStartTime = Date.now();
-      swiping = true;
-    }, { passive: true });
-
-    el.addEventListener('touchmove', (e) => {
-      if (!swiping || e.touches.length !== 1) return;
-
-      // 移動中も長文要素上ならスワイプを即キャンセルして文字スクロールに専念
-      const scrollableDisplay = (e.target && e.target.closest)
-        ? e.target.closest('.time-calc-sub-display, .time-calc-main-display, .time-calc-formula')
-        : null;
-      if (scrollableDisplay && scrollableDisplay.scrollWidth > scrollableDisplay.clientWidth + 1) {
-        swiping = false;
-        return;
-      }
-
-      const dx = e.touches[0].clientX - touchStartX;
-      const dy = e.touches[0].clientY - touchStartY;
-      // スクロール中（縦方向が支配的）はスワイプ判定をキャンセル
-      if (Math.abs(dy) > Math.abs(dx) * Math.tan((ANGLE_THRESHOLD * Math.PI) / 180)) {
-        swiping = false;
-      }
-    }, { passive: true });
-
-    el.addEventListener('touchend', (e) => {
-      if (!swiping) return;
-      swiping = false;
-
-      const changedTouch = e.changedTouches[0];
-      const dx = changedTouch.clientX - touchStartX;
-      const dy = changedTouch.clientY - touchStartY;
-      const elapsed = Date.now() - touchStartTime;
-
-      // 長時間タッチや垂直方向への移動はタブ切り替えとみなさない
-      if (elapsed > 600) return;
-      if (Math.abs(dy) > Math.abs(dx)) return;
-      if (Math.abs(dx) < SWIPE_THRESHOLD) return;
-
-      const currentIndex = TAB_ORDER.indexOf(this.engineMode);
-      if (currentIndex === -1) return;
-
-      let nextIndex;
-      if (dx < 0) {
-        // 左スワイプ → 画面右側のタブへ（インデックス増加方向）
-        nextIndex = Math.min(currentIndex + 1, TAB_ORDER.length - 1);
-      } else {
-        // 右スワイプ → 画面左側のタブへ（インデックス減少方向）
-        nextIndex = Math.max(currentIndex - 1, 0);
-      }
-
-      if (nextIndex !== currentIndex) {
-        this.setEngineMode(TAB_ORDER[nextIndex]);
-      }
-    }, { passive: true });
-
-    // ─── マウス操作（PC）────────────────────────────────
-    // ※ 数式・メインディスプレイ・サブディスプレイは setupDisplayDragScroll で
-    //   横スクロールを担当するため、それらの要素内からドラッグ開始した場合は
-    //   タブ切り替えを発動しない。
-    const MOUSE_THRESHOLD = 80;  // タブ切り替えに必要な最小水平移動量(px) ─ マウスはやや多め
-    const MOUSE_MAX_TIME = 800;  // ms以内のドラッグのみ対象
-
-    let mouseStartX = 0;
-    let mouseStartY = 0;
-    let mouseStartTime = 0;
-    let mouseActive = false;
-
-    el.addEventListener('mousedown', (e) => {
-      if (e.button !== 0) return;
-      // ドラッグ開始位置が表示エリア内なら横スクロール優先でスキップ
-      const isDisplayArea = (e.target && e.target.closest)
-        ? e.target.closest('.time-calc-sub-display, .time-calc-main-display, .time-calc-formula')
-        : null;
-      if (isDisplayArea && isDisplayArea.scrollWidth > isDisplayArea.clientWidth + 1) return;
-
-      mouseStartX = e.clientX;
-      mouseStartY = e.clientY;
-      mouseStartTime = Date.now();
-      mouseActive = true;
-    });
-
-    window.addEventListener('mouseup', (e) => {
-      if (!mouseActive) return;
-      mouseActive = false;
-
-      const dx = e.clientX - mouseStartX;
-      const dy = e.clientY - mouseStartY;
-      const elapsed = Date.now() - mouseStartTime;
-
-      // 垂直方向が支配的・短距離・長時間はスキップ
-      if (elapsed > MOUSE_MAX_TIME) return;
-      if (Math.abs(dy) > Math.abs(dx)) return;
-      if (Math.abs(dx) < MOUSE_THRESHOLD) return;
-
-      const currentIndex = TAB_ORDER.indexOf(this.engineMode);
-      if (currentIndex === -1) return;
-
-      let nextIndex;
-      if (dx < 0) {
-        // 左ドラッグ → 右側のタブへ
-        nextIndex = Math.min(currentIndex + 1, TAB_ORDER.length - 1);
-      } else {
-        // 右ドラッグ → 左側のタブへ
-        nextIndex = Math.max(currentIndex - 1, 0);
-      }
-
-      if (nextIndex !== currentIndex) {
-        this.setEngineMode(TAB_ORDER[nextIndex]);
-      }
-    });
-  },
-
-  // タブ別入力状態の初期化
-  initTabStates() {
-    if (!this.tabStates) {
-      this.tabStates = {
-        time: {
-          currentInput: "0",
-          formula: "",
-          leftValue: null,
-          pendingOp: null,
-          isNewInput: true,
-          displayFormat: 'COLON'
-        },
-        precision: {
-          currentInput: "0",
-          formula: "",
-          leftValue: null,
-          pendingOp: null,
-          isNewInput: true
-        },
-        split: {
-          splitCurrency: this.splitCurrency || 'JPY',
-          splitTotal: this.splitTotal || 0,
-          splitPeople: this.splitPeople || 2,
-          splitRounding: this.splitRounding || 1000,
-          splitActiveField: this.splitActiveField || 'total',
-          splitInputStr: this.splitInputStr || '0',
-          splitMoreCount: this.splitMoreCount || 0,
-          splitLessCount: this.splitLessCount || 0,
-          splitTierGap: this.splitTierGap || 1000,
-          isNewInput: true
-        },
-        currency: {
-          currencyFrom: this.currencyFrom || 'USD',
-          currencyTo: this.currencyTo || 'JPY',
-          currencyActiveField: this.currencyActiveField || 'from',
-          currencyAmount: this.currencyAmount || 0,
-          currencyInputStr: this.currencyInputStr || '0',
-          isNewInput: true
-        }
-      };
-    }
-  },
-
-  // 現在のタブの入力状態を保存
-  saveCurrentTabState() {
-    this.initTabStates();
-    const mode = this.engineMode;
-    if (mode === 'time') {
-      this.tabStates.time = {
-        currentInput: this.currentInput,
-        formula: this.formula,
-        leftValue: this.leftValue,
-        pendingOp: this.pendingOp,
-        isNewInput: this.isNewInput,
-        displayFormat: this.displayFormat
-      };
-    } else if (mode === 'precision') {
-      this.tabStates.precision = {
-        currentInput: this.currentInput,
-        formula: this.formula,
-        leftValue: this.leftValue,
-        pendingOp: this.pendingOp,
-        isNewInput: this.isNewInput
-      };
-    } else if (mode === 'split') {
-      this.tabStates.split = {
-        splitCurrency: this.splitCurrency,
-        splitTotal: this.splitTotal,
-        splitPeople: this.splitPeople,
-        splitRounding: this.splitRounding,
-        splitActiveField: this.splitActiveField,
-        splitInputStr: this.splitInputStr,
-        splitMoreCount: this.splitMoreCount,
-        splitLessCount: this.splitLessCount,
-        splitTierGap: this.splitTierGap,
-        isNewInput: this.isNewInput
-      };
-    } else if (mode === 'currency') {
-      this.tabStates.currency = {
-        currencyFrom: this.currencyFrom,
-        currencyTo: this.currencyTo,
-        currencyActiveField: this.currencyActiveField,
-        currencyAmount: this.currencyAmount,
-        currencyInputStr: this.currencyInputStr,
-        isNewInput: this.isNewInput
-      };
-    }
-  },
-
-  // 切り替え先タブの入力状態を復元
-  restoreTabState(mode) {
-    this.initTabStates();
-    const s = this.tabStates[mode];
-    if (!s) return;
-
-    if (mode === 'time') {
-      this.currentInput = s.currentInput !== undefined ? s.currentInput : '0';
-      this.formula = s.formula !== undefined ? s.formula : '';
-      this.leftValue = s.leftValue !== undefined ? s.leftValue : null;
-      this.pendingOp = s.pendingOp !== undefined ? s.pendingOp : null;
-      this.isNewInput = s.isNewInput !== undefined ? s.isNewInput : true;
-      if (s.displayFormat) this.displayFormat = s.displayFormat;
-    } else if (mode === 'precision') {
-      this.currentInput = s.currentInput !== undefined ? s.currentInput : '0';
-      this.formula = s.formula !== undefined ? s.formula : '';
-      this.leftValue = s.leftValue !== undefined ? s.leftValue : null;
-      this.pendingOp = s.pendingOp !== undefined ? s.pendingOp : null;
-      this.isNewInput = s.isNewInput !== undefined ? s.isNewInput : true;
-    } else if (mode === 'split') {
-      if (s.splitCurrency) this.splitCurrency = s.splitCurrency;
-      this.splitTotal = s.splitTotal !== undefined ? s.splitTotal : 0;
-      this.splitPeople = s.splitPeople !== undefined ? s.splitPeople : 2;
-      this.splitRounding = s.splitRounding !== undefined ? s.splitRounding : 1000;
-      this.splitActiveField = s.splitActiveField || 'total';
-      this.splitInputStr = s.splitInputStr !== undefined ? s.splitInputStr : '0';
-      this.splitMoreCount = s.splitMoreCount !== undefined ? s.splitMoreCount : 0;
-      this.splitLessCount = s.splitLessCount !== undefined ? s.splitLessCount : 0;
-      this.splitTierGap = s.splitTierGap !== undefined ? s.splitTierGap : 1000;
-      this.isNewInput = s.isNewInput !== undefined ? s.isNewInput : true;
-      this.renderSplitRoundingPills();
-    } else if (mode === 'currency') {
-      if (s.currencyFrom) this.currencyFrom = s.currencyFrom;
-      if (s.currencyTo) this.currencyTo = s.currencyTo;
-      this.currencyActiveField = s.currencyActiveField || 'from';
-      this.currencyAmount = s.currencyAmount !== undefined ? s.currencyAmount : 0;
-      this.currencyInputStr = s.currencyInputStr !== undefined ? s.currencyInputStr : '0';
-      this.isNewInput = s.isNewInput !== undefined ? s.isNewInput : true;
-    }
-  },
-
-  // 全タブの入力状態を完全にリセット（アプリ初期化用）
-  resetAllTabs() {
-    this.tabStates = null;
-    this.initTabStates();
-    this.currentInput = '0';
-    this.formula = '';
-    this.leftValue = null;
-    this.pendingOp = null;
-    this.isNewInput = true;
-    this.splitInputStr = '0';
-    this.splitTotal = 0;
-    this.splitPeople = 2;
-    this.splitMoreCount = 0;
-    this.splitLessCount = 0;
-    this.currencyInputStr = '0';
-    this.currencyAmount = 0;
-    this.syncEngineUI();
-    this.updateDisplay();
-  },
-
-  // 4連ナビゲーションタブによるモード設定（状態を保持して切り替え）
+  // 4連ナビゲーションタブによるモード設定
   setEngineMode(mode) {
     if (!['time', 'precision', 'split', 'currency'].includes(mode)) return;
-    if (this.engineMode === mode) return;
-
-    // 1. 移動前のタブの入力状態を保存
-    this.saveCurrentTabState();
-
     this.engineMode = mode;
-
-    // 2. 移動先タブの入力状態を復元（リセットしない）
-    this.restoreTabState(mode);
-
+    this.allClear();
     this.syncEngineUI();
     this.updateDisplay();
     if (mode === 'currency') {
@@ -10484,9 +8781,6 @@ const TimeCalc = {
         else tab.classList.remove('active');
       }
     });
-
-    // グロースライダーをアクティブタブ位置へ移動
-    this.syncSlider(false);
 
     // 1. 上部セレクターの表示切替
     const splitCtrl = document.getElementById('splitControls');
@@ -10621,38 +8915,6 @@ const TimeCalc = {
         else toBox.classList.remove('active-field');
       }
     }
-  },
-
-  // 4連ナビゲーションタブのグロースライダー位置合わせ
-  syncSlider(instant = false) {
-    const activeTab = document.getElementById(`calcTab_${this.engineMode}`);
-    const slider = document.getElementById('calcTabSlider');
-    if (!activeTab || !slider) return;
-
-    const apply = (isInst, retryCount = 0) => {
-      if (activeTab.offsetWidth === 0) {
-        // 非表示中またはレンダリング前の場合は最大5フレーム再試行
-        if (retryCount < 5) {
-          requestAnimationFrame(() => apply(true, retryCount + 1));
-        }
-        return;
-      }
-      if (isInst) {
-        slider.style.transition = 'none';
-        slider.style.left  = activeTab.offsetLeft + 'px';
-        slider.style.width = activeTab.offsetWidth + 'px';
-        slider.style.opacity = '1';
-        requestAnimationFrame(() => {
-          slider.style.transition = '';
-        });
-      } else {
-        slider.style.left  = activeTab.offsetLeft + 'px';
-        slider.style.width = activeTab.offsetWidth + 'px';
-        slider.style.opacity = '1';
-      }
-    };
-
-    apply(instant);
   },
 
   // 割り勘: 通貨に応じた金額フォーマット
@@ -11613,25 +9875,19 @@ const TimeCalc = {
   },
 
   allClear() {
-    if (this.engineMode === 'time' || this.engineMode === 'precision') {
-      this.currentInput = '0';
-      this.formula = '';
-      this.leftValue = null;
-      this.pendingOp = null;
-      this.isNewInput = true;
-    } else if (this.engineMode === 'split') {
+    this.currentInput = '0';
+    this.formula = '';
+    this.leftValue = null;
+    this.pendingOp = null;
+    this.isNewInput = true;
+    if (this.engineMode === 'split') {
       this.splitInputStr = '0';
       this.splitTotal = 0;
       this.splitPeople = 2;
-      this.splitMoreCount = 0;
-      this.splitLessCount = 0;
-      this.isNewInput = true;
     } else if (this.engineMode === 'currency') {
       this.currencyInputStr = '0';
       this.currencyAmount = 0;
-      this.isNewInput = true;
     }
-    this.saveCurrentTabState();
   },
 
   parseValue(str) {
@@ -12032,10 +10288,6 @@ const TimeCalc = {
     });
     if (this.history.length > 30) this.history.pop();
     this.renderHistory();
-    const drawer = document.getElementById('timeCalcHistoryDrawer');
-    if (drawer) {
-      drawer.scrollTop = 0;
-    }
   },
 
   deleteHistoryItem(idx) {
@@ -12051,21 +10303,13 @@ const TimeCalc = {
   },
 
   renderHistory() {
-    const drawer = document.getElementById('timeCalcHistoryDrawer');
     const listEl = document.getElementById('timeCalcHistoryList');
-
+    if (!listEl) return;
     if (this.history.length === 0) {
-      if (drawer) drawer.style.display = 'none';
-      if (listEl) {
-        const emptyMsg = typeof t === 'function' ? (t('no_records') || '記録された結果はありません。') : '記録された結果はありません。';
-        listEl.innerHTML = `<div class="time-calc-history-empty">${emptyMsg}</div>`;
-      }
+      const emptyMsg = typeof t === 'function' ? (t('no_records') || '記録された結果はありません。') : '記録された結果はありません。';
+      listEl.innerHTML = `<div class="time-calc-history-empty">${emptyMsg}</div>`;
       return;
     }
-
-    if (drawer) drawer.style.display = 'block';
-    if (!listEl) return;
-
     listEl.innerHTML = this.history.map((item, idx) => `
       <div class="time-calc-history-item" onclick="TimeCalc.loadHistoryItem(${idx})">
         <div class="hist-content">

@@ -631,6 +631,12 @@ input, select {
     margin-bottom: 8px; /* 段落の間隔を狭める */
 }
 
+#infoCreatedBy {
+    font-size: clamp(12px, 3.8vw, 14.5px);
+    letter-spacing: -0.2px;
+    white-space: nowrap;
+}
+
 /* style.css (末尾の定義を変更) */
 
 /* 中央の🔃ボタンのスタイル */

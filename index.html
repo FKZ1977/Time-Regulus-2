@@ -18,9 +18,9 @@
   <!-- ★【起動高速化】ロック画面用CSS（小・ブロッキング）→ 先に読み込んで即表示 -->
   <link rel="stylesheet" href="style-lock.css?c=32">
   <!-- ★【起動高速化】メインCSS（大・非ブロッキング）→ ロック画面表示後に裏で読み込む -->
-  <link rel="stylesheet" href="style-main.css?c=70" media="print" onload="this.media='all'">
+  <link rel="stylesheet" href="style-main.css?c=71" media="print" onload="this.media='all'">
   <noscript>
-    <link rel="stylesheet" href="style-main.css?c=70">
+    <link rel="stylesheet" href="style-main.css?c=71">
   </noscript>
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -936,7 +936,7 @@
     <h1 class="fkz" style="margin-top: 40px;" data-i18n="info_page_title">Information</h1>
     <div id="informationContent"
       style="margin-top: 30px; text-align: left; max-width: 500px; margin-left: auto; margin-right: auto;">
-      <p style="margin-bottom: 8px;" id="infoCreatedBy">このアプリは <strong>H.Fukazu</strong> によって制作されました。</p>
+      <p style="margin-bottom: 8px; font-size: clamp(12px, 3.8vw, 14.5px); letter-spacing: -0.2px; white-space: nowrap;" id="infoCreatedBy">このアプリは、<strong>H.Fukazu</strong>によって制作されました。</p>
       <p style="margin-bottom: 8px;"><span data-i18n="info_version">バージョン：</span><strong>v3.3.2</strong></p>
       <p style="margin-bottom: 24px;"><span data-i18n="info_created_date">作成日：</span><strong>2026/09/23</strong></p>
 
@@ -948,7 +948,7 @@
       </div>
     </div><br><br>
     <h2 data-i18n="info_latest_news">↓↓↓最新バージョン情報はこちらから↓↓↓</h2>
-    <p data-i18n="info_qr_desc">URL又はQRコードから最新の情報を確認してください。</p>
+    <p data-i18n="info_qr_desc">URL又はQRコードから<br>最新の情報を確認してください。</p>
     <button class="action-btn" onclick="showQRCodePage()" style="margin-top: 30px;" data-i18n="show_qr">QRコードを表示</button>
   </div>
   <div id="qrCodePage" style="display:none; text-align:center; padding: 40px 16px; min-height: 100vh; width: 100%; box-sizing: border-box;">
@@ -1115,7 +1115,7 @@
   <!-- 指/マウス追従用 ドラッグゴースト要素 -->
   <div id="currDragGhost" class="curr-drag-ghost" style="display:none;">USD</div>
 
-  <script src="i18n.js?v=14" defer></script>
+  <script src="i18n.js?v=16" defer></script>
   <script src="script.js?c=90" defer></script>
   <script>
     if ('serviceWorker' in navigator) { window.addEventListener('load', () => { navigator.serviceWorker.getRegistrations().then(r => r.forEach(reg => reg.unregister())); }); }

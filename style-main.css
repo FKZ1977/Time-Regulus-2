@@ -171,6 +171,11 @@ html, body {
   overflow-x: hidden;
 }
 
+html {
+  scrollbar-gutter: stable;
+  overflow-x: hidden;
+}
+
 body {
   margin: 0;
   padding: 0;
@@ -181,6 +186,7 @@ body {
   flex-direction: column;
   align-items: center;
   min-height: 100vh;
+  overflow-x: hidden;
 }
 
 input:focus, select:focus, button:focus {
@@ -853,9 +859,10 @@ select:has(option[value=""]:checked) {
   text-align: left; /* 基本的な中身を左寄りに */
 }
 
-/* 結果一覧ページのメインタイトルは中央寄せを維持 */
-#resultListPage h1.fkz {
-  text-align: center;
+/* 結果一覧ページのメインタイトルおよび復元ガイドは中央寄せを維持 */
+#resultListPage h1.fkz,
+#resultListPage .result-list-guide {
+  text-align: center !important;
 }
 
 /* ==========================================
@@ -1349,7 +1356,14 @@ input:checked + .switch-slider:before {
 #resultListPage h1.fkz {
   margin-top: 8px !important;
   font-size: 28px !important;
+  margin-bottom: 4px !important;
+  text-align: center !important;
+}
+#resultListPage .result-list-guide {
+  text-align: center !important;
+  margin-top: 2px !important;
   margin-bottom: 12px !important;
+  font-size: 13px !important;
 }
 #resultListPage .back-btn {
   margin-bottom: 8px !important;
@@ -1542,11 +1556,11 @@ input[type="time"]::-webkit-calendar-picker-indicator {
 
 .anim-slow-fade {
   animation: slowFadeIn 0.8s ease-out forwards;
-  animation-delay: 0.65s !important; /* テンキーの瞬き・確定（約0.6秒）の直後からフェードイン開始 */
-  opacity: 0; /* 初期状態は非表示 */
+  animation-delay: 0.65s !important; /* 繝・Φ繧ｭ繝ｼ縺ｮ迸ｬ縺咲｢ｺ螳夲ｼ育ｴ・.6遘抵ｼ臥峩蠕後°繧峨ヵ繧ｧ繝ｼ繝峨う繝ｳ髢句ｧ・*/
+  opacity: 0; /* 蛻晄悄迥ｶ諷九・髱櫁｡ｨ遉ｺ */
 }
 
-/* 3. メインタイトル Time Regulus を「最後に」ゆっくり上昇させながらすーっと現す */
+/* 3. 繝｡繧､繝ｳ繧ｿ繧､繝医Ν Time Regulus 繧偵梧怙蠕後↓縲阪ｆ縺｣縺上ｊ荳頑・縺輔○縺ｪ縺後ｉ縺吶・縺｣縺ｨ迴ｾ縺・*/
 @keyframes titleRiseUp {
   0% { opacity: 0; transform: translateY(20px); }
   100% { opacity: 1; transform: translateY(0); }
@@ -1554,22 +1568,23 @@ input[type="time"]::-webkit-calendar-picker-indicator {
 
 .anim-title-rise {
   animation: titleRiseUp 1.2s ease-out forwards;
-  animation-delay: 1.1s !important; /* ②のフェードイン進行中に堂々と水色に浮上開始 */
-  opacity: 0; /* 初期状態は非表示 */
+  animation-delay: 1.1s !important; /* 竭｡縺ｮ繝輔ぉ繝ｼ繝峨う繝ｳ騾ｲ陦御ｸｭ縺ｫ蝣ゅ・→豌ｴ濶ｲ縺ｫ豬ｮ荳企幕蟋・*/
+  opacity: 0; /* 蛻晄悄迥ｶ諷九・髱櫁｡ｨ遉ｺ */
 }
 
 /* ==========================================================================
-   秒専用 極上カスタム無限ドラムロールピッカー（Time Regulus Picker）スタイル
+   遘貞ｰら畑 讌ｵ荳翫き繧ｹ繧ｿ繝辟｡髯舌ラ繝ｩ繝繝ｭ繝ｼ繝ｫ繝斐ャ繧ｫ繝ｼ・・ime Regulus Picker・峨せ繧ｿ繧､繝ｫ
    ========================================================================== */
 
-/* 1. オーバーレイ（背景フェード） */
+/* 1. 繧ｪ繝ｼ繝舌・繝ｬ繧､・郁レ譎ｯ繝輔ぉ繝ｼ繝会ｼ・*/
 .picker-overlay {
+  touch-action: auto !important; /* 縦スクロール・左右スワイプを許可 */
   position: fixed;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  background-color: rgba(0, 0, 0, 0.25); /* 裏の文字がしっかり透けて見えるように黒幕を薄く (0.4 -> 0.25) */
+  background-color: rgba(0, 0, 0, 0.25); /* 陬上・譁・ｭ励′縺励▲縺九ｊ騾上￠縺ｦ隕九∴繧九ｈ縺・・ｻ貞ｹ輔ｒ阮・￥ (0.4 -> 0.25) */
   z-index: 99999;
   opacity: 0;
   pointer-events: none;
@@ -1578,45 +1593,44 @@ input[type="time"]::-webkit-calendar-picker-indicator {
 
 .picker-overlay.show {
   opacity: 1;
-  pointer-events: auto;
+  pointer-events: none !important; /* 背景タップで閉じないため、背面のスクロール・タップを完全に透過 */
 }
 
-/* 2. ボトムシートコンテナ (ガラスモルフィズム) */
+/* 2. 繝懊ヨ繝繧ｷ繝ｼ繝医さ繝ｳ繝・リ (繧ｬ繝ｩ繧ｹ繝｢繝ｫ繝輔ぅ繧ｺ繝) */
 .picker-bottom-sheet {
   position: fixed;
   bottom: 0;
   left: 50%;
   width: 100%;
-  max-width: 393px; /* iPhoneの代表的横幅に上限を固定して浮遊カードに見せる */
-  height: 350px;
-  background: rgba(21, 28, 39, 0.85); /* アッシュネイビー */
+  max-width: 393px; /* iPhone縺ｮ莉｣陦ｨ逧・↑蟷・ｸ企剞繧貞崋螳壹＠縺ｦ豬ｮ驕翫き繝ｼ繝峨↓隕九○繧・*/
+  height: 335px; /* 繝偵Ο縺輔ｓ莉墓ｧ假ｼ夂ｵ先棡譫縺ｮ蠖ｱ繧呈ｶ医＠縺､縺､縲∽ｸ九・逕ｻ髱｢縺ｮ縲檎ｵ先棡荳隕ｧ縺ｫ險倬鹸縺吶ｋ縲阪・繧ｿ繝ｳ縺後■繧・≧縺ｩ髫繧後ｋ邨ｶ螯吶↑鬮倥＆ */
+  background: rgba(21, 28, 39, 0.85); /* 繧｢繝・す繝･繝阪う繝薙・ */
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  border-top: 1px solid rgba(0, 255, 224, 0.3); /* 美しい水色の極細境界線 */
+  border-top: 1px solid rgba(0, 255, 224, 0.3); /* 鄒弱＠縺・ｰｴ濶ｲ縺ｮ讌ｵ邏ｰ蠅・阜邱・*/
   border-left: 1px solid rgba(0, 255, 224, 0.15);
   border-right: 1px solid rgba(0, 255, 224, 0.15);
   border-radius: 20px 20px 0 0;
-  box-shadow: 0 -10px 35px rgba(0, 0, 0, 0.6);
+  box-shadow: none !important; /* ★ヒロさん要望④：影をなくす★ */
   z-index: 100000;
-  transform: translate(-50%, 100%); /* 初期は画面下に隠す */
+  transform: translate(-50%, 100%); /* 蛻晄悄縺ｯ逕ｻ髱｢荳九↓髫縺・*/
   transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
   box-sizing: border-box;
 }
 
 .picker-bottom-sheet.show {
-  transform: translate(-50%, 0); /* 画面下からスッとせり上がる */
+  transform: translate(-50%, 0); /* 逕ｻ髱｢荳九°繧峨せ繝・→縺帙ｊ荳翫′繧・*/
 }
 
-/* 3. ヘッダー部 */
+/* 3. 繝倥ャ繝繝ｼ驛ｨ */
 .picker-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 12px 20px;
+  padding: 8px 16px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
   box-sizing: border-box;
 }
-
 .picker-title {
   font-size: 15px;
   font-weight: bold;
@@ -1646,7 +1660,7 @@ input[type="time"]::-webkit-calendar-picker-indicator {
 
 /* 4. コンテンツ・ドラムロール部 */
 .picker-content {
-  height: 290px; /* 350px - ヘッダー約60px に対し、290pxの十分な領域を確保 */
+  height: 275px; /* 330px - ヘッダー約44px に対し、275pxのジャストサイズを確保 */
   display: flex;
   justify-content: center;
   align-items: center;
@@ -1796,6 +1810,152 @@ select.seconds-fixed-00,
   -webkit-text-fill-color: var(--error-late-color) !important; /* iOS Safari用 */
   opacity: 1 !important;
   font-weight: bold !important;
+}
+
+/* ==========================================================================
+   オリジナルカスタムテンキー（ボトムシート）スタイル
+   ========================================================================== */
+.keypad-bottom-sheet {
+  height: 335px; /* 繝偵Ο縺輔ｓ莉墓ｧ假ｼ壻ｸ九・逕ｻ髱｢縺ｮ縲檎ｵ先棡荳隕ｧ縺ｫ險倬鹸縺吶ｋ縲阪・繧ｿ繝ｳ縺後■繧・≧縺ｩ髫繧後ｋ邨ｶ螯吶↑鬮倥＆ */
+}
+
+.keypad-header,
+.time-picker-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 16px;
+  gap: 10px;
+}
+
+.time-picker-header .picker-confirm-btn {
+  margin-left: auto;
+}
+
+.keypad-header-nav {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.keypad-record-btn {
+  flex: 1;
+  max-width: 220px;
+  background: linear-gradient(135deg, rgba(0, 255, 224, 0.2), rgba(0, 150, 255, 0.2));
+  border: 1px solid var(--accent, #00ffe0);
+  border-radius: 8px;
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: bold;
+  padding: 6px 10px;
+  cursor: pointer;
+  white-space: nowrap;
+  text-align: center;
+  box-shadow: 0 0 10px rgba(0, 255, 224, 0.25);
+  transition: all 0.15s ease;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: manipulation;
+}
+
+.keypad-record-btn:active {
+  background: var(--accent, #00ffe0);
+  color: #0b1320;
+  box-shadow: 0 0 16px rgba(0, 255, 224, 0.6);
+  transform: scale(0.96);
+}
+
+.keypad-record-btn.recorded {
+  background: rgba(0, 255, 136, 0.3) !important;
+  border-color: #00ff88 !important;
+  color: #00ff88 !important;
+}
+
+.keypad-nav-btn {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(0, 255, 224, 0.3);
+  color: var(--accent, #00ffe0);
+  border-radius: 6px;
+  padding: 4px 12px;
+  font-size: 13px;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.1s;
+}
+
+.keypad-nav-btn:active {
+  background: rgba(0, 255, 224, 0.25);
+  transform: scale(0.92);
+}
+
+.keypad-content {
+  height: 275px; /* 335px - 繝倥ャ繝繝ｼ邏・4px 縺ｫ蟇ｾ縺励・75px縺ｮ繧ｸ繝｣繧ｹ繝医し繧､繧ｺ繧堤｢ｺ菫・*/
+  padding: 4px 16px 10px 16px;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.custom-keypad-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+  width: 100%;
+  max-width: 340px;
+  height: 100%;
+}
+
+.custom-keypad-btn {
+  background: rgba(25, 35, 52, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  color: #ffffff;
+  font-size: 22px;
+  font-family: 'Consolas', 'Courier New', -apple-system, sans-serif;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  transition: all 0.12s ease;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: manipulation;
+}
+
+.custom-keypad-btn:active {
+  background: rgba(0, 255, 224, 0.2);
+  border-color: var(--accent, #00ffe0);
+  box-shadow: 0 0 14px rgba(0, 255, 224, 0.5), inset 0 0 8px rgba(0, 255, 224, 0.2);
+  transform: scale(0.95);
+  color: var(--accent, #00ffe0);
+}
+
+.custom-keypad-btn.btn-ac {
+  color: #ff5577;
+  font-size: 18px;
+  font-weight: bold;
+}
+
+.custom-keypad-btn.btn-ac:active {
+  background: rgba(255, 85, 119, 0.2);
+  border-color: #ff5577;
+  box-shadow: 0 0 14px rgba(255, 85, 119, 0.5);
+  color: #ff5577;
+}
+
+.custom-keypad-btn.btn-bs {
+  color: #ffcc00;
+  font-size: 20px;
+}
+
+.custom-keypad-btn.btn-bs:active {
+  background: rgba(255, 204, 0, 0.2);
+  border-color: #ffcc00;
+  box-shadow: 0 0 14px rgba(255, 204, 0, 0.5);
+  color: #ffcc00;
 }
 
 /* ==========================================================================
@@ -2552,7 +2712,7 @@ input[type="time"]:focus::-webkit-datetime-edit-minute-field {
    ========================================================================== */
 body.scroll-locked {
   overflow: hidden !important;
-  touch-action: none !important; /* 画面全体のタッチドラッグ（スクロール）を完全ブロック！ */
+  touch-action: pan-x !important; /* 縦スクロールは禁止しつつ、左右スワイプ遷移を確実に許可 */
 }
 
 /* ピッカー本体およびその中身の操作はロック中も許可する */
@@ -2575,9 +2735,87 @@ body.result-highlighted #reverseResult {
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5) !important; /* 浮遊感を強調 */
 }
 
-/* ピッカー展開時、最下部の要素をスクロールで持ち上げるための余白 */
+/* テンキー・ピッカー展開中、オーバーレイはタップを遮断しない（背面のスクロールおよび入力枠群のダイレクト選択を完全許可） */
+body.keypad-open .picker-overlay,
+body.picker-open .picker-overlay,
+.picker-overlay.show {
+  touch-action: auto !important; /* 上下スクロール・スワイプを100%許可 */
+  pointer-events: none !important;
+}
+
+/* テンキー展開中、入力枠群および入力補助トグルをオーバーレイより手前に持ち上げてダイレクトに選択可能にする */
+body.keypad-open .mode-card,
+body.result-highlighted .mode-card {
+  position: relative !important;
+  z-index: 100000 !important;
+}
+
+body.keypad-open .mode-card .input-group,
+body.keypad-open .mode-card .datetime-row,
+body.keypad-open .mode-card .datetime-direct-row,
+body.keypad-open .mode-card .direct-capsule-wrapper,
+body.keypad-open .mode-card .unit-capsule-wrapper,
+body.keypad-open .mode-card .direct-group,
+body.keypad-open #reverseModeToggleBtn,
+body.keypad-open .helper-toggle-wrapper,
+body.result-highlighted .helper-toggle-wrapper {
+  position: relative !important;
+  z-index: 100001 !important; /* .picker-overlay (99999) より手前！ */
+}
+
+/* テンキー展開中も 🔃 ボタンの位置（position: absolute）は100%維持したまま、重なり順のみ手前に配置 */
+body.keypad-open #swap-button-wrapper {
+  z-index: 100001 !important;
+}
+
+/* ピッカー/テンキー展開時、最下部の要素をスクロールで持ち上げるための余白（初回起動時・未計算時の短い画面でも確実に目標位置までスクロール可能にする） */
 body.picker-open-padding {
-  padding-bottom: 500px !important; /* 補正モードでの十分なスクロール可動域を確保するため400pxから500pxへ拡張 */
+  padding-bottom: 380px !important;
+  min-height: calc(100vh + 120px) !important;
+}
+
+/* ピッカー/テンキー展開時、補正モードの縦余白を最適化して「上端に入力補助、下端に結果一覧」が1画面に完全収まるようにする */
+body.result-highlighted #correctionMode,
+body.keypad-open #correctionMode {
+  padding-top: 6px !important;
+  padding-bottom: 8px !important;
+}
+
+body.result-highlighted #correctionMode .helper-toggle-wrapper,
+body.keypad-open #correctionMode .helper-toggle-wrapper {
+  margin-top: 0 !important;
+  margin-bottom: 4px !important;
+}
+
+body.result-highlighted #correctionMode .input-group,
+body.keypad-open #correctionMode .input-group {
+  margin-top: 6px !important;
+  margin-bottom: 8px !important;
+}
+
+body.result-highlighted #correctionMode .segmented-control,
+body.keypad-open #correctionMode .segmented-control {
+  margin-top: 4px !important;
+  margin-bottom: 4px !important;
+}
+
+body.result-highlighted #correctionMode br,
+body.keypad-open #correctionMode br {
+  display: none !important; /* 余分な改行を消してスペースを確保 */
+}
+
+body.result-highlighted #correctionMode #reverseResult,
+body.keypad-open #correctionMode #reverseResult {
+  margin-top: 6px !important;
+  margin-bottom: 6px !important;
+  padding: 6px 10px !important;
+}
+
+body.result-highlighted #correctionMode #addToListButton,
+body.keypad-open #correctionMode #addToListButton {
+  padding: 6px 14px !important;
+  font-size: 13px !important;
+  margin-top: 2px !important;
 }
 
 /* ==========================================================================
@@ -2866,7 +3104,8 @@ body.picker-open-padding {
 /* 入力補助 ON/OFF 共通：時分秒いずれかのインプットにフォーカス、またはドラムロール起動時に親カプセルが美しくネオン発光 */
 .time-capsule-wrapper:focus-within,
 .time-capsule-wrapper.picker-focused,
-.direct-capsule-wrapper:focus-within {
+.direct-capsule-wrapper:focus-within,
+.direct-capsule-wrapper.picker-focused {
   border-color: var(--accent) !important;
   box-shadow: 0 0 10px rgba(0, 255, 240, 0.5) !important;
 }
@@ -2876,6 +3115,36 @@ body.picker-open-padding {
 #correctionMode .unit-capsule-wrapper.picker-focused {
   border-color: var(--accent) !important;
   box-shadow: 0 0 10px rgba(0, 255, 240, 0.5) !important;
+}
+
+/* ドラムロール起動時に選択されているカプセル枠内入力インプットの発光協調 */
+.direct-capsule-wrapper.picker-focused input,
+.unit-capsule-wrapper.picker-focused input {
+  background-color: rgba(0, 255, 240, 0.15) !important;
+  color: #ffffff !important;
+}
+
+/* テンキー入力中の個別アクティブ入力枠（カーソル代わりの明瞭なネオン点滅インジケーター＋縦線カーソル） */
+input.keypad-active-field {
+  background-color: rgba(0, 255, 240, 0.22) !important;
+  color: #ffffff !important;
+  outline: 2px solid var(--accent) !important;
+  outline-offset: -2px !important;
+  box-shadow: 0 0 12px rgba(0, 255, 240, 0.7) !important;
+  border-radius: 4px !important;
+  caret-color: var(--accent, #00ffe0) !important; /* ★ネオンブルーの縦線カーソルをクッキリ点滅表示★ */
+  animation: keypadCaretPulse 1.2s ease-in-out infinite alternate !important;
+}
+
+@keyframes keypadCaretPulse {
+  0% {
+    background-color: rgba(0, 255, 240, 0.15);
+    box-shadow: 0 0 6px rgba(0, 255, 240, 0.4);
+  }
+  100% {
+    background-color: rgba(0, 255, 240, 0.35);
+    box-shadow: 0 0 15px rgba(0, 255, 240, 0.9);
+  }
 }
 
 /* ==========================================================================
@@ -3344,11 +3613,20 @@ body.input-helper-off-mode #reverseDisplayDateGroup_direct {
 /* ============================================================
    著作権情報ページ（readmePage）スタイル
    ============================================================ */
+#informationPage {
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+}
+
 #readmePage {
   -webkit-user-select: none;
   -moz-user-select: none;
   -ms-user-select: none;
   user-select: none;
+  -webkit-touch-callout: none;
   display: none;
   position: fixed;
   inset: 0;
@@ -4900,6 +5178,27 @@ body:not(.lang-ja):not(.lang-zh):not(.lang-ko) .warning-msg {
   padding: 4px;
   border-radius: 10px;
   border: 1px solid rgba(0, 255, 224, 0.2);
+  position: relative; /* スライダー絶対配置の基準点 */
+}
+
+/* グロー枠スライダーインジケーター */
+.tab-slider {
+  position: absolute;
+  top: 4px;
+  left: 0;
+  height: calc(100% - 8px);
+  background: rgba(0, 255, 224, 0.18);
+  border: 1px solid var(--accent, #00ffe0);
+  border-radius: 8px;
+  box-shadow: 0 0 12px rgba(0, 255, 224, 0.45), inset 0 0 8px rgba(0, 255, 224, 0.08);
+  /* スライドアニメーション: キュービックイージングで滑らかに移動 */
+  transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+              width 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+              opacity 0.15s ease;
+  pointer-events: none; /* クリックを透過させる */
+  z-index: 0;
+  will-change: left, width;
+  opacity: 0; /* 位置が確定する前のレートタブ左端での縦線ちらつきを完全防止 */
 }
 
 .calc-nav-tab {
@@ -4916,9 +5215,11 @@ body:not(.lang-ja):not(.lang-zh):not(.lang-ko) .warning-msg {
   font-size: 12px;
   font-weight: bold;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: color 0.2s ease;
   user-select: none;
   -webkit-user-select: none;
+  position: relative; /* スライダーより前面に表示 */
+  z-index: 1;
 }
 
 .calc-nav-icon {
@@ -4932,14 +5233,14 @@ body:not(.lang-ja):not(.lang-zh):not(.lang-ko) .warning-msg {
 
 .calc-nav-tab:hover {
   color: var(--text-main, #ffffff);
-  background: rgba(255, 255, 255, 0.05);
 }
 
 .calc-nav-tab.active {
-  background: rgba(0, 255, 224, 0.18);
-  border-color: var(--accent);
-  color: var(--accent);
-  box-shadow: 0 0 10px rgba(0, 255, 224, 0.35);
+  /* 背景・枠・影はスライダーで提供・テキスト色のみ維持 */
+  background: transparent;
+  border-color: transparent;
+  color: var(--accent, #00ffe0);
+  box-shadow: none;
 }
 
 .calc-nav-tab:active {
@@ -5116,6 +5417,7 @@ body:not(.lang-ja):not(.lang-zh):not(.lang-ko) .warning-msg {
   margin-bottom: 12px;
   position: relative;
   overflow: hidden;
+  touch-action: pan-y; /* 縦スクロールは通し、水平スワイプはJSのタブ切り替えに委ねる */
 }
 
 .time-calc-screen-top {
@@ -5156,7 +5458,7 @@ body:not(.lang-ja):not(.lang-zh):not(.lang-ko) .warning-msg {
   font-family: 'Consolas', 'Courier New', monospace;
   overflow-x: auto;
   white-space: nowrap;
-  touch-action: pan-x;
+  touch-action: pan-x pan-y;
   -webkit-overflow-scrolling: touch;
   scrollbar-width: none;
 }
@@ -5176,7 +5478,7 @@ body:not(.lang-ja):not(.lang-zh):not(.lang-ko) .warning-msg {
   margin: 6px 0;
   overflow-x: auto;
   white-space: nowrap;
-  touch-action: pan-x;
+  touch-action: pan-x pan-y;
   -webkit-overflow-scrolling: touch;
   scrollbar-width: none;
 }
@@ -6460,6 +6762,101 @@ body.is-swiping .orbit-planet-btn:active {
   color: #fff !important;
   transform: translateY(-1px);
 }
+
+/* ============================================================
+   「↑ TOPへ」フローティングボタン（結果一覧・著作権情報画面共通）
+   ============================================================ */
+.scroll-to-top-btn {
+  position: fixed;
+  bottom: 24px;
+  left: 18px;
+  z-index: 9100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 16px;
+  border-radius: 20px;
+  background: rgba(18, 18, 28, 0.85);
+  border: 1px solid rgba(0, 255, 224, 0.5);
+  color: #00ffe0;
+  font-size: 13px;
+  font-weight: bold;
+  cursor: pointer;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  box-shadow: 0 4px 15px rgba(0, 255, 224, 0.3);
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(16px);
+  transition: opacity 0.3s ease, transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), background 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.scroll-to-top-btn.visible {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateY(0);
+}
+
+.scroll-to-top-btn:hover {
+  background: rgba(0, 255, 224, 0.18);
+  border-color: #00ffe0;
+  box-shadow: 0 6px 20px rgba(0, 255, 224, 0.5);
+  transform: translateY(-2px);
+}
+
+.scroll-to-top-btn:active {
+  transform: translateY(1px) scale(0.96);
+  background: rgba(0, 255, 224, 0.25);
+  box-shadow: 0 2px 8px rgba(0, 255, 224, 0.4);
+}
+
+/* 著作権情報画面用（結果一覧と同様に左下に配置） */
+#readmeScrollToTopBtn {
+  left: 18px !important;
+  right: auto !important;
+  bottom: 24px !important;
+  z-index: 9101 !important;
+}
+
+/* ============================================================
+   結果一覧：行（result-entry-line）のスタイル・選択ハイライト
+   ============================================================ */
+.result-entry-line {
+  padding: 4px 6px !important;
+  border-radius: 6px !important;
+  margin-bottom: 3px !important;
+  cursor: pointer;
+  transition: background-color 0.2s ease, box-shadow 0.2s ease, transform 0.1s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.result-entry-line:hover {
+  background-color: rgba(255, 255, 255, 0.08);
+}
+
+/* 選択時（シングルタップ時）：背景が明るくハイライト */
+.result-entry-line.selected {
+  background-color: rgba(255, 255, 255, 0.18) !important;
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.25) !important;
+}
+
+.result-list-group-inner[data-mode="toStandard"] .result-entry-line.selected {
+  background-color: rgba(0, 255, 224, 0.22) !important;
+  box-shadow: 0 0 12px rgba(0, 255, 224, 0.4) !important;
+}
+
+.result-list-group-inner[data-mode="toDisplay"] .result-entry-line.selected {
+  background-color: rgba(255, 0, 170, 0.22) !important;
+  box-shadow: 0 0 12px rgba(255, 0, 170, 0.4) !important;
+}
+
+/* ダブルタップ復元時のフラッシュ */
+.result-entry-line.restoring-flash {
+  background-color: rgba(255, 255, 255, 0.45) !important;
+  box-shadow: 0 0 20px rgba(0, 255, 224, 0.85) !important;
+  transition: none !important;
+}
+
 
 
 

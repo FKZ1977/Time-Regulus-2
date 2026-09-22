@@ -1,7 +1,7 @@
-﻿const i18n_translations = {
+const i18n_translations = {
   ja: {
     "app_title": "Time Regulus",
-    "app_subtitle": "タイム　レグルス　v3.3.1",
+    "app_subtitle": "タイム　レグルス　v3.3.2",
     "real_time": "リアルタイム",
     "passcode": "暗証番号：",
     "passcode_placeholder": "例：12345",
@@ -89,10 +89,11 @@
     "show_qr": "QRコードを表示",
     "close": "☒ 閉じる",
     "select_time": "時刻を選択",
+    "input_keypad": "テンキー入力",
     "select_display_time": "表示時刻を選択",
     "select_standard_time": "標準時刻を選択",
     "select_error_time": "誤差時間を選択",
-    "done": "完了",
+    "done": "▼ 完了",
     "wrong_passcode": "暗証番号が違います",
     "error_calculate_first": "表示時刻と標準時刻を正しく入力してください。",
     "error_missing_parts": "⚠ 　{0}　が不足",
@@ -119,7 +120,7 @@
     "min_missing": "分",
     "sec_missing": "秒",
     "already_recorded": "既に記録されています",
-    "added_to_list": "✔ 追加しました",
+    "added_to_list": "✔ 記録しました",
     "no_records": "記録された結果はありません。",
     "is_fast_parentheses": "（進み）",
     "is_slow_parentheses": "（遅れ）",
@@ -131,6 +132,7 @@
     "show_copyright": "📖 著作権情報を見る",
     "info_created_by": "このアプリは <strong>H.Fukazu</strong> によって制作されました。",
     "info_version": "バージョン：",
+    "info_created_date": "作成日：",
     "info_latest_news": "最新バージョン情報はこちらから",
     "info_qr_desc": "QRコードから新しい情報を確認してください。",
     "info_page_title": "Information",
@@ -142,14 +144,17 @@
     "result_conclusion": "である",
     "days_ahead": "{0}日先の",
     "days_ago": "{0}日前の",
+    "back_to_top": "↑ TOPへ",
+    "double_tap_to_restore": "💡 ダブルタップで復元",
     "err_list_days": "{0}日",
     "err_list_hours": "{0}時間",
     "err_list_mins": "{0}分",
-    "err_list_secs": "{0}秒"
+    "err_list_secs": "{0}秒",
+    "hold_to_return": "長押しで戻る"
   },
   en: {
     "app_title": "Time Regulus",
-    "app_subtitle": "Time Regulus v3.3.1",
+    "app_subtitle": "Time Regulus v3.3.2",
     "real_time": "Real Time",
     "passcode": "Passcode:",
     "passcode_placeholder": "e.g. 12345",
@@ -237,10 +242,11 @@
     "show_qr": "Show QR Code",
     "close": "☒ Close",
     "select_time": "Select Time",
+    "input_keypad": "Keypad Input",
     "select_display_time": "Select Display Time",
     "select_standard_time": "Select Standard Time",
     "select_error_time": "Select Error Time",
-    "done": "Done",
+    "done": "▼ Done",
     "wrong_passcode": "Incorrect passcode",
     "error_calculate_first": "Please enter Display Time and Standard Time correctly.",
     "error_missing_parts": "⚠ Missing: {0}",
@@ -279,6 +285,7 @@
     "show_copyright": "📖 Copyright Info",
     "info_created_by": "This app was created by <strong>H.Fukazu</strong>.",
     "info_version": "Version: ",
+    "info_created_date": "Release Date: ",
     "info_latest_news": "Latest Version Info",
     "info_qr_desc": "Check new information via QR code.",
     "info_page_title": "Information",
@@ -290,14 +297,17 @@
     "result_conclusion": "",
     "days_ahead": "{0}d ahead ",
     "days_ago": "{0}d ago ",
+    "back_to_top": "↑ Top",
+    "double_tap_to_restore": "💡 Double-tap to restore",
     "err_list_days": "{0}d",
     "err_list_hours": "{0}h",
     "err_list_mins": "{0}m",
-    "err_list_secs": "{0}s"
+    "err_list_secs": "{0}s",
+    "hold_to_return": "Hold to return"
   },
   nl: {
     "app_title": "Time Regulus",
-    "app_subtitle": "Time Regulus v3.3.1",
+    "app_subtitle": "Time Regulus v3.3.2",
     "real_time": "Realtime",
     "passcode": "Toegangscode:",
     "passcode_placeholder": "bijv. 12345",
@@ -387,6 +397,7 @@
     "show_copyright": "📖 Auteursrecht",
     "info_created_by": "Deze applicatie is gemaakt door <strong>H.Fukazu</strong>.",
     "info_version": "Versie: ",
+    "info_created_date": "Aanmaakdatum: ",
     "info_latest_news": "Laatste versie info",
     "info_qr_desc": "Controleer nieuwe informatie via de QR-code.",
     "info_page_title": "Informatie",
@@ -398,15 +409,18 @@
     "result_conclusion": "",
     "days_ahead": "{0}d vooruit ",
     "days_ago": "{0}d geleden ",
+    "back_to_top": "↑ Naar boven",
+    "double_tap_to_restore": "💡 Dubbeltik om te herstellen",
     "err_list_days": "{0}d",
     "err_list_hours": "{0}u",
     "err_list_mins": "{0}m",
-    "err_list_secs": "{0}s"
+    "err_list_secs": "{0}s",
+    "hold_to_return": "Ingedrukt houden om terug te gaan"
   },
 
   pt: {
     "app_title": "Time Regulus",
-    "app_subtitle": "Time Regulus v3.3.1",
+    "app_subtitle": "Time Regulus v3.3.2",
     "real_time": "Tempo Real",
     "passcode": "Senha:",
     "passcode_placeholder": "ex: 12345",
@@ -507,14 +521,17 @@
     "result_conclusion": "",
     "days_ahead": "{0}d à frente ",
     "days_ago": "{0}d atrás ",
+    "back_to_top": "↑ Ao topo",
+    "double_tap_to_restore": "💡 Toque duas vezes para restaurar",
     "err_list_days": "{0}d",
     "err_list_hours": "{0}h",
     "err_list_mins": "{0}m",
-    "err_list_secs": "{0}s"
+    "err_list_secs": "{0}s",
+    "hold_to_return": "Segure para voltar"
   },
   es: {
     "app_title": "Time Regulus",
-    "app_subtitle": "Time Regulus v3.3.1",
+    "app_subtitle": "Time Regulus v3.3.2",
     "real_time": "Tiempo Real",
     "passcode": "Clave:",
     "passcode_placeholder": "ej: 12345",
@@ -615,14 +632,17 @@
     "result_conclusion": "",
     "days_ahead": "{0}d adelante ",
     "days_ago": "{0}d atrás ",
+    "back_to_top": "↑ Al inicio",
+    "double_tap_to_restore": "💡 Toca dos veces para restaurar",
     "err_list_days": "{0}d",
     "err_list_hours": "{0}h",
     "err_list_mins": "{0}m",
-    "err_list_secs": "{0}s"
+    "err_list_secs": "{0}s",
+    "hold_to_return": "Mantén presionado para volver"
   },
   fr: {
     "app_title": "Time Regulus",
-    "app_subtitle": "Time Regulus v3.3.1",
+    "app_subtitle": "Time Regulus v3.3.2",
     "real_time": "Temps Réel",
     "passcode": "Code:",
     "passcode_placeholder": "ex: 12345",
@@ -711,7 +731,8 @@
     "display_time_bare": "Heure Affichée",
     "show_copyright": "📖 Droits d'auteur",
     "info_created_by": "Créé par <strong>H.Fukazu</strong>.",
-    "info_version": "Version:",
+    "info_version": "Versión:",
+    "info_created_date": "Fecha de Creación: ",
     "info_latest_news": "Dernières Nouvelles",
     "info_qr_desc": "Vérifiez le QR.",
     "info_page_title": "Information",
@@ -723,14 +744,17 @@
     "result_conclusion": "",
     "days_ahead": "{0}j en avance ",
     "days_ago": "{0}j en retard ",
+    "back_to_top": "↑ En haut",
+    "double_tap_to_restore": "💡 Appuyez deux fois pour restaurer",
     "err_list_days": "{0}j",
     "err_list_hours": "{0}h",
     "err_list_mins": "{0}m",
-    "err_list_secs": "{0}s"
+    "err_list_secs": "{0}s",
+    "hold_to_return": "Maintenez pour retourner"
   },
   it: {
     "app_title": "Time Regulus",
-    "app_subtitle": "Time Regulus v3.3.1",
+    "app_subtitle": "Time Regulus v3.3.2",
     "real_time": "Tempo Reale",
     "passcode": "Codice:",
     "passcode_placeholder": "es: 12345",
@@ -820,6 +844,7 @@
     "show_copyright": "📖 Diritti d'autore",
     "info_created_by": "Creato da <strong>H.Fukazu</strong>.",
     "info_version": "Versione:",
+    "info_created_date": "Data di Creazione: ",
     "info_latest_news": "Ultime Notizie",
     "info_qr_desc": "Controlla il QR.",
     "info_page_title": "Information",
@@ -831,14 +856,17 @@
     "result_conclusion": "",
     "days_ahead": "{0}g avanti ",
     "days_ago": "{0}g indietro ",
+    "back_to_top": "↑ In cima",
+    "double_tap_to_restore": "💡 Tocca due volte per ripristinare",
     "err_list_days": "{0}g",
     "err_list_hours": "{0}h",
     "err_list_mins": "{0}m",
-    "err_list_secs": "{0}s"
+    "err_list_secs": "{0}s",
+    "hold_to_return": "Tieni premuto per tornare"
   },
   de: {
     "app_title": "Time Regulus",
-    "app_subtitle": "Time Regulus v3.3.1",
+    "app_subtitle": "Time Regulus v3.3.2",
     "real_time": "Echtzeit",
     "passcode": "Code:",
     "passcode_placeholder": "z.B. 12345",
@@ -927,7 +955,8 @@
     "display_time_bare": "Angezeigte Zeit",
     "show_copyright": "📖 Urheberrecht",
     "info_created_by": "Erstellt von <strong>H.Fukazu</strong>.",
-    "info_version": "Version:",
+    "info_version": "Versión:",
+    "info_created_date": "Fecha de Creación: ",
     "info_latest_news": "Neueste Nachrichten",
     "info_qr_desc": "Überprüfen Sie den QR.",
     "info_page_title": "Information",
@@ -939,14 +968,17 @@
     "result_conclusion": "",
     "days_ahead": "{0}T voraus ",
     "days_ago": "{0}T zurück ",
+    "back_to_top": "↑ Nach oben",
+    "double_tap_to_restore": "💡 Doppeltippen zum Wiederherstellen",
     "err_list_days": "{0}T",
     "err_list_hours": "{0}h",
     "err_list_mins": "{0}m",
-    "err_list_secs": "{0}s"
+    "err_list_secs": "{0}s",
+    "hold_to_return": "Gedrückt halten zum Zurückkehren"
   },
   uk: {
     "app_title": "Time Regulus",
-    "app_subtitle": "Time Regulus v3.3.1",
+    "app_subtitle": "Time Regulus v3.3.2",
     "real_time": "Реальний час",
     "passcode": "Код:",
     "passcode_placeholder": "напр: 12345",
@@ -1047,14 +1079,17 @@
     "result_conclusion": "",
     "days_ahead": "{0}д вперед ",
     "days_ago": "{0}д назад ",
+    "back_to_top": "↑ Вгору",
+    "double_tap_to_restore": "💡 Двічі торкніться для відновлення",
     "err_list_days": "{0}д",
     "err_list_hours": "{0}г",
     "err_list_mins": "{0}х",
-    "err_list_secs": "{0}с"
+    "err_list_secs": "{0}с",
+    "hold_to_return": "Утримуйте, щоб повернутися"
   },
   hi: {
     "app_title": "Time Regulus",
-    "app_subtitle": "Time Regulus v3.3.1",
+    "app_subtitle": "Time Regulus v3.3.2",
     "real_time": "वास्तविक समय",
     "passcode": "पासकोड:",
     "passcode_placeholder": "उदा: 12345",
@@ -1149,14 +1184,17 @@
     "result_conclusion": "",
     "days_ahead": "{0}द आगे ",
     "days_ago": "{0}द पीछे ",
+    "back_to_top": "↑ ऊपर",
+    "double_tap_to_restore": "💡 पुनर्स्थापित करने के लिए डबल-टैप करें",
     "err_list_days": "{0}द",
     "err_list_hours": "{0}घं",
     "err_list_mins": "{0}मि",
-    "err_list_secs": "{0}से"
+    "err_list_secs": "{0}से",
+    "hold_to_return": "वापस जाने के लिए दबाकर रखें"
   },
   ar: {
     "app_title": "Time Regulus",
-    "app_subtitle": "Time Regulus v3.3.1",
+    "app_subtitle": "Time Regulus v3.3.2",
     "real_time": "الوقت الحقيقي",
     "passcode": "رمز:",
     "passcode_placeholder": "مثال: 12345",
@@ -1251,14 +1289,17 @@
     "result_conclusion": "",
     "days_ahead": "{0}ي متقدم ",
     "days_ago": "{0}ي متأخر ",
+    "back_to_top": "↑ إلى الأعلى",
+    "double_tap_to_restore": "💡 انقر نقرًا مزدوجًا للاستعادة",
     "err_list_days": "{0}ي",
     "err_list_hours": "{0}س",
     "err_list_mins": "{0}د",
-    "err_list_secs": "{0}ث"
+    "err_list_secs": "{0}ث",
+    "hold_to_return": "اضغط مطولاً للعودة"
   },
   ru: {
     "app_title": "Time Regulus",
-    "app_subtitle": "Time Regulus v3.3.1",
+    "app_subtitle": "Time Regulus v3.3.2",
     "real_time": "Реальное время",
     "passcode": "Код:",
     "passcode_placeholder": "напр: 12345",
@@ -1353,14 +1394,17 @@
     "result_conclusion": "",
     "days_ahead": "{0}д вперед ",
     "days_ago": "{0}д назад ",
+    "back_to_top": "↑ Наверх",
+    "double_tap_to_restore": "💡 Дважды коснитесь для восстановления",
     "err_list_days": "{0}д",
     "err_list_hours": "{0}ч",
     "err_list_mins": "{0}м",
-    "err_list_secs": "{0}с"
+    "err_list_secs": "{0}с",
+    "hold_to_return": "Удерживайте для возврата"
   },
   id: {
     "app_title": "Time Regulus",
-    "app_subtitle": "Time Regulus v3.3.1",
+    "app_subtitle": "Time Regulus v3.3.2",
     "real_time": "Waktu Nyata",
     "passcode": "Sandi:",
     "passcode_placeholder": "cth: 12345",
@@ -1450,6 +1494,7 @@
     "show_copyright": "📖 Hak Cipta",
     "info_created_by": "Dibuat oleh <strong>H.Fukazu</strong>.",
     "info_version": "Versi:",
+    "info_created_date": "Tanggal Dibuat: ",
     "info_latest_news": "Berita Terbaru",
     "info_qr_desc": "Periksa QR.",
     "info_page_title": "Information",
@@ -1461,14 +1506,17 @@
     "result_conclusion": "",
     "days_ahead": "{0}h depan ",
     "days_ago": "{0}h lalu ",
+    "back_to_top": "↑ Ke atas",
+    "double_tap_to_restore": "💡 Ketuk dua kali untuk memulihkan",
     "err_list_days": "{0}h",
     "err_list_hours": "{0}j",
     "err_list_mins": "{0}m",
-    "err_list_secs": "{0}d"
+    "err_list_secs": "{0}d",
+    "hold_to_return": "Tahan untuk kembali"
   },
   zh: {
     "app_title": "Time Regulus",
-    "app_subtitle": "Time Regulus v3.3.1",
+    "app_subtitle": "Time Regulus v3.3.2",
     "real_time": "实时",
     "passcode": "密码:",
     "passcode_placeholder": "例: 12345",
@@ -1563,14 +1611,17 @@
     "result_conclusion": "",
     "days_ahead": "{0}天后 ",
     "days_ago": "{0}天前 ",
+    "back_to_top": "↑ 回到顶部",
+    "double_tap_to_restore": "💡 双击恢复",
     "err_list_days": "{0}天",
     "err_list_hours": "{0}时",
     "err_list_mins": "{0}分",
-    "err_list_secs": "{0}秒"
+    "err_list_secs": "{0}秒",
+    "hold_to_return": "长按返回"
   },
   ko: {
     "app_title": "Time Regulus",
-    "app_subtitle": "Time Regulus v3.3.1",
+    "app_subtitle": "Time Regulus v3.3.2",
     "real_time": "실시간",
     "passcode": "암호:",
     "passcode_placeholder": "예: 12345",
@@ -1671,14 +1722,17 @@
     "result_conclusion": "",
     "days_ahead": "{0}일 후 ",
     "days_ago": "{0}일 전 ",
+    "back_to_top": "↑ 맨 위로",
+    "double_tap_to_restore": "💡 더블 탭하여 복원",
     "err_list_days": "{0}일",
     "err_list_hours": "{0}시",
     "err_list_mins": "{0}분",
-    "err_list_secs": "{0}초"
+    "err_list_secs": "{0}초",
+    "hold_to_return": "길게 눌러 돌아가기"
   },
   tr: {
     "app_title": "Time Regulus",
-    "app_subtitle": "Time Regulus v3.3.1",
+    "app_subtitle": "Time Regulus v3.3.2",
     "real_time": "Gerçek Zamanlı",
     "passcode": "Şifre:",
     "passcode_placeholder": "örn: 12345",
@@ -1779,10 +1833,13 @@
     "result_conclusion": "",
     "days_ahead": "{0}g ileri ",
     "days_ago": "{0}g geri ",
+    "back_to_top": "↑ Başa dön",
+    "double_tap_to_restore": "💡 Geri yüklemek için çift dokunun",
     "err_list_days": "{0}g",
     "err_list_hours": "{0}s",
     "err_list_mins": "{0}d",
-    "err_list_secs": "{0}s"
+    "err_list_secs": "{0}s",
+    "hold_to_return": "Dönmek için basılı tutun"
   }
 };
 
@@ -1864,6 +1921,9 @@ document.addEventListener("DOMContentLoaded", () => {
   document.body.classList.add(`lang-${currentLang}`);
   applyTranslations();
 });
+
+
+
 
 
 

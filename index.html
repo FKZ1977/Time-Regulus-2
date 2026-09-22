@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <title>Time Regulus v3.3.1</title>
+  <title>Time Regulus v3.3.2</title>
   <!-- Google tag (gtag.js) -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-R7PW7DY4GF"></script>
   <script>
@@ -18,9 +18,9 @@
   <!-- ★【起動高速化】ロック画面用CSS（小・ブロッキング）→ 先に読み込んで即表示 -->
   <link rel="stylesheet" href="style-lock.css?c=32">
   <!-- ★【起動高速化】メインCSS（大・非ブロッキング）→ ロック画面表示後に裏で読み込む -->
-  <link rel="stylesheet" href="style-main.css?c=47" media="print" onload="this.media='all'">
+  <link rel="stylesheet" href="style-main.css?c=70" media="print" onload="this.media='all'">
   <noscript>
-    <link rel="stylesheet" href="style-main.css?c=47">
+    <link rel="stylesheet" href="style-main.css?c=70">
   </noscript>
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -94,7 +94,7 @@
       </select>
     </div>
     <h1 class="fkz anim-title-rise" id="lockTitle" data-i18n="app_title">Time Regulus</h1>
-    <p class="subtitle anim-slow-fade" id="lockSubtitle" data-i18n="app_subtitle">タイム　レグルス　v3.3.1</p>
+    <p class="subtitle anim-slow-fade" id="lockSubtitle" data-i18n="app_subtitle">タイム　レグルス　v3.3.2</p>
     <div class="passcode-row anim-slow-fade">
       <label for="passcode" class="passcode-label" data-i18n="passcode">暗証番号：</label>
       <input type="password" id="passcode" placeholder="例：12345" data-i18n-placeholder="passcode_placeholder" tabindex="1" readonly class="passcode-input">
@@ -120,7 +120,7 @@
     <div id="readmeHeader">
       <!-- ← Information に戻るボタン（informationPageから来た場合のみ有効） -->
       <button id="readmeBackBtn" class="back-btn"
-        onclick="returnToLockScreenFromHold()"
+        onclick="backToInfoFromReadme()"
         style="display:none; position:absolute; top:10px; left:10px; z-index:10; font-size:13px; padding:4px 10px;">
         ← Information
       </button>
@@ -165,6 +165,7 @@
       <section id="sec-ko" class="readme-section" dir="ltr"><div class="readme-flag">🇰🇷</div><h2 class="readme-lang-title">＜＜ 한국어 (韓国語) ＞＞</h2><p>이 앱은 <strong>H.Fukazu</strong>에 의해 제작되었습니다.</p><p><strong>저작권 및 이용 약관</strong><br>본 작품의 저작권은 © 2025 H.Fukazu에게 있습니다. All Rights Reserved.</p><p><strong>금지 사항</strong></p><ul><li>무단 전용, 복제, 수정, 2차 사용 금지</li><li>소스 코드의 무단 게시 및 재배포 금지</li><li>상업적 목적의 사용 금지</li><li>본 작품을 기반으로 한 2차 창작 및 공개 금지</li></ul><p>본 작품은 저작권법에 의해 최대한 보호받습니다.</p></section>
       <section id="sec-tr" class="readme-section" dir="ltr"><div class="readme-flag">🇹🇷</div><h2 class="readme-lang-title">＜＜ Türkçe (トルコ語) ＞＞</h2><p>Bu uygulama <strong>H.Fukazu</strong> tarafından oluşturulmuştur.</p><p><strong>Telif Hakkı ve Kullanım Koşulları</strong><br>Bu eserin telif hakkı © 2025 H.Fukazu'ya aittir. Tüm Hakları Saklıdır.</p><p><strong>Kesinlikle Yasaktır</strong></p><ul><li>İzinsiz kullanım, kopyalama, değiştirme veya ikincil kullanım</li><li>Kaynak kodunun izinsiz olarak yeniden yayımlanması veya dağıtılması</li><li>Ticari amaçlarla kullanılması yasaktır</li><li>Türev eserlerin oluşturulması ve yayımlanması yasaktır</li></ul><p>Bu eser telif hakkı yasaları ile maksimum düzeyde korunmaktadır.</p></section>
     </div>
+    <button type="button" id="readmeScrollToTopBtn" class="scroll-to-top-btn" onclick="scrollToTopReadme()" data-i18n="back_to_top" style="z-index: 9050;">↑ TOPへ</button>
   </div>
   <svg id="readmeHoldRing" viewBox="0 0 60 60"><circle cx="30" cy="30" r="26" id="readmeRingCircle"/></svg>
   <p id="readmeHoldHint"></p>
@@ -194,7 +195,7 @@
     </div>
 
     <!-- 普段から画面最下部に控えめに表示される固定ガイド -->
-    <div class="decoy-bottom-guide" id="decoyBottomGuide">長押しで戻る</div>
+    <div class="decoy-bottom-guide" id="decoyBottomGuide" data-i18n="hold_to_return">長押しで戻る</div>
 
     <p class="decoy-hint" id="decoyHint"></p>
     <!-- 長押しプログレスリング -->
@@ -513,7 +514,7 @@
       <div class="unit-input input-helper-on error-days-wrapper"
         style="display: none; align-items: center !important; overflow: visible !important; padding: 4px 2px; margin-left: 2px;">
         <div class="direct-group-error-days">
-          <input type="number" id="errorDays" min="0" step="1" placeholder="d" tabindex="13" inputmode="numeric"
+          <input type="number" id="errorDays" min="0" step="1" placeholder="d" tabindex="13" inputmode="none"
             pattern="[0-9]*">
         </div>
         <span class="unit-label" data-i18n="days_unit" style="margin-left: 4px; margin-right: 4px; white-space: nowrap; flex-shrink: 0;">日</span>
@@ -522,7 +523,7 @@
       <div class="unit-input input-helper-off error-days-wrapper"
         style="align-items: center !important; overflow: visible !important; padding: 4px 2px; margin-left: 2px;">
         <div class="direct-group-error-days">
-          <input type="tel" id="errorDays_direct" placeholder="d" tabindex="13" inputmode="numeric" pattern="[0-9]*"
+          <input type="tel" id="errorDays_direct" placeholder="d" tabindex="13" inputmode="none" pattern="[0-9]*"
             class="direct-error-val">
         </div>
         <span class="unit-label" data-i18n="days_unit" style="margin-left: 4px; margin-right: 4px; white-space: nowrap; flex-shrink: 0;">日</span>
@@ -628,8 +629,6 @@
     <div id="reverseResult" class="result-box"></div>
     <div style="display: flex; flex-direction: column; align-items: center; margin-top: 10px;">
       <button class="action-btn" id="addToListButton" onclick="addResultToList()" data-i18n="record_to_list">結果一覧に記録する</button>
-      <span id="recordSuccessMessage" class="success-message"
-        style="display:none; color: var(--accent); font-weight: bold; font-size: 15px; margin-top: 10px;" data-i18n="added_to_list">結果一覧に追加しました</span>
     </div>
     <p id="showListLink" class="show-list-link" onclick="showResultList()"
       style="display:none; text-align: right; margin-top: 20px;" tabindex="-1" data-i18n="show_list_arrow">結果一覧を表示 →</p><br>
@@ -637,7 +636,9 @@
   <div id="resultListPage" style="display:none; padding: 20px 16px;">
     <button class="back-btn" onclick="backToCorrectionMode()" data-i18n="back_to_correction">← 補正時刻の計算に戻る</button>
     <h1 class="fkz" style="margin-top: 4px;" data-i18n="result_list">結果一覧</h1>
+    <p class="result-list-guide" style="text-align: center;" data-i18n="double_tap_to_restore">💡 ダブルタップで復元</p>
     <div id="resultListContainer" style="margin-top: 10px;"></div>
+    <button type="button" id="scrollToTopBtn" class="scroll-to-top-btn" onclick="scrollToTopResultList()" data-i18n="back_to_top">↑ TOPへ</button>
   </div>
   <!-- 電卓総合画面 (timeCalcMode) -->
   <div id="timeCalcMode" class="mode-card time-calc-card" style="display:none;">
@@ -645,16 +646,10 @@
       <button class="back-btn" onclick="backToModeSelect()" data-i18n="back_mode_select_right" style="margin:0;">モード選択に戻る →</button>
     </div>
 
-    <!-- 4連常設ナビゲーションタブ (⏰ 🔢 💸 💱) -->
+    <!-- 4連常設ナビゲーションタブ (💸 💱 🔢 ⏰) -->
     <div class="calc-nav-tabs">
-      <button type="button" class="calc-nav-tab active" id="calcTab_time" onclick="TimeCalc.setEngineMode('time')">
-        <span class="calc-nav-icon">⏰</span>
-        <span class="calc-nav-text" data-i18n="time_calculator">時間電卓</span>
-      </button>
-      <button type="button" class="calc-nav-tab" id="calcTab_precision" onclick="TimeCalc.setEngineMode('precision')">
-        <span class="calc-nav-icon">🔢</span>
-        <span class="calc-nav-text" data-i18n="standard_calculator">電卓</span>
-      </button>
+      <!-- アクティブタブをスライドするグロー枠インジケーター -->
+      <div class="tab-slider" id="calcTabSlider"></div>
       <button type="button" class="calc-nav-tab" id="calcTab_split" onclick="TimeCalc.setEngineMode('split')">
         <span class="calc-nav-icon">💸</span>
         <span class="calc-nav-text" data-i18n="split_calculator">割り勘</span>
@@ -662,6 +657,14 @@
       <button type="button" class="calc-nav-tab" id="calcTab_currency" onclick="TimeCalc.setEngineMode('currency')">
         <span class="calc-nav-icon">💱</span>
         <span class="calc-nav-text" data-i18n="currency_calculator">レート</span>
+      </button>
+      <button type="button" class="calc-nav-tab" id="calcTab_precision" onclick="TimeCalc.setEngineMode('precision')">
+        <span class="calc-nav-icon">🔢</span>
+        <span class="calc-nav-text" data-i18n="standard_calculator">電卓</span>
+      </button>
+      <button type="button" class="calc-nav-tab active" id="calcTab_time" onclick="TimeCalc.setEngineMode('time')">
+        <span class="calc-nav-icon">⏰</span>
+        <span class="calc-nav-text" data-i18n="time_calculator">時間電卓</span>
       </button>
     </div>
 
@@ -900,13 +903,8 @@
       <button type="button" id="currSlot_5" class="calc-btn calc-btn-unit curr-draggable-btn" onclick="TimeCalc.selectCurrencySlot(5)">🇨🇦 CAD</button>
     </div>
 
-    <!-- 計算履歴ボタン（下部中央） -->
-    <div style="text-align: center; margin-top: 14px;">
-      <button type="button" class="time-calc-history-toggle-btn" onclick="TimeCalc.toggleHistoryDrawer()" data-i18n="time_calc_history" style="font-size: 13px; padding: 7px 22px;">📜 計算履歴</button>
-    </div>
-
-    <!-- 履歴ドロワー（折りたたみ式） -->
-    <div id="timeCalcHistoryDrawer" class="time-calc-history-drawer" style="display:none; margin-top: 12px;">
+    <!-- 計算履歴エリア（ヒロさん仕様: 初期非表示、＝を押すと出現、0件で自動非表示） -->
+    <div id="timeCalcHistoryDrawer" class="time-calc-history-drawer" style="display:none; margin-top: 14px;">
       <div class="time-calc-history-header">
         <span data-i18n="time_calc_history">計算履歴</span>
         <button class="time-calc-history-clear-btn" onclick="TimeCalc.clearHistory()" data-i18n="clear_history">履歴クリア</button>
@@ -916,7 +914,7 @@
       </div>
     </div>
   </div>
-  <div id="informationPage" style="display:none; position:relative; text-align:center; padding: 40px 16px; min-height: 100vh; width: 100%; box-sizing: border-box;"><br>
+  <div id="informationPage" style="display:none; position:relative; text-align:center; padding: 40px 16px; min-height: 100vh; width: 100%; box-sizing: border-box; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none;"><br>
     <div style="position: absolute; top: 10px; right: 10px; display: flex; align-items: center; gap: 4px;">
       <span style="font-size: 16px;">🌐</span>
       <select class="lang-selector" onchange="setLanguage(this.value)" style="background: transparent; border: 1px solid var(--accent); color: var(--text-main); border-radius: 4px; padding: 4px; font-size: 14px; width: auto; appearance: none; text-align: center; text-align-last: center;">
@@ -939,7 +937,8 @@
     <div id="informationContent"
       style="margin-top: 30px; text-align: left; max-width: 500px; margin-left: auto; margin-right: auto;">
       <p style="margin-bottom: 8px;" id="infoCreatedBy">このアプリは <strong>H.Fukazu</strong> によって制作されました。</p>
-      <p style="margin-bottom: 24px;"><span data-i18n="info_version">バージョン：</span><strong>v3.3.1</strong></p>
+      <p style="margin-bottom: 8px;"><span data-i18n="info_version">バージョン：</span><strong>v3.3.2</strong></p>
+      <p style="margin-bottom: 24px;"><span data-i18n="info_created_date">作成日：</span><strong>2026/09/20</strong></p>
 
       <!-- 著作権情報ボタン -->
       <div style="text-align: center; margin: 28px 0;">
@@ -962,11 +961,11 @@
     <button class="action-btn" onclick="closeQRCodePage()" style="margin-top: 40px; background-color: #ff4d4d;" data-i18n="close">☒ 閉じる</button>
   </div>
   <!-- 時分秒専用の三連極上カスタム無限ドラムロールピッカー (ボトムシート) -->
-  <div id="pickerOverlay" class="picker-overlay" onclick="closeTimePicker()"></div>
+  <div id="pickerOverlay" class="picker-overlay"></div>
   <div id="regulusTimePicker" class="picker-bottom-sheet">
-    <div class="picker-header">
-      <span class="picker-title" id="pickerTitle" data-i18n="select_time">時刻を選択</span>
-      <button class="picker-confirm-btn" onclick="closeTimePicker()" data-i18n="done">完了</button>
+    <div class="picker-header time-picker-header">
+      <button type="button" id="pickerRecordBtn" class="keypad-record-btn" onclick="RegulusKeypad.recordToList()" style="display: none;" data-i18n="record_to_list">結果一覧に記録する</button>
+      <button type="button" class="picker-confirm-btn" onclick="closeTimePicker()" data-i18n="done">▼ 完了</button>
     </div>
     <div class="picker-content">
       <div class="picker-wheels-wrapper">
@@ -993,6 +992,37 @@
           <div class="picker-mask-top"></div>
           <div class="picker-mask-bottom"></div>
         </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 時分秒・日付直接入力用オリジナルカスタムテンキー (ボトムシート) -->
+  <div id="regulusCustomKeypad" class="picker-bottom-sheet keypad-bottom-sheet">
+    <div class="picker-header keypad-header">
+      <div class="keypad-header-nav">
+        <button type="button" class="keypad-nav-btn" onclick="RegulusKeypad.prevField()" title="前の枠へ">◀</button>
+        <button type="button" class="keypad-nav-btn" onclick="RegulusKeypad.nextField()" title="次の枠へ">▶</button>
+      </div>
+      <button type="button" id="keypadRecordBtn" class="keypad-record-btn" onclick="RegulusKeypad.recordToList()" style="display: none;" data-i18n="record_to_list">結果一覧に記録する</button>
+      <button type="button" class="picker-confirm-btn" onclick="RegulusKeypad.close()" data-i18n="done">▼ 完了</button>
+    </div>
+    <div class="keypad-content">
+      <div class="custom-keypad-grid">
+        <button type="button" class="custom-keypad-btn" onclick="RegulusKeypad.press(1)">1</button>
+        <button type="button" class="custom-keypad-btn" onclick="RegulusKeypad.press(2)">2</button>
+        <button type="button" class="custom-keypad-btn" onclick="RegulusKeypad.press(3)">3</button>
+        
+        <button type="button" class="custom-keypad-btn" onclick="RegulusKeypad.press(4)">4</button>
+        <button type="button" class="custom-keypad-btn" onclick="RegulusKeypad.press(5)">5</button>
+        <button type="button" class="custom-keypad-btn" onclick="RegulusKeypad.press(6)">6</button>
+        
+        <button type="button" class="custom-keypad-btn" onclick="RegulusKeypad.press(7)">7</button>
+        <button type="button" class="custom-keypad-btn" onclick="RegulusKeypad.press(8)">8</button>
+        <button type="button" class="custom-keypad-btn" onclick="RegulusKeypad.press(9)">9</button>
+        
+        <button type="button" class="custom-keypad-btn btn-ac" onclick="RegulusKeypad.clear()">AC</button>
+        <button type="button" class="custom-keypad-btn" onclick="RegulusKeypad.press(0)">0</button>
+        <button type="button" class="custom-keypad-btn btn-bs" onclick="RegulusKeypad.backspace()">⌫</button>
       </div>
     </div>
   </div>
@@ -1085,14 +1115,13 @@
   <!-- 指/マウス追従用 ドラッグゴースト要素 -->
   <div id="currDragGhost" class="curr-drag-ghost" style="display:none;">USD</div>
 
-  <script src="i18n.js?v=3" defer></script>
-  <script src="script.js?c=46" defer></script>
+  <script src="i18n.js?v=13" defer></script>
+  <script src="script.js?c=90" defer></script>
   <script>
     if ('serviceWorker' in navigator) { window.addEventListener('load', () => { navigator.serviceWorker.getRegistrations().then(r => r.forEach(reg => reg.unregister())); }); }
   </script>
 </body>
 </html>
-
 
 
 

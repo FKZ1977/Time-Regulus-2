@@ -134,7 +134,7 @@ const i18n_translations = {
     "info_version": "バージョン：",
     "info_created_date": "作成日：",
     "info_latest_news": "最新バージョン情報はこちらから",
-    "info_qr_desc": "URL又はQRコードから<br>最新の情報を確認してください。",
+    "info_qr_desc": "URL又はQRコードから<br>最新情報を確認してください。",
     "info_page_title": "Information",
     "delete": "削除",
     "mode_calc_label": "の計算",

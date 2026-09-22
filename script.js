@@ -3986,6 +3986,9 @@ function resetApp(onlyInputs = false) {
   if (onlyInputs) { 
      resultHistory = [];
      localStorage.removeItem('resultHistory');
+     if (typeof TimeCalc !== 'undefined' && typeof TimeCalc.clearHistory === 'function') {
+       TimeCalc.clearHistory();
+     }
      const resultListContainerEl = document.getElementById("resultListContainer");
      if (resultListContainerEl) resultListContainerEl.innerHTML = "";
      const showListLinkEl = document.getElementById("showListLink");
@@ -10284,6 +10287,7 @@ const TimeCalc = {
 
   init() {
     this.loadSavedCurrencySlots();
+    this.loadHistory();
     this.syncEngineUI();
     this.updateDisplay();
     this.renderHistory();
@@ -12244,6 +12248,35 @@ const TimeCalc = {
     this.memory = 0;
   },
 
+  // 履歴の永続化（localStorage対応: 補正時刻の結果一覧と同様に保持）
+  loadHistory() {
+    try {
+      const saved = localStorage.getItem('regulus_timecalc_history');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed)) {
+          this.history = parsed;
+          return;
+        }
+      }
+    } catch (e) {
+      console.error('Failed to load timeCalc history:', e);
+    }
+    this.history = [];
+  },
+
+  saveHistory() {
+    try {
+      if (this.history && this.history.length > 0) {
+        localStorage.setItem('regulus_timecalc_history', JSON.stringify(this.history));
+      } else {
+        localStorage.removeItem('regulus_timecalc_history');
+      }
+    } catch (e) {
+      console.error('Failed to save timeCalc history:', e);
+    }
+  },
+
   toggleHistoryDrawer() {
     const drawer = document.getElementById('timeCalcHistoryDrawer');
     if (drawer) {
@@ -12260,6 +12293,7 @@ const TimeCalc = {
       state: state
     });
     if (this.history.length > 30) this.history.pop();
+    this.saveHistory();
     this.renderHistory();
     const drawer = document.getElementById('timeCalcHistoryDrawer');
     if (drawer) {
@@ -12270,12 +12304,14 @@ const TimeCalc = {
   deleteHistoryItem(idx) {
     if (this.history[idx]) {
       this.history.splice(idx, 1);
+      this.saveHistory();
       this.renderHistory();
     }
   },
 
   clearHistory() {
     this.history = [];
+    this.saveHistory();
     this.renderHistory();
   },
 
@@ -12295,15 +12331,26 @@ const TimeCalc = {
     if (drawer) drawer.style.display = 'block';
     if (!listEl) return;
 
-    listEl.innerHTML = this.history.map((item, idx) => `
-      <div class="time-calc-history-item" onclick="TimeCalc.loadHistoryItem(${idx})">
-        <div class="hist-content">
-          <span class="hist-formula">${item.formula}</span>
-          <span class="hist-result">${item.result}</span>
+    const modeIcons = {
+      time: '⏰',
+      precision: '🔢',
+      currency: '💱',
+      split: '💸'
+    };
+
+    listEl.innerHTML = this.history.map((item, idx) => {
+      const icon = modeIcons[item.mode] || '⏰';
+      return `
+        <div class="time-calc-history-item" onclick="TimeCalc.loadHistoryItem(${idx})">
+          <span class="hist-icon">${icon}</span>
+          <div class="hist-content">
+            <span class="hist-formula">${item.formula}</span>
+            <span class="hist-result">${item.result}</span>
+          </div>
+          <button type="button" class="hist-del-btn" title="削除" onclick="event.stopPropagation(); TimeCalc.deleteHistoryItem(${idx})">☒</button>
         </div>
-        <button type="button" class="hist-del-btn" title="削除" onclick="event.stopPropagation(); TimeCalc.deleteHistoryItem(${idx})">☒</button>
-      </div>
-    `).join('');
+      `;
+    }).join('');
   },
 
   loadHistoryItem(idx) {
@@ -12328,10 +12375,7 @@ const TimeCalc = {
       this.splitTierGap = item.state.splitTierGap || 1000;
       this.syncEngineUI();
       this.updateDisplay();
-      return;
-    }
-
-    if (item.mode === 'currency' && item.state) {
+    } else if (item.mode === 'currency' && item.state) {
       this.currencyFrom = item.state.currencyFrom || 'JPY';
       this.currencyTo = item.state.currencyTo || 'USD';
       this.currencyAmount = item.state.currencyAmount || 0;
@@ -12342,13 +12386,19 @@ const TimeCalc = {
       if (toSel) toSel.value = this.currencyTo;
       this.syncEngineUI();
       this.updateDisplay();
-      return;
+    } else {
+      this.currentInput = item.result;
+      if (item.formula) this.formula = item.formula;
+      this.isNewInput = true;
+      this.updateDisplay();
     }
 
-    this.currentInput = item.result;
-    if (item.formula) this.formula = item.formula;
-    this.isNewInput = true;
-    this.updateDisplay();
+    // 履歴復元時に画面を最上部へスムーズスクロール（復元された結果がすぐに見えるようにする）
+    window.scrollTo({ top: 0, left: 0, behavior: 'smooth' });
+    const tcMode = document.getElementById('timeCalcMode');
+    if (tcMode) {
+      tcMode.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
   },
 
   // ===== カスタムレート入力モーダル =====
@@ -12568,5 +12618,11 @@ const TimeCalc = {
     }
   }
 };
+
+// マルチ電卓の計算履歴を初期ロード（補正時刻の結果一覧と同様に起動時に復元）
+if (typeof TimeCalc !== 'undefined' && typeof TimeCalc.loadHistory === 'function') {
+  TimeCalc.loadHistory();
+}
+
 
 

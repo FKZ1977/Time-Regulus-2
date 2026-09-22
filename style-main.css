@@ -5824,7 +5824,7 @@ body:not(.lang-ja):not(.lang-zh):not(.lang-ko) .warning-msg {
   background: rgba(14, 18, 28, 0.95);
   border: 1.5px solid rgba(0, 255, 224, 0.35);
   border-radius: 10px;
-  padding: 10px 12px;
+  padding: 0 12px 10px 12px;
   margin-bottom: 12px;
   max-height: 320px;
   overflow-y: auto;
@@ -5833,6 +5833,17 @@ body:not(.lang-ja):not(.lang-zh):not(.lang-ko) .warning-msg {
 }
 
 .time-calc-history-header {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  background: rgba(14, 18, 28, 0.98);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border-top-left-radius: 8px;
+  border-top-right-radius: 8px;
+  margin-left: -12px;
+  margin-right: -12px;
+  padding: 10px 12px 6px 12px;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -5840,7 +5851,6 @@ body:not(.lang-ja):not(.lang-zh):not(.lang-ko) .warning-msg {
   font-weight: bold;
   color: var(--accent);
   border-bottom: 1px solid rgba(0, 255, 224, 0.2);
-  padding-bottom: 6px;
   margin-bottom: 8px;
 }
 
@@ -5880,6 +5890,15 @@ body:not(.lang-ja):not(.lang-zh):not(.lang-ko) .warning-msg {
 .time-calc-history-item:hover {
   background: rgba(0, 255, 224, 0.1);
   border-color: var(--accent);
+}
+.time-calc-history-item .hist-icon {
+  margin-right: 8px;
+  font-size: 14px;
+  line-height: 1;
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  user-select: none;
 }
 .time-calc-history-item .hist-content {
   flex: 1;

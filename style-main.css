@@ -5828,8 +5828,37 @@ body:not(.lang-ja):not(.lang-zh):not(.lang-ko) .warning-msg {
   margin-bottom: 12px;
   max-height: 320px;
   overflow-y: auto;
+  -webkit-overflow-scrolling: touch; /* iOSでの滑らかな慣性スクロール */
+  overscroll-behavior: contain;      /* 履歴端で親画面が縦スクロールされる連鎖を遮断 */
+  overscroll-behavior-y: contain;
+  touch-action: pan-y;               /* 履歴内の縦スクロールを最優先にブラウザへ指示 */
   box-shadow: 0 4px 14px rgba(0, 0, 0, 0.5);
   animation: riseInShort 0.3s ease-out;
+
+  /* 標準スクロールバー (Firefox等) */
+  scrollbar-width: thin;
+  scrollbar-color: #00ffe0 rgba(255, 255, 255, 0.08);
+}
+
+/* WebKit系 (iOS Safari, Chrome, Edge) 明るく見やすい水色カスタムスクロールバー */
+.time-calc-history-drawer::-webkit-scrollbar {
+  width: 6px;
+  display: block;
+}
+.time-calc-history-drawer::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 4px;
+  margin-top: 36px; /* 固定ヘッダーの下からスクロールバーを開始 */
+  margin-bottom: 6px;
+}
+.time-calc-history-drawer::-webkit-scrollbar-thumb {
+  background: #00ffe0; /* 明るく輝くネオン水色バー */
+  border-radius: 4px;
+  box-shadow: 0 0 8px rgba(0, 255, 224, 0.7);
+}
+.time-calc-history-drawer::-webkit-scrollbar-thumb:hover {
+  background: #55fff2;
+  box-shadow: 0 0 12px rgba(0, 255, 224, 1);
 }
 
 .time-calc-history-header {

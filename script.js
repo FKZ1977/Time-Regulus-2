@@ -6115,6 +6115,13 @@ document.addEventListener("focusin", function(e) {
       return;
     }
 
+    // 計算履歴ドロワー内でのタッチは、内部の履歴スクロールを最優先（画面スワイプを除外）
+    if (e.target && e.target.closest && e.target.closest('#timeCalcHistoryDrawer')) {
+      isSwiping = false;
+      fromEl = null;
+      return;
+    }
+
     isSwiping  = true;
     axisLocked = null;
     toEl = null;
@@ -10293,6 +10300,7 @@ const TimeCalc = {
     this.renderHistory();
     this.setupDisplayDragScroll();
     this.setupCurrencyDragAndDrop();
+    this.setupHistoryScrollGuard();
     // タブ切り替えはグローバルスワイプシステムに統合済み（setupSwipeNavigation不要）
 
     // 再起動時・モード切替時に最新の計算結果が一番上に見えるようスクロール位置を最上部にリセット
@@ -10335,6 +10343,37 @@ const TimeCalc = {
     if (this.engineMode === 'currency') {
       this.syncAllSlotRates();
     }
+  },
+
+  // スマホ（iOS Safari等）での計算履歴内スクロール優先ガード
+  // 指を動かしたときに親画面全体の縦スクロールに吸い取られるのを防ぐ
+  setupHistoryScrollGuard() {
+    const drawer = document.getElementById('timeCalcHistoryDrawer');
+    if (!drawer || drawer._scrollGuardInitialized) return;
+    drawer._scrollGuardInitialized = true;
+
+    drawer.addEventListener('touchstart', (e) => {
+      if (e.target && (e.target.closest('button') || e.target.closest('.hist-del-btn'))) return;
+
+      const top = drawer.scrollTop;
+      const totalScroll = drawer.scrollHeight;
+      const currentScroll = top + drawer.offsetHeight;
+
+      // 上端バウンスで親画面スクロールへ連鎖するのを1pxずらしで防止
+      if (top === 0) {
+        drawer.scrollTop = 1;
+      } else if (currentScroll >= totalScroll) {
+        // 下端バウンスで親画面スクロールへ連鎖するのを1pxずらしで防止
+        drawer.scrollTop = top - 1;
+      }
+    }, { passive: true });
+
+    drawer.addEventListener('touchmove', (e) => {
+      // 履歴がスクロール可能な状態であれば、親画面へのイベント伝播を防止
+      if (drawer.scrollHeight > drawer.clientHeight) {
+        e.stopPropagation();
+      }
+    }, { passive: true });
   },
 
   // PCマウスドラッグによる横スクロール機能

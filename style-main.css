@@ -6671,13 +6671,13 @@ body:not(.lang-ja):not(.lang-zh):not(.lang-ko) .warning-msg {
   justify-content: center;
   border-radius: 50px; /* 優雅なオーバル型 */
   background: radial-gradient(circle at 35% 30%, #1e5cb3 0%, #0d2e6e 45%, #18134a 80%, #08061c 100%);
-  border: 1.8px solid #00b4d8;
+  border: 1.8px solid #00ffe0;
   color: #ffffff;
   font-size: 15.5px;
   font-weight: 800;
   letter-spacing: 1px;
   text-shadow: 0 2px 5px rgba(0, 0, 0, 0.8), 0 0 10px rgba(0, 255, 224, 0.5);
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.75), 0 0 20px rgba(0, 180, 216, 0.4), inset 0 2px 4px rgba(255, 255, 255, 0.55), inset 0 -4px 10px rgba(0, 0, 0, 0.7);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.75), 0 0 20px rgba(0, 255, 224, 0.45), inset 0 2px 4px rgba(255, 255, 255, 0.55), inset 0 -4px 10px rgba(0, 0, 0, 0.7);
   cursor: pointer;
   outline: none;
   user-select: none;
@@ -6686,16 +6686,16 @@ body:not(.lang-ja):not(.lang-zh):not(.lang-ko) .warning-msg {
   white-space: nowrap;
 }
 
-/* 各ボタンのプロポーション */
+/* 各ボタンの縁取りの水色の光を均一に統一 (#00ffe0) */
 .btn-calc-error {
   min-width: 110px;
   padding: 16px 14px;
-  border-color: #00d2ff;
+  border-color: #00ffe0;
 }
 .btn-calc-correction {
   min-width: 120px;
   padding: 17px 15px;
-  border-color: #0088ff;
+  border-color: #00ffe0;
 }
 .btn-calc-multi {
   min-width: 95px;
@@ -6721,8 +6721,8 @@ body:not(.lang-ja):not(.lang-zh):not(.lang-ko) .warning-msg {
 /* スワイプ中は :active を抑制（長押し誤演出防止） */
 body.is-swiping .orbit-planet-btn:active {
   transform: none;
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.75), 0 0 20px rgba(0, 180, 216, 0.4), inset 0 2px 4px rgba(255, 255, 255, 0.55), inset 0 -4px 10px rgba(0, 0, 0, 0.7);
-  border-color: #00b4d8;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.75), 0 0 20px rgba(0, 255, 224, 0.45), inset 0 2px 4px rgba(255, 255, 255, 0.55), inset 0 -4px 10px rgba(0, 0, 0, 0.7);
+  border-color: #00ffe0;
 }
 
 

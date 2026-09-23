@@ -10295,6 +10295,15 @@ const TimeCalc = {
     this.setupCurrencyDragAndDrop();
     // タブ切り替えはグローバルスワイプシステムに統合済み（setupSwipeNavigation不要）
 
+    // 再起動時・モード切替時に最新の計算結果が一番上に見えるようスクロール位置を最上部にリセット
+    const drawer = document.getElementById('timeCalcHistoryDrawer');
+    if (drawer) {
+      drawer.scrollTop = 0;
+      setTimeout(() => {
+        if (drawer) drawer.scrollTop = 0;
+      }, 50);
+    }
+
     // グロースライダーの初期位置をアニメーションなしで即時設定
     this.syncSlider(true);
 
@@ -12351,6 +12360,11 @@ const TimeCalc = {
         </div>
       `;
     }).join('');
+
+    // 最新の計算結果が常に一番上に見えるよう、ボックス内スクロールを最上部にリセット
+    if (drawer) {
+      drawer.scrollTop = 0;
+    }
   },
 
   loadHistoryItem(idx) {

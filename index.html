@@ -713,8 +713,8 @@
 
     <div id="currencyControls" class="currency-controls" style="display:none;">
       <div class="currency-select-row">
-        <div id="currencyFromField" class="currency-field-label curr-drop-target active-field" onclick="TimeCalc.setCurrencyActiveField('from')" title="タップして元通貨を変更 / 通貨ボタンをここにドラッグ＆ドロップ">
-          <span class="currency-field-indicator">FROM</span>
+        <div id="currencyFromField" class="currency-field-label curr-drop-target active-field" onclick="TimeCalc.setCurrencyActiveField('from')" title="タップで選択 / 長押しでリスト表示 / 通貨ボタンをここにドラッグ＆ドロップ">
+          <span class="currency-field-indicator">FROM <span style="font-size: 8.5px; opacity: 0.65; font-weight: normal; letter-spacing: 0;">▼長押し</span></span>
           <select id="currencyFromSelect" class="currency-select" onchange="TimeCalc.onCurrencyChange()">
             <option value="USD" selected>🇺🇸 米国 USD (米ドル $)</option>
             <option value="JPY">🇯🇵 日本 JPY (日本円 ¥)</option>
@@ -740,8 +740,8 @@
           </select>
         </div>
         <button type="button" class="currency-swap-btn" onclick="TimeCalc.swapCurrencies()" title="通貨を入れ替え">⇄</button>
-        <div id="currencyToField" class="currency-field-label curr-drop-target" onclick="TimeCalc.setCurrencyActiveField('to')" title="タップして対象通貨を変更 / 通貨ボタンをここにドラッグ＆ドロップ">
-          <span class="currency-field-indicator">TO</span>
+        <div id="currencyToField" class="currency-field-label curr-drop-target" onclick="TimeCalc.setCurrencyActiveField('to')" title="タップで選択 / 長押しでリスト表示 / 通貨ボタンをここにドラッグ＆ドロップ">
+          <span class="currency-field-indicator">TO <span style="font-size: 8.5px; opacity: 0.65; font-weight: normal; letter-spacing: 0;">▼長押し</span></span>
           <select id="currencyToSelect" class="currency-select" onchange="TimeCalc.onCurrencyChange()">
             <option value="JPY" selected>🇯🇵 日本 JPY (日本円 ¥)</option>
             <option value="USD">🇺🇸 米国 USD (米ドル $)</option>
@@ -906,7 +906,10 @@
     <!-- 計算履歴エリア（ヒロさん仕様: 初期非表示、＝を押すと出現、0件で自動非表示） -->
     <div id="timeCalcHistoryDrawer" class="time-calc-history-drawer" style="display:none; margin-top: 14px;">
       <div class="time-calc-history-header">
-        <span data-i18n="time_calc_history">計算履歴</span>
+        <div class="time-calc-history-title-group">
+          <span data-i18n="time_calc_history">計算履歴</span>
+          <span class="time-calc-history-guide" data-i18n="double_tap_to_restore">💡 ダブルタップで復元</span>
+        </div>
         <button class="time-calc-history-clear-btn" onclick="TimeCalc.clearHistory()" data-i18n="clear_history">履歴クリア</button>
       </div>
       <div id="timeCalcHistoryList" class="time-calc-history-list">

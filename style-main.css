@@ -5379,6 +5379,23 @@ body:not(.lang-ja):not(.lang-zh):not(.lang-ko) .warning-msg {
   text-align-last: center;
   outline: none;
   transition: border-color 0.2s, box-shadow 0.2s;
+  pointer-events: none; /* ヒロさん仕様: 通常時は直接開かず、長押しでドロップダウンピッカーを起動 */
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.currency-field-label.longpress-activating {
+  border-color: #00ffe0 !important;
+  box-shadow: 0 0 16px rgba(0, 255, 224, 0.7) !important;
+  transform: scale(1.04);
+}
+
+.curr-draggable-btn.dnd-touch-active {
+  transform: scale(1.08) !important;
+  box-shadow: 0 0 16px rgba(0, 255, 224, 0.9) !important;
+  border-color: #00ffe0 !important;
+  z-index: 100 !important;
+  touch-action: none !important; /* 長押し確定時のみドラッグを有効化 */
 }
 
 .currency-field-label.active-field .currency-select {
@@ -5470,6 +5487,12 @@ body:not(.lang-ja):not(.lang-zh):not(.lang-ko) .warning-msg {
 }
 .time-calc-formula::-webkit-scrollbar {
   display: none;
+}
+.time-calc-formula.typing {
+  color: #00ffe0;
+  font-weight: bold;
+  text-shadow: 0 0 6px rgba(0, 255, 224, 0.6);
+  letter-spacing: 0.5px;
 }
 
 .time-calc-main-display {
@@ -5883,6 +5906,20 @@ body:not(.lang-ja):not(.lang-zh):not(.lang-ko) .warning-msg {
   margin-bottom: 8px;
 }
 
+.time-calc-history-title-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.time-calc-history-guide {
+  font-size: 11px;
+  font-weight: normal;
+  color: rgba(255, 255, 255, 0.7);
+  letter-spacing: 0.02em;
+}
+
 .time-calc-history-clear-btn {
   background: transparent;
   border: 1px solid rgba(255, 77, 77, 0.6);
@@ -5915,10 +5952,27 @@ body:not(.lang-ja):not(.lang-zh):not(.lang-ko) .warning-msg {
   font-family: 'Consolas', 'Courier New', monospace;
   cursor: pointer;
   transition: all 0.15s ease;
+  user-select: none;
+  -webkit-user-select: none;
+  outline: none;
 }
-.time-calc-history-item:hover {
-  background: rgba(0, 255, 224, 0.1);
-  border-color: var(--accent);
+@media (hover: hover) and (pointer: fine) {
+  .time-calc-history-item:hover {
+    background: rgba(0, 255, 224, 0.1);
+    border-color: var(--accent);
+  }
+}
+/* 選択時（シングルタップ時）：背景が明るくハイライト（結果一覧と同様の仕様） */
+.time-calc-history-item.selected {
+  background-color: rgba(0, 255, 224, 0.22) !important;
+  border-color: var(--accent) !important;
+  box-shadow: 0 0 12px rgba(0, 255, 224, 0.4) !important;
+}
+/* ダブルタップ復元時のフラッシュ */
+.time-calc-history-item.restoring-flash {
+  background-color: rgba(255, 255, 255, 0.45) !important;
+  box-shadow: 0 0 20px rgba(0, 255, 224, 0.85) !important;
+  transition: none !important;
 }
 .time-calc-history-item .hist-icon {
   margin-right: 8px;
@@ -6171,7 +6225,7 @@ body:not(.lang-ja):not(.lang-zh):not(.lang-ko) .warning-msg {
 .curr-draggable-btn {
   cursor: grab;
   user-select: none;
-  touch-action: none; /* スマホでのドラッグを円滑にする */
+  touch-action: pan-y; /* ★ヒロさん仕様: 通常時は縦スクロールを最優先！長押し時のみDnD発動 */
   font-size: 12.5px !important;
   white-space: nowrap;
   letter-spacing: -0.4px;

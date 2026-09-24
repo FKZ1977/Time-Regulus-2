@@ -10068,6 +10068,17 @@ const TimeCalc = {
   isNewInput: true,         // 次のキー入力で currentInput を上書きするか
   tabStates: null,          // タブごとの入力保持用ステート辞書
   history: [],              // 履歴配列
+  selectedHistoryId: null,  // 選択ハイライト中の履歴ID
+
+  // 時間電卓用スロット＆入力バッファ（ヒロさん仕様: 液晶上部に数字プレビュー、時間/分/秒でスロット確定・置換）
+  timeSlotH: null,          // 時スロット（例: 1, 25）
+  timeSlotM: null,          // 分スロット（例: 25, 30）
+  timeSlotS: null,          // 秒スロット（例: 30）
+  timeDigitBuffer: '',      // 液晶画面の一番上に表示する入力中バッファ（例: '1', '25', '30'）
+
+  // 電卓（precision）用数式ステート（ヒロさん仕様: 括弧や数式がそのまま液晶上部に表示され、＝で計算）
+  precisionExpression: '',
+  precisionJustCalculated: false,
 
   // 割り勘計算用ステート (ヒロさん仕様: 多通貨対応)
   splitCurrency: 'JPY',
@@ -10586,11 +10597,17 @@ const TimeCalc = {
           leftValue: null,
           pendingOp: null,
           isNewInput: true,
-          displayFormat: 'COLON'
+          displayFormat: 'COLON',
+          timeSlotH: null,
+          timeSlotM: null,
+          timeSlotS: null,
+          timeDigitBuffer: ''
         },
         precision: {
           currentInput: "0",
           formula: "",
+          precisionExpression: "",
+          precisionJustCalculated: false,
           leftValue: null,
           pendingOp: null,
           isNewInput: true
@@ -10630,12 +10647,18 @@ const TimeCalc = {
         leftValue: this.leftValue,
         pendingOp: this.pendingOp,
         isNewInput: this.isNewInput,
-        displayFormat: this.displayFormat
+        displayFormat: this.displayFormat,
+        timeSlotH: this.timeSlotH,
+        timeSlotM: this.timeSlotM,
+        timeSlotS: this.timeSlotS,
+        timeDigitBuffer: this.timeDigitBuffer
       };
     } else if (mode === 'precision') {
       this.tabStates.precision = {
         currentInput: this.currentInput,
         formula: this.formula,
+        precisionExpression: this.precisionExpression,
+        precisionJustCalculated: this.precisionJustCalculated,
         leftValue: this.leftValue,
         pendingOp: this.pendingOp,
         isNewInput: this.isNewInput
@@ -10678,9 +10701,15 @@ const TimeCalc = {
       this.pendingOp = s.pendingOp !== undefined ? s.pendingOp : null;
       this.isNewInput = s.isNewInput !== undefined ? s.isNewInput : true;
       if (s.displayFormat) this.displayFormat = s.displayFormat;
+      this.timeSlotH = s.timeSlotH !== undefined ? s.timeSlotH : null;
+      this.timeSlotM = s.timeSlotM !== undefined ? s.timeSlotM : null;
+      this.timeSlotS = s.timeSlotS !== undefined ? s.timeSlotS : null;
+      this.timeDigitBuffer = s.timeDigitBuffer !== undefined ? s.timeDigitBuffer : '';
     } else if (mode === 'precision') {
       this.currentInput = s.currentInput !== undefined ? s.currentInput : '0';
       this.formula = s.formula !== undefined ? s.formula : '';
+      this.precisionExpression = s.precisionExpression !== undefined ? s.precisionExpression : '';
+      this.precisionJustCalculated = s.precisionJustCalculated !== undefined ? s.precisionJustCalculated : false;
       this.leftValue = s.leftValue !== undefined ? s.leftValue : null;
       this.pendingOp = s.pendingOp !== undefined ? s.pendingOp : null;
       this.isNewInput = s.isNewInput !== undefined ? s.isNewInput : true;
@@ -10715,6 +10744,10 @@ const TimeCalc = {
     this.leftValue = null;
     this.pendingOp = null;
     this.isNewInput = true;
+    this.timeSlotH = null;
+    this.timeSlotM = null;
+    this.timeSlotS = null;
+    this.timeDigitBuffer = '';
     this.splitInputStr = '0';
     this.splitTotal = 0;
     this.splitPeople = 2;
@@ -11184,20 +11217,103 @@ const TimeCalc = {
       }
     });
 
+    // ドラッグオーバー対象（FROM / TO / モーダルスロット）の判定（スクロール中もリアルタイムに判定）
+    const updateDragOverTarget = (clientX, clientY) => {
+      const underEl = document.elementFromPoint(clientX, clientY);
+
+      // 1. メイン電卓の FROM / TO 判定
+      const isOverFrom = underEl && underEl.closest('#currencyFromField');
+      const isOverTo = underEl && underEl.closest('#currencyToField');
+
+      if (fromField) {
+        if (isOverFrom) fromField.classList.add('drag-over');
+        else fromField.classList.remove('drag-over');
+      }
+      if (toField) {
+        if (isOverTo) toField.classList.add('drag-over');
+        else toField.classList.remove('drag-over');
+      }
+
+      // 2. レート選択モーダルのスロットカード (A〜F) 判定
+      const hoveredCard = underEl ? underEl.closest('.rate-slot-card') : null;
+      document.querySelectorAll('.rate-slot-card').forEach(card => {
+        if (hoveredCard && card === hoveredCard) {
+          card.classList.add('drag-over');
+        } else {
+          card.classList.remove('drag-over');
+        }
+      });
+    };
+
+    // ★ヒロさん仕様: ドラッグ中のオートスクロール（Edge Auto-Scroll）
+    // つまんだまま上端（または下端）に指を持っていくと、隠れていたFROM/TOが現れるよう自動スクロール！
+    let autoScrollRaf = null;
+    let lastClientX = 0;
+    let lastClientY = 0;
+
+    const runAutoScroll = () => {
+      if (!isDragging) {
+        stopAutoScroll();
+        return;
+      }
+
+      const topZone = 130;    // 画面上端から130px以内に入ったら上スクロール
+      const bottomZone = 110; // 画面下端から110px以内に入ったら下スクロール
+      const winH = window.innerHeight;
+      let scrollSpeed = 0;
+
+      if (lastClientY < topZone) {
+        // 上へスクロール (上端に近いほど高速にスクロール: 5px〜25px)
+        const ratio = Math.max(0, (topZone - lastClientY) / topZone);
+        scrollSpeed = -Math.round(5 + ratio * 20);
+      } else if (lastClientY > winH - bottomZone) {
+        // 下へスクロール
+        const ratio = Math.max(0, (lastClientY - (winH - bottomZone)) / bottomZone);
+        scrollSpeed = Math.round(5 + ratio * 20);
+      }
+
+      if (scrollSpeed !== 0) {
+        window.scrollBy({ top: scrollSpeed, behavior: 'auto' });
+        // スクロールで指の下に新しく入ってきた要素（FROM/TO等）をリアルタイム判定
+        updateDragOverTarget(lastClientX, lastClientY);
+      }
+
+      autoScrollRaf = requestAnimationFrame(runAutoScroll);
+    };
+
+    const startAutoScroll = () => {
+      if (!autoScrollRaf) {
+        autoScrollRaf = requestAnimationFrame(runAutoScroll);
+      }
+    };
+
+    const stopAutoScroll = () => {
+      if (autoScrollRaf) {
+        cancelAnimationFrame(autoScrollRaf);
+        autoScrollRaf = null;
+      }
+    };
+
     const startDrag = (curr, clientX, clientY, e) => {
       draggedCurrency = curr;
       isDragging = true;
       hasMoved = false;
       startX = clientX;
       startY = clientY;
+      lastClientX = clientX;
+      lastClientY = clientY;
 
       if (ghost) {
         const flag = TimeCalc.currencyFlags[curr] || '';
         ghost.textContent = `${flag} ${curr}`;
         ghost.style.left = `${clientX}px`;
         ghost.style.top = `${clientY}px`;
-        ghost.style.display = 'none'; // 動き出すまでは表示しない
+        ghost.style.display = 'block';
       }
+
+      // オートスクロール監視ループを開始
+      startAutoScroll();
+
       if (e && e.cancelable && e.type === 'touchstart') {
         // タッチ時のブラウザスクロール等を抑制
       }
@@ -11205,6 +11321,9 @@ const TimeCalc = {
 
     const moveDrag = (clientX, clientY, e) => {
       if (!isDragging) return;
+      lastClientX = clientX;
+      lastClientY = clientY;
+
       const dist = Math.hypot(clientX - startX, clientY - startY);
       if (dist > 4) {
         hasMoved = true;
@@ -11214,31 +11333,7 @@ const TimeCalc = {
           ghost.style.top = `${clientY}px`;
         }
 
-        // カーソル直下にある要素を判定
-        const underEl = document.elementFromPoint(clientX, clientY);
-
-        // 1. メイン電卓の FROM / TO 判定
-        const isOverFrom = underEl && underEl.closest('#currencyFromField');
-        const isOverTo = underEl && underEl.closest('#currencyToField');
-
-        if (fromField) {
-          if (isOverFrom) fromField.classList.add('drag-over');
-          else fromField.classList.remove('drag-over');
-        }
-        if (toField) {
-          if (isOverTo) toField.classList.add('drag-over');
-          else toField.classList.remove('drag-over');
-        }
-
-        // 2. レート選択モーダルのスロットカード (A〜F) 判定
-        const hoveredCard = underEl ? underEl.closest('.rate-slot-card') : null;
-        document.querySelectorAll('.rate-slot-card').forEach(card => {
-          if (hoveredCard && card === hoveredCard) {
-            card.classList.add('drag-over');
-          } else {
-            card.classList.remove('drag-over');
-          }
-        });
+        updateDragOverTarget(clientX, clientY);
 
         if (e && e.cancelable) {
           e.preventDefault();
@@ -11249,6 +11344,7 @@ const TimeCalc = {
     const endDrag = (clientX, clientY) => {
       if (!isDragging) return;
       isDragging = false;
+      stopAutoScroll();
       if (ghost) ghost.style.display = 'none';
 
       if (hasMoved && draggedCurrency) {
@@ -11284,30 +11380,101 @@ const TimeCalc = {
         }
       }
 
-      // ハイライトを全て解除
+      // ハイライト・アクティブ状態を全て解除
       if (fromField) fromField.classList.remove('drag-over');
       if (toField) toField.classList.remove('drag-over');
       document.querySelectorAll('.rate-slot-card').forEach(c => c.classList.remove('drag-over'));
+      document.querySelectorAll('.curr-draggable-btn').forEach(b => b.classList.remove('dnd-touch-active'));
 
       draggedCurrency = null;
     };
 
     this.startCurrencyDrag = startDrag;
 
+    let lastSlotDragEndTime = 0;
+
     // メイン電卓キーパッドの6スロットボタンにドラッグリスナーを登録
+    // ★ヒロさん仕様: 画面スクロール最優先！普通になぞるとスクロール、長押し（350ms）でドラッグ開始
     for (let i = 0; i < 6; i++) {
       const btn = document.getElementById(`currSlot_${i}`);
       if (!btn) continue;
 
+      let touchPressTimer = null;
+      let touchStartX = 0;
+      let touchStartY = 0;
+      let isLongPressed = false;
+
       btn.addEventListener('touchstart', (e) => {
         if (e.touches.length === 1) {
-          const curr = TimeCalc.currencySlots[i] || 'USD';
-          startDrag(curr, e.touches[0].clientX, e.touches[0].clientY, e);
+          touchStartX = e.touches[0].clientX;
+          touchStartY = e.touches[0].clientY;
+          isLongPressed = false;
+
+          // 350ms長押しでドラッグモード発動（指を動かせばスクロール優先）
+          touchPressTimer = setTimeout(() => {
+            isLongPressed = true;
+            if (navigator.vibrate) {
+              try { navigator.vibrate([35, 30, 35]); } catch(err){}
+            }
+            btn.classList.add('dnd-touch-active');
+            const curr = TimeCalc.currencySlots[i] || 'USD';
+            startDrag(curr, touchStartX, touchStartY, e);
+            if (ghost) {
+              const flag = TimeCalc.currencyFlags[curr] || '';
+              ghost.textContent = `${flag} ${curr}`;
+              ghost.style.display = 'block';
+              ghost.style.left = `${touchStartX}px`;
+              ghost.style.top = `${touchStartY}px`;
+            }
+          }, 350);
         }
       }, { passive: true });
 
+      btn.addEventListener('touchmove', (e) => {
+        if (touchPressTimer && e.touches.length > 0) {
+          const dx = Math.abs(e.touches[0].clientX - touchStartX);
+          const dy = Math.abs(e.touches[0].clientY - touchStartY);
+          // 8px以上の指移動があった場合は「画面スクロール」と判定し、長押しタイマーを即座にキャンセル！
+          if (dx > 8 || dy > 8) {
+            clearTimeout(touchPressTimer);
+            touchPressTimer = null;
+          }
+        }
+        // 長押し確定後は画面スクロールを抑止してドラッグ移動を優先
+        if (isLongPressed && e.cancelable) {
+          e.preventDefault();
+        }
+      }, { passive: false });
+
+      btn.addEventListener('touchend', () => {
+        if (touchPressTimer) {
+          clearTimeout(touchPressTimer);
+          touchPressTimer = null;
+        }
+        btn.classList.remove('dnd-touch-active');
+        if (isLongPressed) {
+          lastSlotDragEndTime = Date.now();
+        }
+      }, { passive: true });
+
+      btn.addEventListener('touchcancel', () => {
+        if (touchPressTimer) {
+          clearTimeout(touchPressTimer);
+          touchPressTimer = null;
+        }
+        btn.classList.remove('dnd-touch-active');
+      }, { passive: true });
+
+      // 長押しドラッグ後の誤タップ（スロット選択）を抑止
+      btn.addEventListener('click', (e) => {
+        if (Date.now() - lastSlotDragEndTime < 450) {
+          e.stopPropagation();
+          e.preventDefault();
+        }
+      }, true);
+
       btn.addEventListener('mousedown', (e) => {
-        // 左ボタン (0) または 右ボタン (2) でドラッグ可能！
+        // PCマウス操作: 左ボタン (0) または 右ボタン (2) でドラッグ可能！
         if (e.button === 0 || e.button === 2) {
           const curr = TimeCalc.currencySlots[i] || 'USD';
           startDrag(curr, e.clientX, e.clientY, e);
@@ -11315,8 +11482,112 @@ const TimeCalc = {
       });
     }
 
+    // ===== FROM / TO フィールドの長押し検知 =====
+    // ★ヒロさん仕様: シングルタップでアクティブ枠切替、長押しでドロップダウンリスト出現
+    ['from', 'to'].forEach(fieldKey => {
+      const fieldId = fieldKey === 'from' ? 'currencyFromField' : 'currencyToField';
+      const selectId = fieldKey === 'from' ? 'currencyFromSelect' : 'currencyToSelect';
+      const fieldEl = document.getElementById(fieldId);
+      const selectEl = document.getElementById(selectId);
+      if (!fieldEl || !selectEl) return;
+
+      let longPressTimer = null;
+      let startX = 0;
+      let startY = 0;
+
+      const triggerDropdown = () => {
+        if (navigator.vibrate) {
+          try { navigator.vibrate(25); } catch(err){}
+        }
+        fieldEl.classList.add('longpress-activating');
+        setTimeout(() => fieldEl.classList.remove('longpress-activating'), 350);
+
+        selectEl.style.pointerEvents = 'auto';
+        if (typeof selectEl.showPicker === 'function') {
+          try {
+            selectEl.showPicker();
+          } catch(err) {
+            selectEl.focus();
+            selectEl.click();
+          }
+        } else {
+          selectEl.focus();
+          selectEl.click();
+        }
+
+        const resetPointerEvents = () => {
+          selectEl.style.pointerEvents = '';
+          selectEl.removeEventListener('change', resetPointerEvents);
+          selectEl.removeEventListener('blur', resetPointerEvents);
+        };
+        selectEl.addEventListener('change', resetPointerEvents);
+        selectEl.addEventListener('blur', resetPointerEvents);
+        setTimeout(resetPointerEvents, 2500);
+      };
+
+      // タッチ操作（スマホ）
+      fieldEl.addEventListener('touchstart', (e) => {
+        if (e.touches.length === 1) {
+          startX = e.touches[0].clientX;
+          startY = e.touches[0].clientY;
+
+          longPressTimer = setTimeout(() => {
+            triggerDropdown();
+          }, 380); // 380ms長押しでドロップダウンピッカー出現
+        }
+      }, { passive: true });
+
+      fieldEl.addEventListener('touchmove', (e) => {
+        if (longPressTimer && e.touches.length > 0) {
+          const dx = Math.abs(e.touches[0].clientX - startX);
+          const dy = Math.abs(e.touches[0].clientY - startY);
+          // 6px以上動いたら画面スクロールと判定して長押しをキャンセル
+          if (dx > 6 || dy > 6) {
+            clearTimeout(longPressTimer);
+            longPressTimer = null;
+          }
+        }
+      }, { passive: true });
+
+      fieldEl.addEventListener('touchend', () => {
+        if (longPressTimer) {
+          clearTimeout(longPressTimer);
+          longPressTimer = null;
+        }
+      }, { passive: true });
+
+      fieldEl.addEventListener('touchcancel', () => {
+        if (longPressTimer) {
+          clearTimeout(longPressTimer);
+          longPressTimer = null;
+        }
+      });
+
+      // PCマウス操作: 左クリック長押し または 右クリックでドロップダウン可能
+      fieldEl.addEventListener('mousedown', (e) => {
+        if (e.button === 0) {
+          longPressTimer = setTimeout(() => {
+            triggerDropdown();
+          }, 420);
+        }
+      });
+
+      fieldEl.addEventListener('mouseup', () => {
+        if (longPressTimer) {
+          clearTimeout(longPressTimer);
+          longPressTimer = null;
+        }
+      });
+
+      fieldEl.addEventListener('contextmenu', (e) => {
+        e.preventDefault();
+        triggerDropdown();
+      });
+    });
+
     window.addEventListener('touchmove', (e) => {
       if (isDragging && e.touches.length === 1) {
+        if (e.cancelable) e.preventDefault();
         moveDrag(e.touches[0].clientX, e.touches[0].clientY, e);
       }
     }, { passive: false });
@@ -11536,10 +11807,8 @@ const TimeCalc = {
     }
 
     if (this.engineMode === 'precision') {
-      if (key === 'UNIT_H') { this.inputParenthesis('('); this.updateDisplay(); return; }
-      if (key === 'UNIT_M') { this.inputParenthesis(')'); this.updateDisplay(); return; }
-      if (key === 'UNIT_S') { this.calculateSquare(); this.updateDisplay(); return; }
-      if (key === ':') { this.calculateSqrt(); this.updateDisplay(); return; }
+      this.handlePrecisionKey(key);
+      return;
     }
 
     switch (key) {
@@ -11772,7 +12041,46 @@ const TimeCalc = {
     this.updateDisplay();
   },
 
+  // 時間電卓用スロット＆入力バッファのリセット
+  resetTimeSlots() {
+    this.timeSlotH = null;
+    this.timeSlotM = null;
+    this.timeSlotS = null;
+    this.timeDigitBuffer = '';
+  },
+
+  // 時間電卓: スロットの値から currentInput を計算・同期
+  syncCurrentInputFromSlots() {
+    if (this.timeSlotH !== null || this.timeSlotM !== null || this.timeSlotS !== null) {
+      const h = this.timeSlotH || 0;
+      const m = this.timeSlotM || 0;
+      const s = this.timeSlotS || 0;
+      const totalSec = h * 3600 + m * 60 + s;
+      this.currentInput = this.formatTime(totalSec, 'COLON');
+    } else if (this.timeDigitBuffer !== '') {
+      this.currentInput = this.timeDigitBuffer;
+    } else {
+      this.currentInput = '0';
+    }
+  },
+
   inputDigit(d) {
+    if (this.engineMode === 'time') {
+      if (this.isNewInput) {
+        this.resetTimeSlots();
+        this.isNewInput = false;
+      }
+      if (this.timeDigitBuffer === '0' || !this.timeDigitBuffer) {
+        this.timeDigitBuffer = (d === '00' ? '0' : d);
+      } else {
+        if (this.timeDigitBuffer.length < 8) {
+          this.timeDigitBuffer += d;
+        }
+      }
+      this.updateDisplay();
+      return;
+    }
+
     if (this.isNewInput) {
       this.currentInput = d === '00' ? '0' : d;
       this.isNewInput = false;
@@ -11786,6 +12094,19 @@ const TimeCalc = {
   },
 
   inputDot() {
+    if (this.engineMode === 'time') {
+      if (this.isNewInput) {
+        this.resetTimeSlots();
+        this.isNewInput = false;
+      }
+      if (!this.timeDigitBuffer) {
+        this.timeDigitBuffer = "0.";
+      } else if (!this.timeDigitBuffer.includes('.')) {
+        this.timeDigitBuffer += '.';
+      }
+      this.updateDisplay();
+      return;
+    }
     if (this.isNewInput) {
       this.currentInput = "0.";
       this.isNewInput = false;
@@ -11800,58 +12121,350 @@ const TimeCalc = {
 
   inputColon() {
     if (this.engineMode !== 'time') return;
-    if (this.isNewInput) {
-      this.currentInput = "0:";
+    if (this.timeDigitBuffer !== '') {
+      const val = parseFloat(this.timeDigitBuffer);
+      if (!isNaN(val)) {
+        if (this.timeSlotH === null) {
+          this.timeSlotH = val;
+        } else if (this.timeSlotM === null) {
+          this.timeSlotM = val;
+        } else {
+          this.timeSlotS = val;
+        }
+      }
+      this.timeDigitBuffer = '';
       this.isNewInput = false;
+      this.syncCurrentInputFromSlots();
+      this.updateDisplay();
       return;
-    }
-    const colonCount = (this.currentInput.match(/:/g) || []).length;
-    if (colonCount < 2 && !this.currentInput.endsWith(':')) {
-      this.currentInput += ':';
     }
   },
 
   inputUnit(unit) {
     if (this.engineMode !== 'time') return;
-    if (this.isNewInput) {
-      this.currentInput = "0" + unit;
+    const hasBuffer = this.timeDigitBuffer !== '';
+    const val = hasBuffer ? parseFloat(this.timeDigitBuffer) : null;
+
+    if (unit === 'h') {
+      if (val !== null) {
+        this.timeSlotH = val;
+      } else if (this.timeSlotH === null) {
+        this.timeSlotH = 0;
+      }
+    } else if (unit === 'm') {
+      if (val !== null) {
+        this.timeSlotM = val;
+      } else if (this.timeSlotM === null) {
+        this.timeSlotM = 0;
+      }
+    } else if (unit === 's') {
+      if (val !== null) {
+        this.timeSlotS = val;
+      } else if (this.timeSlotS === null) {
+        this.timeSlotS = 0;
+      }
+    }
+
+    this.timeDigitBuffer = '';
+    this.isNewInput = false;
+    this.syncCurrentInputFromSlots();
+    this.updateDisplay();
+  },
+
+  // ===== 電卓モード（数式計算・括弧対応）エンジン (ヒロさん仕様) =====
+  handlePrecisionKey(key) {
+    if (key === 'AC') {
+      this.precisionExpression = '';
+      this.currentInput = '0';
+      this.formula = '';
+      this.precisionJustCalculated = false;
+      this.isNewInput = true;
+      this.saveCurrentTabState();
+      this.updateDisplay();
+      return;
+    }
+
+    if (key === 'C') {
+      this.currentInput = '0';
+      this.precisionExpression = this.precisionExpression.replace(/[0-9\.]+$/, '').trimEnd();
+      this.updateDisplay();
+      return;
+    }
+
+    if (key === 'BS') {
+      if (this.precisionJustCalculated) {
+        this.precisionExpression = '';
+        this.currentInput = '0';
+        this.formula = '';
+        this.precisionJustCalculated = false;
+        this.isNewInput = true;
+      } else {
+        if (this.precisionExpression.length > 0) {
+          this.precisionExpression = this.precisionExpression.trimEnd();
+          this.precisionExpression = this.precisionExpression.slice(0, -1).trimEnd();
+        }
+        if (this.currentInput.length > 1) {
+          this.currentInput = this.currentInput.slice(0, -1);
+        } else {
+          this.currentInput = '0';
+        }
+      }
+      this.updateDisplay();
+      return;
+    }
+
+    if (key === '=') {
+      this.calculatePrecisionExpression();
+      this.updateDisplay();
+      return;
+    }
+
+    if (key === 'UNIT_H') {
+      this.inputPrecisionParenthesis('(');
+      this.updateDisplay();
+      return;
+    }
+
+    if (key === 'UNIT_M') {
+      this.inputPrecisionParenthesis(')');
+      this.updateDisplay();
+      return;
+    }
+
+    if (key === 'UNIT_S') {
+      this.calculatePrecisionSquare();
+      this.updateDisplay();
+      return;
+    }
+
+    if (key === ':') {
+      this.calculatePrecisionSqrt();
+      this.updateDisplay();
+      return;
+    }
+
+    if (key === 'NEG') {
+      this.togglePrecisionSign();
+      this.updateDisplay();
+      return;
+    }
+
+    if (['+', '-', '*', '/', '%'].includes(key)) {
+      this.inputPrecisionOperator(key);
+      this.updateDisplay();
+      return;
+    }
+
+    if (/^[0-9]$/.test(key) || key === '00') {
+      this.inputPrecisionDigit(key);
+      this.updateDisplay();
+      return;
+    }
+
+    if (key === '.') {
+      this.inputPrecisionDot();
+      this.updateDisplay();
+      return;
+    }
+
+    if (key === 'MC') this.memoryClear();
+    else if (key === 'MR') this.memoryRecall();
+    else if (key === 'M+') this.memoryAdd();
+    else if (key === 'M-') this.memorySubtract();
+    this.updateDisplay();
+  },
+
+  inputPrecisionDigit(digit) {
+    const d = digit === '00' ? '0' : digit;
+    if (this.precisionJustCalculated) {
+      this.precisionExpression = d;
+      this.currentInput = d;
+      this.formula = '';
+      this.precisionJustCalculated = false;
       this.isNewInput = false;
       return;
     }
-    if (!this.currentInput.includes(unit)) {
-      this.currentInput += unit;
-    }
-  },
 
-  inputParenthesis(p) {
-    if (p === '(') {
-      if (this.isNewInput || this.currentInput === '0') {
-        this.formula += (this.formula ? ' ' : '') + '(';
+    const trimmed = this.precisionExpression.trimEnd();
+    if (trimmed.endsWith(')')) {
+      this.precisionExpression = trimmed + ' × ' + d;
+      this.currentInput = d;
+      return;
+    }
+
+    if (this.currentInput === '0' || this.isNewInput) {
+      this.currentInput = d;
+      if (trimmed.endsWith(' 0')) {
+        this.precisionExpression = trimmed.slice(0, -1) + d;
+      } else if (trimmed === '0') {
+        this.precisionExpression = d;
       } else {
-        this.formula += (this.formula ? ' ' : '') + this.currentInput + ' * (';
-        this.currentInput = '0';
-        this.isNewInput = true;
+        this.precisionExpression += d;
       }
-    } else if (p === ')') {
-      this.formula += (this.formula ? ' ' : '') + this.currentInput + ' )';
-      this.currentInput = '0';
-      this.isNewInput = true;
+      this.isNewInput = false;
+    } else {
+      this.currentInput += digit;
+      this.precisionExpression += digit;
     }
   },
 
-  calculateSquare() {
-    const num = parseFloat(this.currentInput) || 0;
-    const res = num * num;
-    const resStr = String(parseFloat(res.toPrecision(12)));
-    const formula = `sqr(${this.currentInput}) =`;
-    this.addHistory(formula, resStr, 'precision', { currentInput: resStr, formula });
-    this.formula = formula;
-    this.currentInput = resStr;
+  inputPrecisionDot() {
+    if (this.precisionJustCalculated) {
+      this.precisionExpression = '0.';
+      this.currentInput = '0.';
+      this.formula = '';
+      this.precisionJustCalculated = false;
+      this.isNewInput = false;
+      return;
+    }
+
+    if (!this.currentInput.includes('.')) {
+      if (this.isNewInput || this.currentInput === '0') {
+        this.currentInput = '0.';
+        const trimmed = this.precisionExpression.trimEnd();
+        if (trimmed.endsWith(' 0')) {
+          this.precisionExpression = trimmed + '.';
+        } else if (trimmed === '0') {
+          this.precisionExpression = '0.';
+        } else {
+          this.precisionExpression += (this.precisionExpression ? ' ' : '') + '0.';
+        }
+      } else {
+        this.currentInput += '.';
+        this.precisionExpression += '.';
+      }
+      this.isNewInput = false;
+    }
+  },
+
+  inputPrecisionOperator(op) {
+    const opSymbols = { '+': '+', '-': '−', '*': '×', '/': '÷', '%': '%' };
+    const sym = opSymbols[op] || op;
+
+    if (this.precisionJustCalculated) {
+      this.precisionExpression = `${this.currentInput} ${sym} `;
+      this.formula = `${this.currentInput} ${sym}`;
+      this.precisionJustCalculated = false;
+      this.isNewInput = true;
+      return;
+    }
+
+    let trimmed = this.precisionExpression.trimEnd();
+    if (!trimmed) {
+      if (op === '-') {
+        this.precisionExpression = '−';
+        this.currentInput = '-';
+        this.isNewInput = false;
+        return;
+      }
+      trimmed = this.currentInput && this.currentInput !== '0' ? this.currentInput : '0';
+    }
+
+    const lastChar = trimmed.slice(-1);
+    if (['+', '−', '×', '÷', '%', '-', '*', '/'].includes(lastChar)) {
+      this.precisionExpression = trimmed.slice(0, -1).trimEnd() + ` ${sym} `;
+    } else {
+      this.precisionExpression = trimmed + ` ${sym} `;
+    }
+
+    this.formula = this.precisionExpression.trim();
     this.isNewInput = true;
   },
 
-  calculateSqrt() {
-    const num = parseFloat(this.currentInput) || 0;
+  inputPrecisionParenthesis(p) {
+    if (p === '(') {
+      if (this.precisionJustCalculated) {
+        this.precisionExpression = '(';
+        this.formula = '(';
+        this.currentInput = '0';
+        this.precisionJustCalculated = false;
+        this.isNewInput = true;
+        return;
+      }
+
+      const trimmed = this.precisionExpression.trimEnd();
+      if (trimmed && /[0-9\)]$/.test(trimmed)) {
+        this.precisionExpression = trimmed + ' × (';
+      } else {
+        this.precisionExpression = trimmed + (trimmed && !trimmed.endsWith('(') ? ' ' : '') + '(';
+      }
+      this.currentInput = '0';
+      this.isNewInput = true;
+    } else if (p === ')') {
+      const trimmed = this.precisionExpression.trimEnd();
+      let openCount = 0;
+      let closeCount = 0;
+      for (const ch of trimmed) {
+        if (ch === '(') openCount++;
+        if (ch === ')') closeCount++;
+      }
+
+      if (openCount > closeCount) {
+        let expr = trimmed.replace(/[\+\−\×\÷\%\-\*\/]+$/, '').trimEnd();
+        this.precisionExpression = expr + ')';
+        this.isNewInput = true;
+      }
+    }
+  },
+
+  calculatePrecisionExpression() {
+    let expr = this.precisionExpression.trim();
+    if (!expr) {
+      expr = this.currentInput || '0';
+    }
+
+    // 末尾の演算子を取り除く
+    expr = expr.replace(/[\+\−\×\÷\%\-\*\/]+$/, '').trim();
+
+    // 未閉じの括弧を自動的に閉じる
+    let openCount = 0;
+    let closeCount = 0;
+    for (const ch of expr) {
+      if (ch === '(') openCount++;
+      if (ch === ')') closeCount++;
+    }
+    if (openCount > closeCount) {
+      expr += ')'.repeat(openCount - closeCount);
+    }
+
+    const fullFormula = `${expr} =`;
+    const res = this.evaluateExpression(expr);
+    const resultStr = String(res);
+
+    this.addHistory(fullFormula, resultStr, 'precision', {
+      precisionExpression: expr,
+      result: resultStr,
+      formula: fullFormula
+    });
+
+    if (typeof gtag === 'function') {
+      gtag('event', 'multi_calc_result', { mode: 'precision' });
+    }
+
+    this.formula = fullFormula;
+    this.currentInput = resultStr;
+    this.precisionExpression = expr;
+    this.precisionJustCalculated = true;
+    this.isNewInput = true;
+  },
+
+  calculatePrecisionSquare() {
+    let num = this.evaluateExpression(this.precisionExpression || this.currentInput);
+    if (typeof num !== 'number' || isNaN(num)) num = parseFloat(this.currentInput) || 0;
+    const res = num * num;
+    const resStr = String(parseFloat(res.toPrecision(12)));
+    const formula = `sqr(${num}) =`;
+    this.addHistory(formula, resStr, 'precision', { precisionExpression: `sqr(${num})`, result: resStr, formula });
+    this.formula = formula;
+    this.currentInput = resStr;
+    this.precisionExpression = resStr;
+    this.precisionJustCalculated = true;
+    this.isNewInput = true;
+  },
+
+  calculatePrecisionSqrt() {
+    let num = this.evaluateExpression(this.precisionExpression || this.currentInput);
+    if (typeof num !== 'number' || isNaN(num)) num = parseFloat(this.currentInput) || 0;
     if (num < 0) {
       this.currentInput = "Error";
       this.isNewInput = true;
@@ -11859,14 +12472,226 @@ const TimeCalc = {
     }
     const res = Math.sqrt(num);
     const resStr = String(parseFloat(res.toPrecision(12)));
-    const formula = `√(${this.currentInput}) =`;
-    this.addHistory(formula, resStr, 'precision', { currentInput: resStr, formula });
+    const formula = `√(${num}) =`;
+    this.addHistory(formula, resStr, 'precision', { precisionExpression: `√(${num})`, result: resStr, formula });
     this.formula = formula;
     this.currentInput = resStr;
+    this.precisionExpression = resStr;
+    this.precisionJustCalculated = true;
     this.isNewInput = true;
   },
 
+  togglePrecisionSign() {
+    if (this.precisionJustCalculated) {
+      if (this.currentInput.startsWith('-')) {
+        this.currentInput = this.currentInput.slice(1);
+      } else if (this.currentInput !== '0' && this.currentInput !== 'Error') {
+        this.currentInput = '-' + this.currentInput;
+      }
+      this.precisionExpression = this.currentInput;
+      return;
+    }
+
+    const oldVal = this.currentInput;
+    let newVal = oldVal;
+    if (oldVal.startsWith('-')) {
+      newVal = oldVal.substring(1);
+    } else if (oldVal !== '0' && oldVal !== 'Error') {
+      newVal = '-' + oldVal;
+    }
+    this.currentInput = newVal;
+
+    if (this.precisionExpression) {
+      const escapedOld = oldVal.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+      const regex = new RegExp(`(?<=\\s|^|\\()${escapedOld}$`);
+      if (regex.test(this.precisionExpression)) {
+        this.precisionExpression = this.precisionExpression.replace(regex, newVal);
+      } else {
+        this.precisionExpression = newVal;
+      }
+    } else {
+      this.precisionExpression = newVal;
+    }
+  },
+
+  // 安全な数式評価（四則演算・括弧・小数を高精度に計算）
+  evaluateExpression(expr) {
+    if (!expr || typeof expr !== 'string') return 0;
+
+    let s = expr
+      .replace(/×/g, '*')
+      .replace(/÷/g, '/')
+      .replace(/−/g, '-')
+      .replace(/,/g, '')
+      .replace(/=/g, '')
+      .trim();
+
+    s = s.replace(/(\d+(\.\d+)?)%/g, '($1/100)');
+    s = s.replace(/(\d)\s*\(/g, '$1*(');
+    s = s.replace(/\)\s*\(/g, ')*(');
+    s = s.replace(/\)\s*(\d)/g, ')*$1');
+
+    let openCount = 0;
+    let closeCount = 0;
+    for (const ch of s) {
+      if (ch === '(') openCount++;
+      if (ch === ')') closeCount++;
+    }
+    if (openCount > closeCount) {
+      s += ')'.repeat(openCount - closeCount);
+    }
+
+    s = s.replace(/[\+\-\*\/]+$/, '').trim();
+    if (!s) return 0;
+
+    if (!/^[0-9\.\+\-\*\/\(\)\s]+$/.test(s)) {
+      return 'Error';
+    }
+
+    try {
+      const tokens = this.tokenizeExpression(s);
+      const rpn = this.shuntingYard(tokens);
+      const result = this.evalRPN(rpn);
+      if (result === 'Error' || isNaN(result) || !isFinite(result)) return 'Error';
+      return parseFloat(Number(result).toPrecision(12));
+    } catch (e) {
+      return 'Error';
+    }
+  },
+
+  tokenizeExpression(str) {
+    const tokens = [];
+    let i = 0;
+    const len = str.length;
+
+    while (i < len) {
+      const ch = str[i];
+      if (/\s/.test(ch)) {
+        i++;
+        continue;
+      }
+
+      if (/[0-9\.]/.test(ch)) {
+        let numStr = '';
+        while (i < len && /[0-9\.]/.test(str[i])) {
+          numStr += str[i];
+          i++;
+        }
+        tokens.push({ type: 'num', val: parseFloat(numStr) });
+        continue;
+      }
+
+      if (ch === '+' || ch === '*' || ch === '/') {
+        tokens.push({ type: 'op', val: ch, prec: (ch === '*' || ch === '/') ? 2 : 1 });
+        i++;
+        continue;
+      }
+
+      if (ch === '-') {
+        const prev = tokens[tokens.length - 1];
+        if (!prev || prev.type === 'op' || (prev.type === 'paren' && prev.val === '(')) {
+          let j = i + 1;
+          while (j < len && /\s/.test(str[j])) j++;
+          if (j < len && /[0-9\.]/.test(str[j])) {
+            let numStr = '-';
+            while (j < len && /[0-9\.]/.test(str[j])) {
+              numStr += str[j];
+              j++;
+            }
+            tokens.push({ type: 'num', val: parseFloat(numStr) });
+            i = j;
+            continue;
+          }
+        }
+        tokens.push({ type: 'op', val: '-', prec: 1 });
+        i++;
+        continue;
+      }
+
+      if (ch === '(' || ch === ')') {
+        tokens.push({ type: 'paren', val: ch });
+        i++;
+        continue;
+      }
+
+      i++;
+    }
+    return tokens;
+  },
+
+  shuntingYard(tokens) {
+    const outputQueue = [];
+    const opStack = [];
+
+    for (const token of tokens) {
+      if (token.type === 'num') {
+        outputQueue.push(token);
+      } else if (token.type === 'op') {
+        while (
+          opStack.length > 0 &&
+          opStack[opStack.length - 1].type === 'op' &&
+          opStack[opStack.length - 1].prec >= token.prec
+        ) {
+          outputQueue.push(opStack.pop());
+        }
+        opStack.push(token);
+      } else if (token.type === 'paren' && token.val === '(') {
+        opStack.push(token);
+      } else if (token.type === 'paren' && token.val === ')') {
+        while (opStack.length > 0 && !(opStack[opStack.length - 1].type === 'paren' && opStack[opStack.length - 1].val === '(')) {
+          outputQueue.push(opStack.pop());
+        }
+        if (opStack.length > 0 && opStack[opStack.length - 1].val === '(') {
+          opStack.pop();
+        }
+      }
+    }
+
+    while (opStack.length > 0) {
+      const top = opStack.pop();
+      if (top.type === 'op') {
+        outputQueue.push(top);
+      }
+    }
+
+    return outputQueue;
+  },
+
+  evalRPN(rpn) {
+    const stack = [];
+    for (const token of rpn) {
+      if (token.type === 'num') {
+        stack.push(token.val);
+      } else if (token.type === 'op') {
+        const b = stack.pop();
+        const a = stack.pop();
+        if (a === undefined || b === undefined) return 0;
+        let res = 0;
+        if (token.val === '+') res = a + b;
+        else if (token.val === '-') res = a - b;
+        else if (token.val === '*') res = a * b;
+        else if (token.val === '/') {
+          if (b === 0) return 'Error';
+          res = a / b;
+        }
+        stack.push(res);
+      }
+    }
+    return stack.length > 0 ? stack[0] : 0;
+  },
+
   toggleSign() {
+    if (this.engineMode === 'time') {
+      if (this.timeDigitBuffer !== '') {
+        if (this.timeDigitBuffer.startsWith('-')) {
+          this.timeDigitBuffer = this.timeDigitBuffer.substring(1);
+        } else {
+          this.timeDigitBuffer = '-' + this.timeDigitBuffer;
+        }
+        this.updateDisplay();
+        return;
+      }
+    }
     if (this.currentInput.startsWith('-')) {
       this.currentInput = this.currentInput.substring(1);
     } else if (this.currentInput !== '0' && this.currentInput !== 'Error') {
@@ -11875,6 +12700,24 @@ const TimeCalc = {
   },
 
   backspace() {
+    if (this.engineMode === 'time') {
+      if (this.timeDigitBuffer.length > 0) {
+        this.timeDigitBuffer = this.timeDigitBuffer.slice(0, -1);
+        this.updateDisplay();
+        return;
+      }
+      if (this.timeSlotS !== null) {
+        this.timeSlotS = null;
+      } else if (this.timeSlotM !== null) {
+        this.timeSlotM = null;
+      } else if (this.timeSlotH !== null) {
+        this.timeSlotH = null;
+      }
+      this.syncCurrentInputFromSlots();
+      this.updateDisplay();
+      return;
+    }
+
     if (this.isNewInput) return;
     if (this.currentInput.length > 1) {
       this.currentInput = this.currentInput.slice(0, -1);
@@ -11889,6 +12732,16 @@ const TimeCalc = {
   },
 
   clearEntry() {
+    if (this.engineMode === 'time') {
+      if (this.timeDigitBuffer !== '') {
+        this.timeDigitBuffer = '';
+      } else {
+        this.resetTimeSlots();
+      }
+      this.syncCurrentInputFromSlots();
+      this.updateDisplay();
+      return;
+    }
     this.currentInput = '0';
     this.isNewInput = true;
   },
@@ -11900,6 +12753,9 @@ const TimeCalc = {
       this.leftValue = null;
       this.pendingOp = null;
       this.isNewInput = true;
+      if (this.engineMode === 'time') {
+        this.resetTimeSlots();
+      }
     } else if (this.engineMode === 'split') {
       this.splitInputStr = '0';
       this.splitTotal = 0;
@@ -11978,6 +12834,9 @@ const TimeCalc = {
   },
 
   handleOperator(op) {
+    if (this.engineMode === 'time') {
+      this.syncCurrentInputFromSlots();
+    }
     const currentVal = this.parseValue(this.currentInput);
 
     if (this.leftValue !== null && this.pendingOp && !this.isNewInput) {
@@ -11997,6 +12856,9 @@ const TimeCalc = {
       : String(this.leftValue.val);
     this.formula = `${leftDisplay} ${opSymbols[op] || op}`;
     this.isNewInput = true;
+    if (this.engineMode === 'time') {
+      this.resetTimeSlots();
+    }
   },
 
   executeCalc(left, right, op) {
@@ -12048,6 +12910,9 @@ const TimeCalc = {
     if (this.leftValue === null || !this.pendingOp) {
       return;
     }
+    if (this.engineMode === 'time') {
+      this.syncCurrentInputFromSlots();
+    }
     const rightVal = this.parseValue(this.currentInput);
     const opSymbols = { '+': '+', '-': '−', '*': '×', '/': '÷', '%': '%' };
     const isTime = this.engineMode === 'time';
@@ -12073,6 +12938,19 @@ const TimeCalc = {
     this.leftValue = null;
     this.pendingOp = null;
     this.isNewInput = true;
+
+    if (this.engineMode === 'time') {
+      const parsed = this.parseValue(resultStr);
+      if (parsed.type === 'time') {
+        const absSec = Math.abs(Math.round(parsed.sec));
+        this.timeSlotH = Math.floor(absSec / 3600);
+        this.timeSlotM = Math.floor((absSec % 3600) / 60);
+        this.timeSlotS = absSec % 60;
+      } else {
+        this.resetTimeSlots();
+      }
+      this.timeDigitBuffer = '';
+    }
   },
 
   toggleFormatMode() {
@@ -12206,11 +13084,44 @@ const TimeCalc = {
       return;
     }
 
-    // 3. 時間電卓 & 精密電卓モードの表示
-    if (formulaEl) formulaEl.textContent = this.formula;
+    // 3. 時間電卓 & 電卓モードの表示
+    if (this.engineMode === 'time') {
+      if (this.timeDigitBuffer !== '') {
+        if (formulaEl) {
+          formulaEl.classList.add('typing');
+          formulaEl.textContent = this.formula ? `${this.formula} ${this.timeDigitBuffer}` : this.timeDigitBuffer;
+        }
+      } else {
+        if (formulaEl) {
+          formulaEl.classList.remove('typing');
+          formulaEl.textContent = this.formula;
+        }
+      }
+    } else if (this.engineMode === 'precision') {
+      if (formulaEl) {
+        formulaEl.classList.remove('typing');
+        if (this.precisionJustCalculated) {
+          formulaEl.textContent = this.formula;
+        } else {
+          formulaEl.textContent = this.precisionExpression || '';
+        }
+        // 数式が長い場合は常に最新入力位置（右端）へスクロール
+        formulaEl.scrollLeft = formulaEl.scrollWidth;
+      }
+    } else {
+      if (formulaEl) {
+        formulaEl.classList.remove('typing');
+        formulaEl.textContent = this.formula;
+      }
+    }
+
     if (opEl) {
-      const opSymbols = { '+': '+', '-': '−', '*': '×', '/': '÷', '%': '%' };
-      opEl.textContent = this.pendingOp ? (opSymbols[this.pendingOp] || this.pendingOp) : '';
+      if (this.engineMode === 'precision') {
+        opEl.textContent = '';
+      } else {
+        const opSymbols = { '+': '+', '-': '−', '*': '×', '/': '÷', '%': '%' };
+        opEl.textContent = this.pendingOp ? (opSymbols[this.pendingOp] || this.pendingOp) : '';
+      }
     }
 
     const parsed = this.parseValue(this.currentInput);
@@ -12220,13 +13131,31 @@ const TimeCalc = {
       if (isPrec) {
         mainEl.textContent = this.currentInput;
       } else {
-        if (this.currentInput === '0' && this.isNewInput) {
-          mainEl.textContent = this.displayFormat === 'COLON' ? "00:00:00" : (typeof t === 'function' ? `0${t('calc_unit_s') || '秒'}` : "0秒");
-        } else {
-          if (parsed.type === 'time') {
-            mainEl.textContent = this.formatTime(parsed.sec, this.displayFormat);
+        const hasSlots = (this.timeSlotH !== null || this.timeSlotM !== null || this.timeSlotS !== null);
+        if (hasSlots) {
+          if (this.displayFormat === 'COLON') {
+            const hStr = (this.timeSlotH !== null) ? String(this.timeSlotH).padStart(2, '0') : '--';
+            const mStr = (this.timeSlotM !== null) ? String(this.timeSlotM).padStart(2, '0') : '--';
+            const sStr = (this.timeSlotS !== null) ? String(this.timeSlotS).padStart(2, '0') : '--';
+            mainEl.textContent = `${hStr}:${mStr}:${sStr}`;
           } else {
-            mainEl.textContent = this.currentInput;
+            const hUnit = (typeof t === 'function' ? t('calc_unit_h') : '時間') || '時間';
+            const mUnit = (typeof t === 'function' ? t('calc_unit_m') : '分') || '分';
+            const sUnit = (typeof t === 'function' ? t('calc_unit_s') : '秒') || '秒';
+            const hStr = (this.timeSlotH !== null) ? `${this.timeSlotH}${hUnit}` : `--${hUnit}`;
+            const mStr = (this.timeSlotM !== null) ? `${String(this.timeSlotM).padStart(2, '0')}${mUnit}` : `--${mUnit}`;
+            const sStr = (this.timeSlotS !== null) ? `${String(this.timeSlotS).padStart(2, '0')}${sUnit}` : `--${sUnit}`;
+            mainEl.textContent = `${hStr} ${mStr} ${sStr}`;
+          }
+        } else {
+          if (this.currentInput === '0' && this.isNewInput) {
+            mainEl.textContent = this.displayFormat === 'COLON' ? "00:00:00" : (typeof t === 'function' ? `0${t('calc_unit_s') || '秒'}` : "0秒");
+          } else {
+            if (parsed.type === 'time') {
+              mainEl.textContent = this.formatTime(parsed.sec, this.displayFormat);
+            } else {
+              mainEl.textContent = this.currentInput;
+            }
           }
         }
       }
@@ -12241,16 +13170,19 @@ const TimeCalc = {
           subEl.textContent = `= 0`;
         }
       } else {
-        if (parsed.type === 'time') {
-          const sec = parsed.sec;
-          const hours = (sec / 3600).toFixed(4);
-          const mins = (sec / 60).toFixed(2);
-          subEl.textContent = `= ${hours} h (${mins} m / ${sec} s)`;
+        const hasSlots = (this.timeSlotH !== null || this.timeSlotM !== null || this.timeSlotS !== null);
+        let sec = 0;
+        if (hasSlots) {
+          sec = (this.timeSlotH || 0) * 3600 + (this.timeSlotM || 0) * 60 + (this.timeSlotS || 0);
+        } else if (parsed.type === 'time') {
+          sec = parsed.sec;
         } else {
-          const sec = parsed.val * 3600;
-          const hms = this.formatTime(sec, 'COLON');
-          subEl.textContent = `= ${hms}`;
+          sec = parsed.val * 3600;
         }
+
+        const hours = (sec / 3600).toFixed(4);
+        const mins = (sec / 60).toFixed(2);
+        subEl.textContent = `= ${hours} h (${mins} m / ${sec} s)`;
       }
     }
 
@@ -12351,6 +13283,9 @@ const TimeCalc = {
 
   deleteHistoryItem(idx) {
     if (this.history[idx]) {
+      if (this.selectedHistoryId === this.history[idx].id) {
+        this.selectedHistoryId = null;
+      }
       this.history.splice(idx, 1);
       this.saveHistory();
       this.renderHistory();
@@ -12359,6 +13294,7 @@ const TimeCalc = {
 
   clearHistory() {
     this.history = [];
+    this.selectedHistoryId = null;
     this.saveHistory();
     this.renderHistory();
   },
@@ -12386,22 +13322,130 @@ const TimeCalc = {
       split: '💸'
     };
 
-    listEl.innerHTML = this.history.map((item, idx) => {
+    listEl.innerHTML = '';
+    this.history.forEach((item, idx) => {
       const icon = modeIcons[item.mode] || '⏰';
-      return `
-        <div class="time-calc-history-item" onclick="TimeCalc.loadHistoryItem(${idx})">
-          <span class="hist-icon">${icon}</span>
-          <div class="hist-content">
-            <span class="hist-formula">${item.formula}</span>
-            <span class="hist-result">${item.result}</span>
-          </div>
-          <button type="button" class="hist-del-btn" title="削除" onclick="event.stopPropagation(); TimeCalc.deleteHistoryItem(${idx})">☒</button>
+      const div = document.createElement('div');
+      div.className = 'time-calc-history-item';
+      div.dataset.histId = String(item.id);
+      if (this.selectedHistoryId && String(item.id) === String(this.selectedHistoryId)) {
+        div.classList.add('selected');
+      }
+
+      div.innerHTML = `
+        <span class="hist-icon">${icon}</span>
+        <div class="hist-content">
+          <span class="hist-formula">${item.formula}</span>
+          <span class="hist-result">${item.result}</span>
         </div>
+        <button type="button" class="hist-del-btn" title="削除">☒</button>
       `;
-    }).join('');
+
+      // 削除ボタンの個別クリック処理
+      const delBtn = div.querySelector('.hist-del-btn');
+      if (delBtn) {
+        delBtn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          TimeCalc.deleteHistoryItem(idx);
+        });
+      }
+
+      // シングルタップ / 選択時に該当行の背景色を変更（結果一覧の toggleSelect と同様の仕様）
+      const toggleSelect = () => {
+        const isSelected = div.classList.contains('selected');
+        listEl.querySelectorAll('.time-calc-history-item.selected').forEach(el => {
+          el.classList.remove('selected');
+          if (typeof el.blur === 'function') el.blur();
+        });
+        if (!isSelected) {
+          div.classList.add('selected');
+          this.selectedHistoryId = item.id;
+        } else {
+          this.selectedHistoryId = null;
+          if (typeof div.blur === 'function') div.blur();
+        }
+      };
+
+      // ダブルタップ / 復元実行
+      const triggerRestore = () => {
+        div.classList.add('restoring-flash');
+        setTimeout(() => div.classList.remove('restoring-flash'), 300);
+        listEl.querySelectorAll('.time-calc-history-item.selected').forEach(el => {
+          el.classList.remove('selected');
+        });
+        div.classList.add('selected');
+        this.selectedHistoryId = item.id;
+        TimeCalc.loadHistoryItem(idx);
+      };
+
+      // タッチ＆スクロール制御
+      let touchStartX = 0;
+      let touchStartY = 0;
+      let isTouchScrolling = false;
+      let lastTouchEndTime = 0;
+      let lastTapTime = 0;
+
+      div.addEventListener('touchstart', (e) => {
+        if (e.target.closest('.hist-del-btn')) return;
+        if (e.touches && e.touches.length > 0) {
+          touchStartX = e.touches[0].clientX;
+          touchStartY = e.touches[0].clientY;
+        }
+        isTouchScrolling = false;
+      }, { passive: true });
+
+      div.addEventListener('touchmove', (e) => {
+        if (!isTouchScrolling && e.touches && e.touches.length > 0) {
+          const dx = Math.abs(e.touches[0].clientX - touchStartX);
+          const dy = Math.abs(e.touches[0].clientY - touchStartY);
+          // 6px以上の移動があればスクロール操作とみなし、選択・復元を完全に抑止
+          if (dx > 6 || dy > 6) {
+            isTouchScrolling = true;
+          }
+        }
+      }, { passive: true });
+
+      // タッチ操作（スマホ・タッチデバイス）：スクロール時は何もしない
+      div.addEventListener('touchend', (e) => {
+        if (e.target.closest('.hist-del-btn')) return;
+        lastTouchEndTime = Date.now();
+        if (isTouchScrolling) {
+          return; // スクロール中は再選択・復元処理を行わない
+        }
+
+        const currentTime = Date.now();
+        const tapLength = currentTime - lastTapTime;
+        if (tapLength < 350 && tapLength > 0) {
+          e.preventDefault();
+          triggerRestore();
+        } else {
+          toggleSelect();
+        }
+        lastTapTime = currentTime;
+      }, { passive: false });
+
+      div.addEventListener('touchcancel', () => {
+        isTouchScrolling = true;
+      });
+
+      // クリック時（PCマウス用）：タッチ操作直後の擬似クリック（ゴーストclick）は除外
+      div.addEventListener('click', (e) => {
+        if (e.target.closest('.hist-del-btn')) return;
+        if (Date.now() - lastTouchEndTime < 450) return;
+        toggleSelect();
+      });
+
+      // ダブルクリック時（PCマウス用）：復元
+      div.addEventListener('dblclick', (e) => {
+        if (e.target.closest('.hist-del-btn')) return;
+        triggerRestore();
+      });
+
+      listEl.appendChild(div);
+    });
 
     // 最新の計算結果が常に一番上に見えるよう、ボックス内スクロールを最上部にリセット
-    if (drawer) {
+    if (drawer && !this.selectedHistoryId) {
       drawer.scrollTop = 0;
     }
   },
@@ -12409,6 +13453,8 @@ const TimeCalc = {
   loadHistoryItem(idx) {
     const item = this.history[idx];
     if (!item) return;
+
+    this.selectedHistoryId = item.id;
 
     // GA: 履歴から呼び出し
     if (typeof gtag === 'function') {
@@ -12443,6 +13489,21 @@ const TimeCalc = {
       this.currentInput = item.result;
       if (item.formula) this.formula = item.formula;
       this.isNewInput = true;
+      if (item.mode === 'precision') {
+        this.precisionExpression = (item.state && item.state.precisionExpression) ? item.state.precisionExpression : item.result;
+        this.precisionJustCalculated = true;
+      } else if (item.mode === 'time') {
+        const parsed = this.parseValue(item.result);
+        if (parsed.type === 'time') {
+          const absSec = Math.abs(Math.round(parsed.sec));
+          this.timeSlotH = Math.floor(absSec / 3600);
+          this.timeSlotM = Math.floor((absSec % 3600) / 60);
+          this.timeSlotS = absSec % 60;
+        } else {
+          this.resetTimeSlots();
+        }
+        this.timeDigitBuffer = '';
+      }
       this.updateDisplay();
     }
 

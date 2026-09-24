@@ -959,8 +959,7 @@
       <img id="qrCodeImage" src="QRCorde.PNG" alt="Time Regulus QR Code"
         style="border: 4px solid var(--text-main); border-radius: 8px;">
     </div>
-    <a href="https://fkz1977.github.io/Time-Regulus-news/" target="_blank" class="url-link" style="font-size: 12px; display:block; color: skyblue
-;">https://fkz1977.github.io/Time-Regulus-news/</a>
+    <a href="https://fkz1977.github.io/Time-Regulus-news/" target="_blank" rel="noopener noreferrer" onclick="openLatestNews(event, this)" class="url-link" style="font-size: 12px; display:block; color: skyblue;">https://fkz1977.github.io/Time-Regulus-news/</a>
     <button class="action-btn" onclick="closeQRCodePage()" style="margin-top: 40px; background-color: #ff4d4d;" data-i18n="close">☒ 閉じる</button>
   </div>
   <!-- 時分秒専用の三連極上カスタム無限ドラムロールピッカー (ボトムシート) -->
@@ -1119,7 +1118,7 @@
   <div id="currDragGhost" class="curr-drag-ghost" style="display:none;">USD</div>
 
   <script src="i18n.js?v=17" defer></script>
-  <script src="script.js?c=90" defer></script>
+  <script src="script.js?c=91" defer></script>
   <script>
     if ('serviceWorker' in navigator) { window.addEventListener('load', () => { navigator.serviceWorker.getRegistrations().then(r => r.forEach(reg => reg.unregister())); }); }
   </script>

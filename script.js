@@ -5549,6 +5549,14 @@ function backToLockScreen() {
   document.getElementById("lockScreen").style.display = "block";
 }
 
+// 最新ニュースページをキャッシュを回避して常に最新版を開く
+function openLatestNews(event, el) {
+  const latestUrl = "https://fkz1977.github.io/Time-Regulus-news/?t=" + Date.now();
+  if (el) {
+    el.href = latestUrl;
+  }
+}
+
 function showQRCodePage() {
   document.getElementById("informationPage").style.display = "none";
   document.getElementById("qrCodePage").style.display = "block";

@@ -1,7 +1,7 @@
 const i18n_translations = {
   ja: {
     "app_title": "Time Regulus",
-    "app_subtitle": "タイム　レグルス　v3.3.2",
+    "app_subtitle": "タイム　レグルス　v3.3.3",
     "real_time": "リアルタイム",
     "passcode": "暗証番号：",
     "passcode_placeholder": "例：12345",
@@ -154,7 +154,7 @@ const i18n_translations = {
   },
   en: {
     "app_title": "Time Regulus",
-    "app_subtitle": "Time Regulus v3.3.2",
+    "app_subtitle": "Time Regulus v3.3.3",
     "real_time": "Real Time",
     "passcode": "Passcode:",
     "passcode_placeholder": "e.g. 12345",
@@ -307,7 +307,7 @@ const i18n_translations = {
   },
   nl: {
     "app_title": "Time Regulus",
-    "app_subtitle": "Time Regulus v3.3.2",
+    "app_subtitle": "Time Regulus v3.3.3",
     "real_time": "Realtime",
     "passcode": "Toegangscode:",
     "passcode_placeholder": "bijv. 12345",
@@ -420,7 +420,7 @@ const i18n_translations = {
 
   pt: {
     "app_title": "Time Regulus",
-    "app_subtitle": "Time Regulus v3.3.2",
+    "app_subtitle": "Time Regulus v3.3.3",
     "real_time": "Tempo Real",
     "passcode": "Senha:",
     "passcode_placeholder": "ex: 12345",
@@ -531,7 +531,7 @@ const i18n_translations = {
   },
   es: {
     "app_title": "Time Regulus",
-    "app_subtitle": "Time Regulus v3.3.2",
+    "app_subtitle": "Time Regulus v3.3.3",
     "real_time": "Tiempo Real",
     "passcode": "Clave:",
     "passcode_placeholder": "ej: 12345",
@@ -642,7 +642,7 @@ const i18n_translations = {
   },
   fr: {
     "app_title": "Time Regulus",
-    "app_subtitle": "Time Regulus v3.3.2",
+    "app_subtitle": "Time Regulus v3.3.3",
     "real_time": "Temps Réel",
     "passcode": "Code:",
     "passcode_placeholder": "ex: 12345",
@@ -754,7 +754,7 @@ const i18n_translations = {
   },
   it: {
     "app_title": "Time Regulus",
-    "app_subtitle": "Time Regulus v3.3.2",
+    "app_subtitle": "Time Regulus v3.3.3",
     "real_time": "Tempo Reale",
     "passcode": "Codice:",
     "passcode_placeholder": "es: 12345",
@@ -866,7 +866,7 @@ const i18n_translations = {
   },
   de: {
     "app_title": "Time Regulus",
-    "app_subtitle": "Time Regulus v3.3.2",
+    "app_subtitle": "Time Regulus v3.3.3",
     "real_time": "Echtzeit",
     "passcode": "Code:",
     "passcode_placeholder": "z.B. 12345",
@@ -978,7 +978,7 @@ const i18n_translations = {
   },
   uk: {
     "app_title": "Time Regulus",
-    "app_subtitle": "Time Regulus v3.3.2",
+    "app_subtitle": "Time Regulus v3.3.3",
     "real_time": "Реальний час",
     "passcode": "Код:",
     "passcode_placeholder": "напр: 12345",
@@ -1089,7 +1089,7 @@ const i18n_translations = {
   },
   hi: {
     "app_title": "Time Regulus",
-    "app_subtitle": "Time Regulus v3.3.2",
+    "app_subtitle": "Time Regulus v3.3.3",
     "real_time": "वास्तविक समय",
     "passcode": "पासकोड:",
     "passcode_placeholder": "उदा: 12345",
@@ -1194,7 +1194,7 @@ const i18n_translations = {
   },
   ar: {
     "app_title": "Time Regulus",
-    "app_subtitle": "Time Regulus v3.3.2",
+    "app_subtitle": "Time Regulus v3.3.3",
     "real_time": "الوقت الحقيقي",
     "passcode": "رمز:",
     "passcode_placeholder": "مثال: 12345",
@@ -1299,7 +1299,7 @@ const i18n_translations = {
   },
   ru: {
     "app_title": "Time Regulus",
-    "app_subtitle": "Time Regulus v3.3.2",
+    "app_subtitle": "Time Regulus v3.3.3",
     "real_time": "Реальное время",
     "passcode": "Код:",
     "passcode_placeholder": "напр: 12345",
@@ -1404,7 +1404,7 @@ const i18n_translations = {
   },
   id: {
     "app_title": "Time Regulus",
-    "app_subtitle": "Time Regulus v3.3.2",
+    "app_subtitle": "Time Regulus v3.3.3",
     "real_time": "Waktu Nyata",
     "passcode": "Sandi:",
     "passcode_placeholder": "cth: 12345",
@@ -1516,7 +1516,7 @@ const i18n_translations = {
   },
   zh: {
     "app_title": "Time Regulus",
-    "app_subtitle": "Time Regulus v3.3.2",
+    "app_subtitle": "Time Regulus v3.3.3",
     "real_time": "实时",
     "passcode": "密码:",
     "passcode_placeholder": "例: 12345",
@@ -1621,7 +1621,7 @@ const i18n_translations = {
   },
   ko: {
     "app_title": "Time Regulus",
-    "app_subtitle": "Time Regulus v3.3.2",
+    "app_subtitle": "Time Regulus v3.3.3",
     "real_time": "실시간",
     "passcode": "암호:",
     "passcode_placeholder": "예: 12345",
@@ -1732,7 +1732,7 @@ const i18n_translations = {
   },
   tr: {
     "app_title": "Time Regulus",
-    "app_subtitle": "Time Regulus v3.3.2",
+    "app_subtitle": "Time Regulus v3.3.3",
     "real_time": "Gerçek Zamanlı",
     "passcode": "Şifre:",
     "passcode_placeholder": "örn: 12345",

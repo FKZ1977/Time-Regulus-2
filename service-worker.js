@@ -1,4 +1,4 @@
-const CACHE_NAME = "time-regulus-v3.3.1-c44";
+const CACHE_NAME = "time-regulus-v3.3.3-c45";
 const urlsToCache = [
   "./",
   "./index.html",

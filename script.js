@@ -1358,17 +1358,109 @@ const RegulusKeypad = {
 
 // ★ヒロさん仕様：テンキー・三連ドラムは外枠タップでは消さず、「完了」ボタンを押した時のみ下がるようにする★
 
+// 暗証番号ハッシュ検証用（SHA-256 + 秘密ソルトによる一方向暗号化）
+function _hashPass(ascii) {
+  function rightRotate(value, amount) {
+    return (value >>> amount) | (value << (32 - amount));
+  }
+  const mathPow = Math.pow;
+  const maxWord = mathPow(2, 32);
+  const lengthProperty = 'length';
+  let i, j;
+  let result = '';
+  const words = [];
+  const salted = ascii + '_regulus_secret_2026_';
+  const asciiBitLength = salted[lengthProperty] * 8;
+  const hash = [];
+  const k = [];
+  let primeCounter = 0;
+
+  const isComposite = {};
+  for (let candidate = 2; primeCounter < 64; candidate++) {
+    if (!isComposite[candidate]) {
+      for (i = 0; i < 312; i += candidate) {
+        isComposite[i] = candidate;
+      }
+      hash[primeCounter] = (mathPow(candidate, 0.5) * maxWord) | 0;
+      k[primeCounter++] = (mathPow(candidate, 1 / 3) * maxWord) | 0;
+    }
+  }
+
+  let padded = salted + '\x80';
+  while (padded[lengthProperty] % 64 - 56) padded += '\x00';
+  for (i = 0; i < padded[lengthProperty]; i++) {
+    j = padded.charCodeAt(i);
+    if (j >> 8) return '';
+    words[i >> 2] |= j << ((3 - i) % 4) * 8;
+  }
+  words[words[lengthProperty]] = ((asciiBitLength / maxWord) | 0);
+  words[words[lengthProperty]] = (asciiBitLength | 0);
+
+  for (j = 0; j < words[lengthProperty];) {
+    const w = words.slice(j, j += 16);
+    const oldHash = hash.slice(0);
+    let curHash = hash.slice(0, 8);
+
+    for (i = 0; i < 64; i++) {
+      const w15 = w[i - 15], w2 = w[i - 2];
+      const a = curHash[0], e = curHash[4];
+      const temp1 = curHash[7]
+        + (rightRotate(e, 6) ^ rightRotate(e, 11) ^ rightRotate(e, 25))
+        + ((e & curHash[5]) ^ ((~e) & curHash[6]))
+        + k[i]
+        + (w[i] = (i < 16) ? w[i] : (
+          w[i - 16]
+          + (rightRotate(w15, 7) ^ rightRotate(w15, 18) ^ (w15 >>> 3))
+          + w[i - 7]
+          + (rightRotate(w2, 17) ^ rightRotate(w2, 19) ^ (w2 >>> 10))
+        ) | 0);
+      const temp2 = (rightRotate(a, 2) ^ rightRotate(a, 13) ^ rightRotate(a, 22))
+        + ((a & curHash[1]) ^ (a & curHash[2]) ^ (curHash[1] & curHash[2]));
+
+      curHash = [(temp1 + temp2) | 0].concat(curHash);
+      curHash[4] = (curHash[4] + temp1) | 0;
+    }
+
+    for (i = 0; i < 8; i++) {
+      hash[i] = (curHash[i] + oldHash[i]) | 0;
+    }
+  }
+
+  for (i = 0; i < 8; i++) {
+    for (j = 3; j + 1; j--) {
+      const b = (hash[i] >> (j * 8)) & 255;
+      result += ((b < 16) ? '0' : '') + b.toString(16);
+    }
+  }
+  return result;
+}
+
 function checkPass() {
   const inputField = document.getElementById("passcode");
   const input = inputField.value;
-  const correct = "164";
+  const inputHash = _hashPass(input);
   const errorMessage = document.getElementById("error");
-  const PRECISION_CLOCK_PASS = '12345'; // 精密時計（＆カウントダウンタイマー）※旧8888から変更
-  const VIEW_LOCK_PASS = '7777';
-  const ANALOG_LOCK_PASS = '4444';
-  const ALWAYS_ON_PASS = '112233445566778899';
-  if (input === ALWAYS_ON_PASS) { inputField.value = ''; inputField.style.border = ''; errorMessage.innerText = ''; const nowOn = _toggleAlwaysOnMode(); const msg = nowOn ? 'ON' : 'OFF'; errorMessage.style.color = nowOn ? '#00ffcc' : '#aaaaaa'; errorMessage.innerText = msg; setTimeout(() => { errorMessage.innerText = ''; errorMessage.style.color = ''; }, 2500); inputField.focus(); return; }
-  if (input === PRECISION_CLOCK_PASS) {
+
+  // ソルト付きSHA-256ハッシュ値（元の数字はコード上に一切存在しない安全設計）
+  const HASH_CORRECT = "5a46500f4574da339febde9fc96d874d679dcfd9fc27458760b324bc0200d7be";
+  const HASH_PRECISION_CLOCK = "9e777081d19a9d350daad298107939e941601fa508e85a4f6146e34724df8628";
+  const HASH_VIEW_LOCK = "d1357a67ff44ae38c6e4d91bca77917754dd315c4610073d9b5b569701f03d94";
+  const HASH_ANALOG_LOCK = "3e7ed458c8ae8082e241ad00fdbd7f1e5ec53c9e8c73b221b4c7863fd1f18b2c";
+  const HASH_ALWAYS_ON = "da552d43670d5621eff84c8ef33b153ca1697344c92fd7fc42cdd1b2aade1247";
+
+  if (inputHash === HASH_ALWAYS_ON) {
+    inputField.value = '';
+    inputField.style.border = '';
+    errorMessage.innerText = '';
+    const nowOn = _toggleAlwaysOnMode();
+    const msg = nowOn ? 'ON' : 'OFF';
+    errorMessage.style.color = nowOn ? '#00ffcc' : '#aaaaaa';
+    errorMessage.innerText = msg;
+    setTimeout(() => { errorMessage.innerText = ''; errorMessage.style.color = ''; }, 2500);
+    inputField.focus();
+    return;
+  }
+  if (inputHash === HASH_PRECISION_CLOCK) {
     inputField.value = '';
     inputField.style.border = '';
     errorMessage.innerText = '';
@@ -1376,10 +1468,22 @@ function checkPass() {
     showDecoyScreen();
     return;
   }
-  if (input === VIEW_LOCK_PASS) { inputField.value = ''; inputField.style.border = ''; errorMessage.innerText = ''; showViewLockScreen(); return; }
-  if (input === ANALOG_LOCK_PASS) { inputField.value = ''; inputField.style.border = ''; errorMessage.innerText = ''; showAnalogLockScreen(); return; }
+  if (inputHash === HASH_VIEW_LOCK) {
+    inputField.value = '';
+    inputField.style.border = '';
+    errorMessage.innerText = '';
+    showViewLockScreen();
+    return;
+  }
+  if (inputHash === HASH_ANALOG_LOCK) {
+    inputField.value = '';
+    inputField.style.border = '';
+    errorMessage.innerText = '';
+    showAnalogLockScreen();
+    return;
+  }
 
-  if (input === correct) {
+  if (inputHash === HASH_CORRECT) {
     document.getElementById("lockScreen").style.display = "none";
     document.getElementById("modeSelect").style.display = "block";
     // モードボタンラベルを確実に多言語化

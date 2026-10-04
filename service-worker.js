@@ -1,4 +1,4 @@
-const CACHE_NAME = "time-regulus-v3.3.3-c45";
+const CACHE_NAME = "time-regulus-v3.3.3-c48";
 const urlsToCache = [
   "./",
   "./index.html",
@@ -8,6 +8,8 @@ const urlsToCache = [
   "./manifest.json",
   "./icon-192.png",
   "./icon-512.png",
+  "./icon-maskable-192.png",
+  "./icon-maskable-512.png",
   "./QRCorde.PNG",
   "./fonts/Bellefair.ttf",
   "./fonts/BungeeShade.ttf",

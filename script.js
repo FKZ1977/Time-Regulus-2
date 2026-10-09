@@ -5707,14 +5707,21 @@ if ('serviceWorker' in navigator) {
             .then(reg => {
                 console.log('Service Worker 登録成功:', reg.scope);
 
+                // 起動時に最新のService Workerがあるか強制的に再検証 (Safari / iOS 対策)
+                reg.update().catch(() => {});
+
                 reg.addEventListener('updatefound', () => {
                     newWorker = reg.installing;
-                    newWorker.addEventListener('statechange', () => {
-                        if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                            console.log('New content available, show update prompt');
-                            updateNotification.style.display = 'block'; 
-                        }
-                    });
+                    if (newWorker) {
+                        newWorker.addEventListener('statechange', () => {
+                            if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                                console.log('最新バージョンを検知しました。自動更新を適用します。');
+                                if (updateNotification) updateNotification.style.display = 'block';
+                                // 待機せずに新しいService Workerへ即座に切り替え
+                                newWorker.postMessage({ action: 'skipWaiting' });
+                            }
+                        });
+                    }
                 });
             })
             .catch(error => {
@@ -5730,8 +5737,22 @@ if ('serviceWorker' in navigator) {
         });
     }
 
+    // 新しいService Workerが有効になったらページを自動更新（無限ループ防止ガード付き）
+    let refreshing = false;
     navigator.serviceWorker.addEventListener('controllerchange', () => {
-        window.location.reload();
+        if (!refreshing) {
+            refreshing = true;
+            window.location.reload();
+        }
+    });
+
+    // iPhone (iOS Safari) / PWA の bfcache 対策（バックグラウンドやマルチタスク復帰時の最新確認）
+    window.addEventListener('pageshow', (event) => {
+        if (event.persisted) {
+            navigator.serviceWorker.getRegistration().then(reg => {
+                if (reg) reg.update().catch(() => {});
+            });
+        }
     });
 }
 

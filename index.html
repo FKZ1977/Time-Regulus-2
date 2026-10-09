@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="ja">
+
 <head>
   <meta charset="UTF-8">
   <title>Time Regulus v3.3.3</title>
@@ -12,6 +13,10 @@
     gtag('config', 'G-R7PW7DY4GF');
   </script>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <!-- ブラウザのHTTPキャッシュ制御（常に最新のHTMLを取得） -->
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
   <link rel="manifest" href="manifest.json">
   <meta name="apple-mobile-web-app-title" content="TimeRegulus🦖">
   <link rel="apple-touch-icon" href="icon-192.png">
@@ -30,27 +35,33 @@
         opacity: 0;
         transform: translateY(20px);
       }
+
       100% {
         opacity: 1;
         transform: translateY(0);
       }
     }
+
     @keyframes riseInShort {
       0% {
         opacity: 0;
         transform: translateY(20px);
       }
+
       100% {
         opacity: 1;
         transform: translateY(0);
       }
     }
+
     .rise-in-long {
       animation: riseInLong 1s ease-out forwards;
     }
+
     .rise-in-short {
       animation: riseInShort 1s ease-out forwards;
     }
+
     /* 標準時刻が上の時の00秒のスタイル */
     .seconds-fixed-00 {
       /* input要素のスタイルを上書きしてセレクトボックスの枠を消し、背景色を適用 */
@@ -71,14 +82,17 @@
     }
   </style>
 </head>
+
 <body class="fade-in">
   <!-- iOS Safari テンキー∧∨ナビゲーション時のデッドロック（フリーズ）回避用ダミー入力枠 -->
   <input type="text" id="iosKeyboardCloser" readonly tabindex="-1"
     style="position: absolute; top: -9999px; left: -9999px; opacity: 0; pointer-events: none;">
   <div id="lockScreen">
-    <div class="anim-slow-fade" style="position: absolute; top: 10px; right: 10px; display: flex; align-items: center; gap: 4px;">
+    <div class="anim-slow-fade"
+      style="position: absolute; top: 10px; right: 10px; display: flex; align-items: center; gap: 4px;">
       <span style="font-size: 16px;">🌐</span>
-      <select class="lang-selector" onchange="setLanguage(this.value)" style="background: transparent; border: 1px solid var(--accent); color: var(--text-main); border-radius: 4px; padding: 4px; font-size: 14px; width: auto; appearance: none; text-align: center; text-align-last: center;">
+      <select class="lang-selector" onchange="setLanguage(this.value)"
+        style="background: transparent; border: 1px solid var(--accent); color: var(--text-main); border-radius: 4px; padding: 4px; font-size: 14px; width: auto; appearance: none; text-align: center; text-align-last: center;">
         <option value="ja">JP 日本語</option>
         <option value="en">EN English</option>
         <option value="nl">NL Nederlands</option>
@@ -97,7 +111,8 @@
     <p class="subtitle anim-slow-fade" id="lockSubtitle" data-i18n="app_subtitle">タイム　レグルス　v3.3.3</p>
     <div class="passcode-row anim-slow-fade">
       <label for="passcode" class="passcode-label" data-i18n="passcode">暗証番号：</label>
-      <input type="password" id="passcode" placeholder="例：12345" data-i18n-placeholder="passcode_placeholder" tabindex="1" readonly class="passcode-input">
+      <input type="password" id="passcode" placeholder="例：12345" data-i18n-placeholder="passcode_placeholder"
+        tabindex="1" readonly class="passcode-input">
     </div>
     <button class="action-btn anim-slow-fade" onclick="checkPass()" tabindex="2" data-i18n="open">開く</button>
     <div id="keypad" class="keypad-grid">
@@ -119,15 +134,15 @@
   <div id="readmePage" style="display:none;">
     <div id="readmeHeader">
       <!-- ← Information に戻るボタン（informationPageから来た場合のみ有効） -->
-      <button id="readmeBackBtn" class="back-btn"
-        onclick="backToInfoFromReadme()"
+      <button id="readmeBackBtn" class="back-btn" onclick="backToInfoFromReadme()"
         style="display:none; position:absolute; top:10px; left:10px; z-index:10; font-size:13px; padding:4px 10px;">
         ← Information
       </button>
       <h1 class="fkz" id="readmeTitle">Copyright Info</h1>
       <div id="readmeCountryBar" style="display: flex; align-items: center; justify-content: center; gap: 8px;">
         <span style="font-size: 18px;">🌐</span>
-        <select id="readmeCountrySelect" onchange="jumpToReadmeSection(this.value)" style="width: auto; max-width: 180px;">
+        <select id="readmeCountrySelect" onchange="jumpToReadmeSection(this.value)"
+          style="width: auto; max-width: 180px;">
           <option value="sec-ja">JP 日本語</option>
           <option value="sec-en">EN English</option>
           <option value="sec-nl">NL Nederlands</option>
@@ -148,26 +163,253 @@
       </div>
     </div>
     <div id="readmeBody">
-      <section id="sec-ja" class="readme-section" dir="ltr"><div class="readme-flag">🇯🇵</div><h2 class="readme-lang-title">＜＜ 日本語 ＞＞</h2><p>このアプリは <strong>H.Fukazu</strong> によって制作されました。</p><p><strong>著作権および利用規約</strong><br>本作品（ソフトウェア、コード、ドキュメント、および関連する全ての内容を含む）の著作権は、© 2025 H.Fukazu に帰属します。© 2025 H.Fukazu. All Rights Reserved.</p><p><strong>厳禁事項</strong><br>著作者からの書面による事前の明示的な許可なく、以下の行為を固く禁じます。</p><ul><li>無断転用、複製、改変、二次利用は禁止</li><li>ソースコードの全部または一部の無断転載および再配布の禁止</li><li>商業的な目的での利用禁止（営利・非営利を問わず、対価を得る活動への利用）</li><li>本作品を基にした派生作品の作成および公開も禁止</li></ul><p>本作品は、著作権法によって最大限に保護されています。</p></section>
-      <section id="sec-en" class="readme-section" dir="ltr"><div class="readme-flag">🇺🇸 🇬🇧</div><h2 class="readme-lang-title">＜＜ English (英語) ＞＞</h2><p>This application was created by <strong>H.Fukazu</strong>.</p><p><strong>Copyright and Usage Policy</strong><br>All rights to this work—including software, code, documentation, and all related content—are reserved by © 2025 H.Fukazu. All Rights Reserved.</p><p><strong>Strictly Prohibited</strong><br>The following actions are strictly prohibited without prior explicit written permission from the author:</p><ul><li>Unauthorized use, reproduction, modification, or secondary use</li><li>Republishing or redistributing all or part of the source code without permission</li><li>Use for commercial purposes (including both for-profit and non-profit activities involving compensation)</li><li>Creation or publication of derivative works based on this work</li></ul><p>This work is fully protected under copyright law.</p></section>
-      <section id="sec-nl" class="readme-section" dir="ltr"><div class="readme-flag">🇳🇱</div><h2 class="readme-lang-title">◆ Nederlands (オランダ語) ◆</h2><p>Deze applicatie is gemaakt door <strong>H.Fukazu</strong>.</p><p><strong>Auteursrecht en gebruiksvoorwaarden</strong><br>Het auteursrecht berust bij © 2025 H.Fukazu. All Rights Reserved.</p><p><strong>Strikt verboden</strong></p><ul><li>Ongeoorloofd gebruik, reproductie, wijziging of hergebruik</li><li>Ongeoorloofde publicatie of distributie van de broncode</li><li>Commercieel gebruik verboden</li><li>Creatie en publicatie van afgeleide werken verboden</li></ul><p>Dit werk is maximaal beschermd onder de auteurswet.</p></section>
-      <section id="sec-pt" class="readme-section" dir="ltr"><div class="readme-flag">🇵🇹 🇧🇷</div><h2 class="readme-lang-title">＜＜ Português (ポルトガル語) ＞＞</h2><p>Este aplicativo foi criado por <strong>H.Fukazu</strong>.</p><p><strong>Direitos autorais e política de uso</strong><br>Os direitos autorais pertencem a © 2025 H.Fukazu. All Rights Reserved.</p><p><strong>Proibições estritas</strong></p><ul><li>Uso, cópia, modificação ou reutilização não autorizados</li><li>Reprodução ou redistribuição não autorizada do código-fonte</li><li>Uso para fins comerciais proibido</li><li>Criação e publicação de obras derivadas proibidas</li></ul><p>Esta obra está protegida ao máximo pela lei de direitos autorais.</p></section>
-      <section id="sec-es" class="readme-section" dir="ltr"><div class="readme-flag">🇪🇸 🇲🇽</div><h2 class="readme-lang-title">＜＜ Español (スペイン語) ＞＞</h2><p>Esta aplicación fue creada por <strong>H.Fukazu</strong>.</p><p><strong>Derechos de autor y política de uso</strong><br>Los derechos de autor pertenecen a © 2025 H.Fukazu. All Rights Reserved.</p><p><strong>Prohibiciones estrictas</strong></p><ul><li>Uso, copia, modificación o reutilización sin autorización</li><li>Reproducción o redistribución no autorizada del código fuente</li><li>Uso con fines comerciales prohibido</li><li>Creación y publicación de obras derivadas prohibidas</li></ul><p>Esta obra está protegida al máximo por la ley de derechos de autor.</p></section>
-      <section id="sec-fr" class="readme-section" dir="ltr"><div class="readme-flag">🇫🇷</div><h2 class="readme-lang-title">＜＜ Français (フランス語) ＞＞</h2><p>Cette application a été créée par <strong>H.Fukazu</strong>.</p><p><strong>Politique de droits d'auteur</strong><br>Tous les droits relatifs à cette œuvre sont réservés à © 2025 H.Fukazu. Tous droits réservés.</p><p><strong>Strictement interdit</strong></p><ul><li>Utilisation, reproduction, modification ou réutilisation non autorisée</li><li>Républication ou redistribution partielle ou totale du code source</li><li>Utilisation à des fins commerciales</li><li>Création ou publication d'œuvres dérivées</li></ul><p>Cette œuvre est pleinement protégée par la législation sur le droit d'auteur.</p></section>
-      <section id="sec-it" class="readme-section" dir="ltr"><div class="readme-flag">🇮🇹</div><h2 class="readme-lang-title">＜＜ Italiano (イタリア語) ＞＞</h2><p>Questa app è stata creata da <strong>H.Fukazu</strong>.</p><p><strong>Copyright e condizioni d'uso</strong><br>Il copyright di quest'opera appartiene a © 2025 H.Fukazu. All Rights Reserved.</p><p><strong>Divieti assoluti</strong></p><ul><li>Uso, copia, modifica o riutilizzo non autorizzati</li><li>Ripubblicazione o ridistribuzione non autorizzata del codice sorgente</li><li>Uso a scopo commerciale vietato</li><li>Creazione e pubblicazione di opere derivate vietate</li></ul><p>Quest'opera è protetta al massimo dalla legge sul copyright.</p></section>
-      <section id="sec-de" class="readme-section" dir="ltr"><div class="readme-flag">🇩🇪</div><h2 class="readme-lang-title">＜＜ Deutsch (ドイツ語) ＞＞</h2><p>Diese App wurde von <strong>H.Fukazu</strong> entwickelt.</p><p><strong>Urheberrecht und Nutzungsbedingungen</strong><br>Das Urheberrecht liegt bei © 2025 H.Fukazu. All Rights Reserved.</p><p><strong>Streng verboten</strong></p><ul><li>Unerlaubte Verwendung, Vervielfältigung, Änderung oder Weiterverwendung</li><li>Unerlaubte Veröffentlichung oder Weitergabe des Quellcodes</li><li>Kommerzielle Nutzung verboten</li><li>Erstellung und Veröffentlichung abgeleiteter Werke verboten</li></ul><p>Dieses Werk ist durch das Urheberrecht maximal geschützt.</p></section>
-      <section id="sec-uk" class="readme-section" dir="ltr"><div class="readme-flag">🇺🇦</div><h2 class="readme-lang-title">＜＜ Українська (ウクライナ語) ＞＞</h2><p>Цей додаток створено <strong>H.Fukazu</strong>.</p><p><strong>Авторське право та умови використання</strong><br>Авторські права належать © 2025 H.Fukazu. All Rights Reserved.</p><p><strong>Строго заборонено</strong></p><ul><li>Несанкціоноване використання, копіювання, модифікацію або повторне використання</li><li>Публікацію або повторне розповсюдження вихідного коду без дозволу</li><li>Використання з комерційною метою заборонено</li><li>Створення та публікація похідних творів також заборонені</li></ul><p>Цей твір максимально захищено законом про авторське право.</p></section>
-      <section id="sec-hi" class="readme-section" dir="ltr"><div class="readme-flag">🇮🇳</div><h2 class="readme-lang-title">＜＜ हिन्दी (ヒンディー語) ＞＞</h2><p>यह ऐप <strong>H.Fukazu</strong> द्वारा बनाया गया है।</p><p><strong>कॉपीराइट और उपयोग की शर्तें</strong><br>इस रचना का कॉपीराइट © 2025 H.Fukazu के पास है। All Rights Reserved.</p><p><strong>कड़ाई से निषिद्ध</strong></p><ul><li>अनधिकृत उपयोग, प्रतिलिपि, संशोधन या पुनः उपयोग</li><li>स्रोत कोड का अनधिकृत पुनः प्रकाशन या पुनः वितरण</li><li>व्यावसायिक उद्देश्य के लिए उपयोग निषिद्ध</li><li>व्युत्पन्न कार्यों का निर्माण और प्रकाशन निषिद्ध</li></ul><p>यह रचना कॉपीराइट कानून द्वारा पूरी तरह से संरक्षित है।</p></section>
-      <section id="sec-ar" class="readme-section" dir="rtl"><div class="readme-flag">🇸🇦</div><h2 class="readme-lang-title">＜＜ العربية (アラビア語) ＞＞</h2><p>تم إنشاء هذا التطبيق بواسطة <strong>H.Fukazu</strong>.</p><p><strong>حقوق النشر وشروط الاستخدام</strong><br>حقوق النشر لهذا العمل تعود إلى © 2025 H.Fukazu. All Rights Reserved.</p><p><strong>المحظورات الصارمة</strong></p><ul><li>الاستخدام أو النسخ أو التعديل أو إعادة الاستخدام بدون إذن</li><li>إعادة نشر أو توزيع الشيفرة المصدرية بدون إذن</li><li>الاستخدام لأغراض تجارية ممنوع</li><li>إنشاء ونشر أعمال مشتقة ممنوع</li></ul><p>هذا العمل محمي بأقصى درجة بموجب قانون حقوق النشر.</p></section>
-      <section id="sec-ru" class="readme-section" dir="ltr"><div class="readme-flag">🇷🇺</div><h2 class="readme-lang-title">＜＜ Русский (ロシア語) ＞＞</h2><p>Это приложение было создано <strong>H.Fukazu</strong>.</p><p><strong>Авторские права и условия использования</strong><br>Авторские права принадлежат © 2025 H.Fukazu. All Rights Reserved.</p><p><strong>Строго запрещено</strong></p><ul><li>Несанкционированное использование, копирование, изменение или повторное использование</li><li>Публикация или распространение исходного кода без разрешения</li><li>Использование в коммерческих целях запрещено</li><li>Создание и публикация производных работ запрещены</li></ul><p>Данная работа максимально защищена законом об авторском праве.</p></section>
-      <section id="sec-id" class="readme-section" dir="ltr"><div class="readme-flag">🇮🇩</div><h2 class="readme-lang-title">＜＜ Bahasa Indonesia (インドネシア語) ＞＞</h2><p>Aplikasi ini dibuat oleh <strong>H.Fukazu</strong>.</p><p><strong>Hak Cipta dan Ketentuan Penggunaan</strong><br>Hak cipta dimiliki oleh © 2025 H.Fukazu. All Rights Reserved.</p><p><strong>Larangan Keras</strong></p><ul><li>Penggunaan, penyalinan, modifikasi, atau penggunaan ulang tanpa izin</li><li>Publikasi atau distribusi ulang kode sumber tanpa izin</li><li>Penggunaan untuk tujuan komersial dilarang</li><li>Pembuatan dan publikasi karya turunan juga dilarang</li></ul><p>Karya ini dilindungi secara maksimal oleh undang-undang hak cipta.</p></section>
-      <section id="sec-zh" class="readme-section" dir="ltr"><div class="readme-flag">🇨🇳</div><h2 class="readme-lang-title">＜＜ 中文 (中国語) ＞＞</h2><p>本应用由 <strong>H.Fukazu</strong> 制作。</p><p><strong>版权与使用条款</strong><br>本作品的版权归 © 2025 H.Fukazu 所有。All Rights Reserved.</p><p><strong>严禁事项</strong></p><ul><li>禁止擅自转载、复制、修改、二次使用</li><li>禁止未经授权转载或再分发源代码</li><li>禁止用于商业目的</li><li>禁止基于本作品创作并发布衍生作品</li></ul><p>本作品受到版权法的最大保护。</p></section>
-      <section id="sec-ko" class="readme-section" dir="ltr"><div class="readme-flag">🇰🇷</div><h2 class="readme-lang-title">＜＜ 한국어 (韓国語) ＞＞</h2><p>이 앱은 <strong>H.Fukazu</strong>에 의해 제작되었습니다.</p><p><strong>저작권 및 이용 약관</strong><br>본 작품의 저작권은 © 2025 H.Fukazu에게 있습니다. All Rights Reserved.</p><p><strong>금지 사항</strong></p><ul><li>무단 전용, 복제, 수정, 2차 사용 금지</li><li>소스 코드의 무단 게시 및 재배포 금지</li><li>상업적 목적의 사용 금지</li><li>본 작품을 기반으로 한 2차 창작 및 공개 금지</li></ul><p>본 작품은 저작권법에 의해 최대한 보호받습니다.</p></section>
-      <section id="sec-tr" class="readme-section" dir="ltr"><div class="readme-flag">🇹🇷</div><h2 class="readme-lang-title">＜＜ Türkçe (トルコ語) ＞＞</h2><p>Bu uygulama <strong>H.Fukazu</strong> tarafından oluşturulmuştur.</p><p><strong>Telif Hakkı ve Kullanım Koşulları</strong><br>Bu eserin telif hakkı © 2025 H.Fukazu'ya aittir. Tüm Hakları Saklıdır.</p><p><strong>Kesinlikle Yasaktır</strong></p><ul><li>İzinsiz kullanım, kopyalama, değiştirme veya ikincil kullanım</li><li>Kaynak kodunun izinsiz olarak yeniden yayımlanması veya dağıtılması</li><li>Ticari amaçlarla kullanılması yasaktır</li><li>Türev eserlerin oluşturulması ve yayımlanması yasaktır</li></ul><p>Bu eser telif hakkı yasaları ile maksimum düzeyde korunmaktadır.</p></section>
+      <section id="sec-ja" class="readme-section" dir="ltr">
+        <div class="readme-flag">🇯🇵</div>
+        <h2 class="readme-lang-title">＜＜ 日本語 ＞＞</h2>
+        <p>このアプリは <strong>H.Fukazu</strong> によって制作されました。</p>
+        <p><strong>著作権および利用規約</strong><br>本作品（ソフトウェア、コード、ドキュメント、および関連する全ての内容を含む）の著作権は、© 2025 H.Fukazu に帰属します。© 2025
+          H.Fukazu. All Rights Reserved.</p>
+        <p><strong>厳禁事項</strong><br>著作者からの書面による事前の明示的な許可なく、以下の行為を固く禁じます。</p>
+        <ul>
+          <li>無断転用、複製、改変、二次利用は禁止</li>
+          <li>ソースコードの全部または一部の無断転載および再配布の禁止</li>
+          <li>商業的な目的での利用禁止（営利・非営利を問わず、対価を得る活動への利用）</li>
+          <li>本作品を基にした派生作品の作成および公開も禁止</li>
+        </ul>
+        <p>本作品は、著作権法によって最大限に保護されています。</p>
+      </section>
+      <section id="sec-en" class="readme-section" dir="ltr">
+        <div class="readme-flag">🇺🇸 🇬🇧</div>
+        <h2 class="readme-lang-title">＜＜ English (英語) ＞＞</h2>
+        <p>This application was created by <strong>H.Fukazu</strong>.</p>
+        <p><strong>Copyright and Usage Policy</strong><br>All rights to this work—including software, code,
+          documentation, and all related content—are reserved by © 2025 H.Fukazu. All Rights Reserved.</p>
+        <p><strong>Strictly Prohibited</strong><br>The following actions are strictly prohibited without prior explicit
+          written permission from the author:</p>
+        <ul>
+          <li>Unauthorized use, reproduction, modification, or secondary use</li>
+          <li>Republishing or redistributing all or part of the source code without permission</li>
+          <li>Use for commercial purposes (including both for-profit and non-profit activities involving compensation)
+          </li>
+          <li>Creation or publication of derivative works based on this work</li>
+        </ul>
+        <p>This work is fully protected under copyright law.</p>
+      </section>
+      <section id="sec-nl" class="readme-section" dir="ltr">
+        <div class="readme-flag">🇳🇱</div>
+        <h2 class="readme-lang-title">◆ Nederlands (オランダ語) ◆</h2>
+        <p>Deze applicatie is gemaakt door <strong>H.Fukazu</strong>.</p>
+        <p><strong>Auteursrecht en gebruiksvoorwaarden</strong><br>Het auteursrecht berust bij © 2025 H.Fukazu. All
+          Rights Reserved.</p>
+        <p><strong>Strikt verboden</strong></p>
+        <ul>
+          <li>Ongeoorloofd gebruik, reproductie, wijziging of hergebruik</li>
+          <li>Ongeoorloofde publicatie of distributie van de broncode</li>
+          <li>Commercieel gebruik verboden</li>
+          <li>Creatie en publicatie van afgeleide werken verboden</li>
+        </ul>
+        <p>Dit werk is maximaal beschermd onder de auteurswet.</p>
+      </section>
+      <section id="sec-pt" class="readme-section" dir="ltr">
+        <div class="readme-flag">🇵🇹 🇧🇷</div>
+        <h2 class="readme-lang-title">＜＜ Português (ポルトガル語) ＞＞</h2>
+        <p>Este aplicativo foi criado por <strong>H.Fukazu</strong>.</p>
+        <p><strong>Direitos autorais e política de uso</strong><br>Os direitos autorais pertencem a © 2025 H.Fukazu. All
+          Rights Reserved.</p>
+        <p><strong>Proibições estritas</strong></p>
+        <ul>
+          <li>Uso, cópia, modificação ou reutilização não autorizados</li>
+          <li>Reprodução ou redistribuição não autorizada do código-fonte</li>
+          <li>Uso para fins comerciais proibido</li>
+          <li>Criação e publicação de obras derivadas proibidas</li>
+        </ul>
+        <p>Esta obra está protegida ao máximo pela lei de direitos autorais.</p>
+      </section>
+      <section id="sec-es" class="readme-section" dir="ltr">
+        <div class="readme-flag">🇪🇸 🇲🇽</div>
+        <h2 class="readme-lang-title">＜＜ Español (スペイン語) ＞＞</h2>
+        <p>Esta aplicación fue creada por <strong>H.Fukazu</strong>.</p>
+        <p><strong>Derechos de autor y política de uso</strong><br>Los derechos de autor pertenecen a © 2025 H.Fukazu.
+          All Rights Reserved.</p>
+        <p><strong>Prohibiciones estrictas</strong></p>
+        <ul>
+          <li>Uso, copia, modificación o reutilización sin autorización</li>
+          <li>Reproducción o redistribución no autorizada del código fuente</li>
+          <li>Uso con fines comerciales prohibido</li>
+          <li>Creación y publicación de obras derivadas prohibidas</li>
+        </ul>
+        <p>Esta obra está protegida al máximo por la ley de derechos de autor.</p>
+      </section>
+      <section id="sec-fr" class="readme-section" dir="ltr">
+        <div class="readme-flag">🇫🇷</div>
+        <h2 class="readme-lang-title">＜＜ Français (フランス語) ＞＞</h2>
+        <p>Cette application a été créée par <strong>H.Fukazu</strong>.</p>
+        <p><strong>Politique de droits d'auteur</strong><br>Tous les droits relatifs à cette œuvre sont réservés à ©
+          2025 H.Fukazu. Tous droits réservés.</p>
+        <p><strong>Strictement interdit</strong></p>
+        <ul>
+          <li>Utilisation, reproduction, modification ou réutilisation non autorisée</li>
+          <li>Républication ou redistribution partielle ou totale du code source</li>
+          <li>Utilisation à des fins commerciales</li>
+          <li>Création ou publication d'œuvres dérivées</li>
+        </ul>
+        <p>Cette œuvre est pleinement protégée par la législation sur le droit d'auteur.</p>
+      </section>
+      <section id="sec-it" class="readme-section" dir="ltr">
+        <div class="readme-flag">🇮🇹</div>
+        <h2 class="readme-lang-title">＜＜ Italiano (イタリア語) ＞＞</h2>
+        <p>Questa app è stata creata da <strong>H.Fukazu</strong>.</p>
+        <p><strong>Copyright e condizioni d'uso</strong><br>Il copyright di quest'opera appartiene a © 2025 H.Fukazu.
+          All Rights Reserved.</p>
+        <p><strong>Divieti assoluti</strong></p>
+        <ul>
+          <li>Uso, copia, modifica o riutilizzo non autorizzati</li>
+          <li>Ripubblicazione o ridistribuzione non autorizzata del codice sorgente</li>
+          <li>Uso a scopo commerciale vietato</li>
+          <li>Creazione e pubblicazione di opere derivate vietate</li>
+        </ul>
+        <p>Quest'opera è protetta al massimo dalla legge sul copyright.</p>
+      </section>
+      <section id="sec-de" class="readme-section" dir="ltr">
+        <div class="readme-flag">🇩🇪</div>
+        <h2 class="readme-lang-title">＜＜ Deutsch (ドイツ語) ＞＞</h2>
+        <p>Diese App wurde von <strong>H.Fukazu</strong> entwickelt.</p>
+        <p><strong>Urheberrecht und Nutzungsbedingungen</strong><br>Das Urheberrecht liegt bei © 2025 H.Fukazu. All
+          Rights Reserved.</p>
+        <p><strong>Streng verboten</strong></p>
+        <ul>
+          <li>Unerlaubte Verwendung, Vervielfältigung, Änderung oder Weiterverwendung</li>
+          <li>Unerlaubte Veröffentlichung oder Weitergabe des Quellcodes</li>
+          <li>Kommerzielle Nutzung verboten</li>
+          <li>Erstellung und Veröffentlichung abgeleiteter Werke verboten</li>
+        </ul>
+        <p>Dieses Werk ist durch das Urheberrecht maximal geschützt.</p>
+      </section>
+      <section id="sec-uk" class="readme-section" dir="ltr">
+        <div class="readme-flag">🇺🇦</div>
+        <h2 class="readme-lang-title">＜＜ Українська (ウクライナ語) ＞＞</h2>
+        <p>Цей додаток створено <strong>H.Fukazu</strong>.</p>
+        <p><strong>Авторське право та умови використання</strong><br>Авторські права належать © 2025 H.Fukazu. All
+          Rights Reserved.</p>
+        <p><strong>Строго заборонено</strong></p>
+        <ul>
+          <li>Несанкціоноване використання, копіювання, модифікацію або повторне використання</li>
+          <li>Публікацію або повторне розповсюдження вихідного коду без дозволу</li>
+          <li>Використання з комерційною метою заборонено</li>
+          <li>Створення та публікація похідних творів також заборонені</li>
+        </ul>
+        <p>Цей твір максимально захищено законом про авторське право.</p>
+      </section>
+      <section id="sec-hi" class="readme-section" dir="ltr">
+        <div class="readme-flag">🇮🇳</div>
+        <h2 class="readme-lang-title">＜＜ हिन्दी (ヒンディー語) ＞＞</h2>
+        <p>यह ऐप <strong>H.Fukazu</strong> द्वारा बनाया गया है।</p>
+        <p><strong>कॉपीराइट और उपयोग की शर्तें</strong><br>इस रचना का कॉपीराइट © 2025 H.Fukazu के पास है। All Rights
+          Reserved.</p>
+        <p><strong>कड़ाई से निषिद्ध</strong></p>
+        <ul>
+          <li>अनधिकृत उपयोग, प्रतिलिपि, संशोधन या पुनः उपयोग</li>
+          <li>स्रोत कोड का अनधिकृत पुनः प्रकाशन या पुनः वितरण</li>
+          <li>व्यावसायिक उद्देश्य के लिए उपयोग निषिद्ध</li>
+          <li>व्युत्पन्न कार्यों का निर्माण और प्रकाशन निषिद्ध</li>
+        </ul>
+        <p>यह रचना कॉपीराइट कानून द्वारा पूरी तरह से संरक्षित है।</p>
+      </section>
+      <section id="sec-ar" class="readme-section" dir="rtl">
+        <div class="readme-flag">🇸🇦</div>
+        <h2 class="readme-lang-title">＜＜ العربية (アラビア語) ＞＞</h2>
+        <p>تم إنشاء هذا التطبيق بواسطة <strong>H.Fukazu</strong>.</p>
+        <p><strong>حقوق النشر وشروط الاستخدام</strong><br>حقوق النشر لهذا العمل تعود إلى © 2025 H.Fukazu. All Rights
+          Reserved.</p>
+        <p><strong>المحظورات الصارمة</strong></p>
+        <ul>
+          <li>الاستخدام أو النسخ أو التعديل أو إعادة الاستخدام بدون إذن</li>
+          <li>إعادة نشر أو توزيع الشيفرة المصدرية بدون إذن</li>
+          <li>الاستخدام لأغراض تجارية ممنوع</li>
+          <li>إنشاء ونشر أعمال مشتقة ممنوع</li>
+        </ul>
+        <p>هذا العمل محمي بأقصى درجة بموجب قانون حقوق النشر.</p>
+      </section>
+      <section id="sec-ru" class="readme-section" dir="ltr">
+        <div class="readme-flag">🇷🇺</div>
+        <h2 class="readme-lang-title">＜＜ Русский (ロシア語) ＞＞</h2>
+        <p>Это приложение было создано <strong>H.Fukazu</strong>.</p>
+        <p><strong>Авторские права и условия использования</strong><br>Авторские права принадлежат © 2025 H.Fukazu. All
+          Rights Reserved.</p>
+        <p><strong>Строго запрещено</strong></p>
+        <ul>
+          <li>Несанкционированное использование, копирование, изменение или повторное использование</li>
+          <li>Публикация или распространение исходного кода без разрешения</li>
+          <li>Использование в коммерческих целях запрещено</li>
+          <li>Создание и публикация производных работ запрещены</li>
+        </ul>
+        <p>Данная работа максимально защищена законом об авторском праве.</p>
+      </section>
+      <section id="sec-id" class="readme-section" dir="ltr">
+        <div class="readme-flag">🇮🇩</div>
+        <h2 class="readme-lang-title">＜＜ Bahasa Indonesia (インドネシア語) ＞＞</h2>
+        <p>Aplikasi ini dibuat oleh <strong>H.Fukazu</strong>.</p>
+        <p><strong>Hak Cipta dan Ketentuan Penggunaan</strong><br>Hak cipta dimiliki oleh © 2025 H.Fukazu. All Rights
+          Reserved.</p>
+        <p><strong>Larangan Keras</strong></p>
+        <ul>
+          <li>Penggunaan, penyalinan, modifikasi, atau penggunaan ulang tanpa izin</li>
+          <li>Publikasi atau distribusi ulang kode sumber tanpa izin</li>
+          <li>Penggunaan untuk tujuan komersial dilarang</li>
+          <li>Pembuatan dan publikasi karya turunan juga dilarang</li>
+        </ul>
+        <p>Karya ini dilindungi secara maksimal oleh undang-undang hak cipta.</p>
+      </section>
+      <section id="sec-zh" class="readme-section" dir="ltr">
+        <div class="readme-flag">🇨🇳</div>
+        <h2 class="readme-lang-title">＜＜ 中文 (中国語) ＞＞</h2>
+        <p>本应用由 <strong>H.Fukazu</strong> 制作。</p>
+        <p><strong>版权与使用条款</strong><br>本作品的版权归 © 2025 H.Fukazu 所有。All Rights Reserved.</p>
+        <p><strong>严禁事项</strong></p>
+        <ul>
+          <li>禁止擅自转载、复制、修改、二次使用</li>
+          <li>禁止未经授权转载或再分发源代码</li>
+          <li>禁止用于商业目的</li>
+          <li>禁止基于本作品创作并发布衍生作品</li>
+        </ul>
+        <p>本作品受到版权法的最大保护。</p>
+      </section>
+      <section id="sec-ko" class="readme-section" dir="ltr">
+        <div class="readme-flag">🇰🇷</div>
+        <h2 class="readme-lang-title">＜＜ 한국어 (韓国語) ＞＞</h2>
+        <p>이 앱은 <strong>H.Fukazu</strong>에 의해 제작되었습니다.</p>
+        <p><strong>저작권 및 이용 약관</strong><br>본 작품의 저작권은 © 2025 H.Fukazu에게 있습니다. All Rights Reserved.</p>
+        <p><strong>금지 사항</strong></p>
+        <ul>
+          <li>무단 전용, 복제, 수정, 2차 사용 금지</li>
+          <li>소스 코드의 무단 게시 및 재배포 금지</li>
+          <li>상업적 목적의 사용 금지</li>
+          <li>본 작품을 기반으로 한 2차 창작 및 공개 금지</li>
+        </ul>
+        <p>본 작품은 저작권법에 의해 최대한 보호받습니다.</p>
+      </section>
+      <section id="sec-tr" class="readme-section" dir="ltr">
+        <div class="readme-flag">🇹🇷</div>
+        <h2 class="readme-lang-title">＜＜ Türkçe (トルコ語) ＞＞</h2>
+        <p>Bu uygulama <strong>H.Fukazu</strong> tarafından oluşturulmuştur.</p>
+        <p><strong>Telif Hakkı ve Kullanım Koşulları</strong><br>Bu eserin telif hakkı © 2025 H.Fukazu'ya aittir. Tüm
+          Hakları Saklıdır.</p>
+        <p><strong>Kesinlikle Yasaktır</strong></p>
+        <ul>
+          <li>İzinsiz kullanım, kopyalama, değiştirme veya ikincil kullanım</li>
+          <li>Kaynak kodunun izinsiz olarak yeniden yayımlanması veya dağıtılması</li>
+          <li>Ticari amaçlarla kullanılması yasaktır</li>
+          <li>Türev eserlerin oluşturulması ve yayımlanması yasaktır</li>
+        </ul>
+        <p>Bu eser telif hakkı yasaları ile maksimum düzeyde korunmaktadır.</p>
+      </section>
     </div>
-    <button type="button" id="readmeScrollToTopBtn" class="scroll-to-top-btn" onclick="scrollToTopReadme()" data-i18n="back_to_top" style="z-index: 9050;">↑ TOPへ</button>
+    <button type="button" id="readmeScrollToTopBtn" class="scroll-to-top-btn" onclick="scrollToTopReadme()"
+      data-i18n="back_to_top" style="z-index: 9050;">↑ TOPへ</button>
   </div>
-  <svg id="readmeHoldRing" viewBox="0 0 60 60"><circle cx="30" cy="30" r="26" id="readmeRingCircle"/></svg>
+  <svg id="readmeHoldRing" viewBox="0 0 60 60">
+    <circle cx="30" cy="30" r="26" id="readmeRingCircle" />
+  </svg>
   <p id="readmeHoldHint"></p>
   <!-- ダミー画面 (囮パスワード用デジタル時計) -->
   <div id="decoyScreen" style="display:none;">
@@ -177,12 +419,13 @@
       <div class="decoy-date" id="decoyDate">----年--月--日</div>
       <div class="decoy-time" id="decoyTime">--:--:--.--</div>
     </div>
-    
+
     <!-- カウントダウンタイマー -->
     <div class="decoy-timer-container anim-slow-fade">
       <div class="decoy-timer-top">
         <div id="decoyCountdown" class="decoy-countdown" style="visibility: hidden;">00:00.0</div>
-        <button id="decoyPauseBtn" class="decoy-pause-btn" style="visibility: hidden;" onclick="toggleDecoyTimer()">❚❚</button>
+        <button id="decoyPauseBtn" class="decoy-pause-btn" style="visibility: hidden;"
+          onclick="toggleDecoyTimer()">❚❚</button>
       </div>
       <div class="decoy-timer-buttons">
         <button onclick="startDecoyTimer(1)">1分</button>
@@ -200,7 +443,7 @@
     <p class="decoy-hint" id="decoyHint"></p>
     <!-- 長押しプログレスリング -->
     <svg id="decoyHoldRing" viewBox="0 0 60 60">
-      <circle cx="30" cy="30" r="26" id="decoyRingCircle"/>
+      <circle cx="30" cy="30" r="26" id="decoyRingCircle" />
     </svg>
   </div>
 
@@ -211,10 +454,10 @@
       <div id="viewLockDate" class="view-lock-date" style="display:none;"></div>
       <div id="viewLockClock" class="view-lock-clock">--:--:--</div>
     </div>
-    
+
     <!-- 長押しプログレスリング -->
     <svg id="viewLockHoldRing" class="hold-ring" viewBox="0 0 60 60">
-      <circle cx="30" cy="30" r="26" id="viewLockRingCircle"/>
+      <circle cx="30" cy="30" r="26" id="viewLockRingCircle" />
     </svg>
   </div>
 
@@ -222,7 +465,9 @@
   <div id="analogLockScreen" style="display:none;" class="analog-lock-screen info-state-0">
     <div id="analogInfoContainer" class="analog-info-container">
       <div id="analogDigitalClock" class="analog-digital-clock">00:00</div>
-      <div id="analogCalendarViewport" class="analog-calendar-viewport"><div id="analogCalendarRail" class="analog-calendar-rail"></div></div>
+      <div id="analogCalendarViewport" class="analog-calendar-viewport">
+        <div id="analogCalendarRail" class="analog-calendar-rail"></div>
+      </div>
     </div>
     <div class="analog-swipe-container" id="analogSwipeContainer">
       <!-- 1. Regulus Core -->
@@ -273,7 +518,7 @@
         </div>
       </div>
     </div>
-    
+
     <div class="analog-pager" id="analogPager">
       <span class="pager-dot active"></span>
       <span class="pager-dot"></span>
@@ -282,7 +527,7 @@
 
     <!-- 長押しプログレスリング -->
     <svg id="analogHoldRing" class="hold-ring" viewBox="0 0 60 60">
-      <circle cx="30" cy="30" r="26" id="analogRingCircle"/>
+      <circle cx="30" cy="30" r="26" id="analogRingCircle" />
     </svg>
   </div>
   <div id="modeSelect" class="regulus-mode-select-screen" style="display:none;">
@@ -318,29 +563,31 @@
       <svg class="orbit-ring-svg" viewBox="0 0 460 380">
         <defs>
           <linearGradient id="orbitGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stop-color="#00ffe0" stop-opacity="0.95"/>
-            <stop offset="45%" stop-color="#0088ff" stop-opacity="0.45"/>
-            <stop offset="100%" stop-color="#ff00aa" stop-opacity="0.85"/>
+            <stop offset="0%" stop-color="#00ffe0" stop-opacity="0.95" />
+            <stop offset="45%" stop-color="#0088ff" stop-opacity="0.45" />
+            <stop offset="100%" stop-color="#ff00aa" stop-opacity="0.85" />
           </linearGradient>
           <filter id="orbitGlow" x="-20%" y="-20%" width="140%" height="140%">
-            <feGaussianBlur stdDeviation="3.5" result="glow"/>
+            <feGaussianBlur stdDeviation="3.5" result="glow" />
             <feMerge>
-              <feMergeNode in="glow"/>
-              <feMergeNode in="SourceGraphic"/>
+              <feMergeNode in="glow" />
+              <feMergeNode in="SourceGraphic" />
             </feMerge>
           </filter>
         </defs>
         <!-- メイン軌道楕円 (拡大 & 傾き固定 & 点線のみ時計回り) -->
-        <ellipse cx="230" cy="190" rx="195" ry="130" class="orbit-ellipse-line" filter="url(#orbitGlow)" transform="rotate(-15 230 190)" pathLength="980"/>
+        <ellipse cx="230" cy="190" rx="195" ry="130" class="orbit-ellipse-line" filter="url(#orbitGlow)"
+          transform="rotate(-15 230 190)" pathLength="980" />
         <!-- サブ交差軌道楕円 (逆斜めの細い線・拡大 & 立体感強調) -->
-        <ellipse cx="230" cy="190" rx="185" ry="115" class="orbit-ellipse-sub" transform="rotate(30 230 190)"/>
+        <ellipse cx="230" cy="190" rx="185" ry="115" class="orbit-ellipse-sub" transform="rotate(30 230 190)" />
       </svg>
 
       <!-- 縦に3つ並ぶ惑星ボタン群 (揺らぎアニメーション & 水鏡反射付き) -->
       <div class="orbit-vertical-buttons">
         <!-- 1. 誤差の計算 -->
         <div class="orbit-btn-wrapper-vert vert-delay-1">
-          <button type="button" class="orbit-planet-btn btn-vert-card btn-calc-error" onclick="triggerModeTransition('error', showErrorMode)" tabindex="3">
+          <button type="button" class="orbit-planet-btn btn-vert-card btn-calc-error"
+            onclick="triggerModeTransition('error', showErrorMode)" tabindex="3">
             <span class="planet-btn-glow"></span>
             <span class="planet-btn-text" data-i18n="calc_error">誤差の計算</span>
           </button>
@@ -349,7 +596,8 @@
 
         <!-- 2. 補正時刻の計算 -->
         <div class="orbit-btn-wrapper-vert vert-delay-2">
-          <button type="button" class="orbit-planet-btn btn-vert-card btn-calc-correction" onclick="triggerModeTransition('correction', showCorrectionMode)" tabindex="4">
+          <button type="button" class="orbit-planet-btn btn-vert-card btn-calc-correction"
+            onclick="triggerModeTransition('correction', showCorrectionMode)" tabindex="4">
             <span class="planet-btn-glow"></span>
             <span class="planet-btn-text" data-i18n="calc_correction">補正時刻の計算</span>
           </button>
@@ -358,7 +606,8 @@
 
         <!-- 3. マルチ電卓 -->
         <div class="orbit-btn-wrapper-vert vert-delay-3">
-          <button type="button" class="orbit-planet-btn btn-vert-card btn-calc-multi" onclick="triggerModeTransition('multi', showTimeCalcMode)" tabindex="5">
+          <button type="button" class="orbit-planet-btn btn-vert-card btn-calc-multi"
+            onclick="triggerModeTransition('multi', showTimeCalcMode)" tabindex="5">
             <span class="planet-btn-glow"></span>
             <span class="planet-btn-text" data-i18n="time_calculator_etc">マルチ電卓</span>
           </button>
@@ -369,10 +618,12 @@
 
     <!-- 下部アクション: 入力情報のリセット -->
     <div class="mode-select-footer-area">
-      <a href="#" onclick="showResetConfirmation(); return false;" id="resetLink" class="neon-reset-link" data-i18n="reset_inputs_link">入力情報のリセット</a>
+      <a href="#" onclick="showResetConfirmation(); return false;" id="resetLink" class="neon-reset-link"
+        data-i18n="reset_inputs_link">入力情報のリセット</a>
       <div id="resetConfirmContainer" style="display:none; margin-top: 15px;">
         <button class="action-btn" onclick="resetAppAndReturnToLock()"
-          style="background-color: var(--toggle-bg); box-shadow: 0 4px 12px rgba(255, 0, 170, 0.3); font-size: 14px; padding: 10px 20px;" data-i18n="reset_inputs_btn">入力情報を消去して初期画面に戻ります</button>
+          style="background-color: var(--toggle-bg); box-shadow: 0 4px 12px rgba(255, 0, 170, 0.3); font-size: 14px; padding: 10px 20px;"
+          data-i18n="reset_inputs_btn">入力情報を消去して初期画面に戻ります</button>
       </div>
     </div>
   </div>
@@ -449,8 +700,8 @@
         </label>
       </div>
       <label data-i18n="standard_time">標準時刻：</label>
-      <button class="action-btn" id="standardNowButton" onclick="setNowToStandard()"
-        style="margin-left: 8px;" data-i18n="now">NOW🔄</button>
+      <button class="action-btn" id="standardNowButton" onclick="setNowToStandard()" style="margin-left: 8px;"
+        data-i18n="now">NOW🔄</button>
       <div class="datetime-row">
         <!-- 【入力補助 ON 時の 日付カレンダー入力欄】 -->
         <div class="date-input-wrapper input-helper-on" style="display: none;" id="standardDateWrapper">
@@ -490,7 +741,8 @@
     </div>
     <div class="result-box" id="result"></div>
     <div style="text-align: right;">
-      <div id="toReverseButton" onclick="switchToCorrectionMode()" class="to-reverse-link" style="display: none;" data-i18n="calc_correction_arrow">
+      <div id="toReverseButton" onclick="switchToCorrectionMode()" class="to-reverse-link" style="display: none;"
+        data-i18n="calc_correction_arrow">
         補正時刻を計算→
       </div>
     </div>
@@ -517,7 +769,8 @@
           <input type="number" id="errorDays" min="0" step="1" placeholder="d" tabindex="13" inputmode="none"
             pattern="[0-9]*">
         </div>
-        <span class="unit-label" data-i18n="days_unit" style="margin-left: 4px; margin-right: 4px; white-space: nowrap; flex-shrink: 0;">日</span>
+        <span class="unit-label" data-i18n="days_unit"
+          style="margin-left: 4px; margin-right: 4px; white-space: nowrap; flex-shrink: 0;">日</span>
       </div>
       <!-- 【入力補助 OFF 時の日数入力欄】 -->
       <div class="unit-input input-helper-off error-days-wrapper"
@@ -526,7 +779,8 @@
           <input type="tel" id="errorDays_direct" placeholder="d" tabindex="13" inputmode="none" pattern="[0-9]*"
             class="direct-error-val">
         </div>
-        <span class="unit-label" data-i18n="days_unit" style="margin-left: 4px; margin-right: 4px; white-space: nowrap; flex-shrink: 0;">日</span>
+        <span class="unit-label" data-i18n="days_unit"
+          style="margin-left: 4px; margin-right: 4px; white-space: nowrap; flex-shrink: 0;">日</span>
       </div>
       <!-- 【共通の時分秒入力欄 (常にテンキー用直接入力枠を表示 - 三分割均等幅)】 -->
       <div class="unit-capsule-wrapper" style="flex: none; width: auto; display: flex; align-items: center; gap: 2px;">
@@ -558,9 +812,10 @@
         <option value="early" data-i18n="slow">遅れている</option>
       </select>
       <div class="segmented-control" id="errorDirectionToggleContainer">
-        <button type="button" class="segment-btn active-late" id="btnLate" onclick="toggleDirection()"
-          tabindex="17" data-i18n="fast">進んでいる</button>
-        <button type="button" class="segment-btn" id="btnEarly" onclick="toggleDirection()" data-i18n="slow">遅れている</button>
+        <button type="button" class="segment-btn active-late" id="btnLate" onclick="toggleDirection()" tabindex="17"
+          data-i18n="fast">進んでいる</button>
+        <button type="button" class="segment-btn" id="btnEarly" onclick="toggleDirection()"
+          data-i18n="slow">遅れている</button>
       </div>
     </div>
     <br>
@@ -628,22 +883,26 @@
     </div>
     <div id="reverseResult" class="result-box"></div>
     <div style="display: flex; flex-direction: column; align-items: center; margin-top: 10px;">
-      <button class="action-btn" id="addToListButton" onclick="addResultToList()" data-i18n="record_to_list">結果一覧に記録する</button>
+      <button class="action-btn" id="addToListButton" onclick="addResultToList()"
+        data-i18n="record_to_list">結果一覧に記録する</button>
     </div>
     <p id="showListLink" class="show-list-link" onclick="showResultList()"
-      style="display:none; text-align: right; margin-top: 20px;" tabindex="-1" data-i18n="show_list_arrow">結果一覧を表示 →</p><br>
+      style="display:none; text-align: right; margin-top: 20px;" tabindex="-1" data-i18n="show_list_arrow">結果一覧を表示 →</p>
+    <br>
   </div>
   <div id="resultListPage" style="display:none; padding: 20px 16px;">
     <button class="back-btn" onclick="backToCorrectionMode()" data-i18n="back_to_correction">← 補正時刻の計算に戻る</button>
     <h1 class="fkz" style="margin-top: 4px;" data-i18n="result_list">結果一覧</h1>
     <p class="result-list-guide" style="text-align: center;" data-i18n="double_tap_to_restore">💡 ダブルタップで復元</p>
     <div id="resultListContainer" style="margin-top: 10px;"></div>
-    <button type="button" id="scrollToTopBtn" class="scroll-to-top-btn" onclick="scrollToTopResultList()" data-i18n="back_to_top">↑ TOPへ</button>
+    <button type="button" id="scrollToTopBtn" class="scroll-to-top-btn" onclick="scrollToTopResultList()"
+      data-i18n="back_to_top">↑ TOPへ</button>
   </div>
   <!-- 電卓総合画面 (timeCalcMode) -->
   <div id="timeCalcMode" class="mode-card time-calc-card" style="display:none;">
     <div class="time-calc-topbar">
-      <button class="back-btn" onclick="backToModeSelect()" data-i18n="back_mode_select_right" style="margin:0;">モード選択に戻る →</button>
+      <button class="back-btn" onclick="backToModeSelect()" data-i18n="back_mode_select_right"
+        style="margin:0;">モード選択に戻る →</button>
     </div>
 
     <!-- 4連常設ナビゲーションタブ (💸 💱 🔢 ⏰) -->
@@ -671,11 +930,15 @@
     <!-- 割り勘用入力セレクター (💸モード時のみ表示 & 多通貨対応) -->
     <div id="splitControls" class="split-controls" style="display:none;">
       <!-- 通貨選択行 (ヒロさん仕様: 日本円や米ドル・ユーロ等の外貨での割り勘に対応) -->
-      <div class="split-currency-row" style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; padding: 2px 4px;">
-        <span style="font-size: 12px; font-weight: bold; color: var(--accent); display: flex; align-items: center; gap: 4px;">
+      <div class="split-currency-row"
+        style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; padding: 2px 4px;">
+        <span
+          style="font-size: 12px; font-weight: bold; color: var(--accent); display: flex; align-items: center; gap: 4px;">
           <span>💱</span> <span data-i18n="split_currency_label">通貨</span>:
         </span>
-        <select id="splitCurrencySelect" class="currency-select" style="width: auto; max-width: 230px; font-size: 12px; padding: 3px 8px; height: 28px; background: rgba(0, 255, 224, 0.08); border: 1px solid rgba(0, 255, 224, 0.4); border-radius: 6px; color: #fff;" onchange="TimeCalc.onSplitCurrencyChange()">
+        <select id="splitCurrencySelect" class="currency-select"
+          style="width: auto; max-width: 230px; font-size: 12px; padding: 3px 8px; height: 28px; background: rgba(0, 255, 224, 0.08); border: 1px solid rgba(0, 255, 224, 0.4); border-radius: 6px; color: #fff;"
+          onchange="TimeCalc.onSplitCurrencyChange()">
           <option value="JPY" selected>🇯🇵 日本 JPY (¥)</option>
           <option value="USD">🇺🇸 米国 USD ($)</option>
           <option value="EUR">🇪🇺 欧州 EUR (€)</option>
@@ -694,11 +957,13 @@
       </div>
 
       <div style="display: flex; gap: 6px;">
-        <div id="splitFieldTotal" class="split-field-row active-field" style="flex: 1.3;" onclick="TimeCalc.setSplitActiveField('total')">
+        <div id="splitFieldTotal" class="split-field-row active-field" style="flex: 1.3;"
+          onclick="TimeCalc.setSplitActiveField('total')">
           <span class="split-field-label" data-i18n="split_total">総額</span>
           <span id="splitValTotal" class="split-field-val">¥0</span>
         </div>
-        <div id="splitFieldPeople" class="split-field-row" style="flex: 1;" onclick="TimeCalc.setSplitActiveField('people')">
+        <div id="splitFieldPeople" class="split-field-row" style="flex: 1;"
+          onclick="TimeCalc.setSplitActiveField('people')">
           <span class="split-field-label" data-i18n="split_people">人数</span>
           <span id="splitValPeople" class="split-field-val">2人</span>
         </div>
@@ -706,15 +971,19 @@
       <div class="split-round-pills" id="splitRoundPills">
         <button type="button" class="split-pill" id="splitRound_1" onclick="TimeCalc.setSplitRounding(1)">1円</button>
         <button type="button" class="split-pill" id="splitRound_10" onclick="TimeCalc.setSplitRounding(10)">10円</button>
-        <button type="button" class="split-pill" id="splitRound_100" onclick="TimeCalc.setSplitRounding(100)">100円</button>
-        <button type="button" class="split-pill active" id="splitRound_1000" onclick="TimeCalc.setSplitRounding(1000)">1000円</button>
+        <button type="button" class="split-pill" id="splitRound_100"
+          onclick="TimeCalc.setSplitRounding(100)">100円</button>
+        <button type="button" class="split-pill active" id="splitRound_1000"
+          onclick="TimeCalc.setSplitRounding(1000)">1000円</button>
       </div>
     </div>
 
     <div id="currencyControls" class="currency-controls" style="display:none;">
       <div class="currency-select-row">
-        <div id="currencyFromField" class="currency-field-label curr-drop-target active-field" onclick="TimeCalc.setCurrencyActiveField('from')" title="タップで選択 / 長押しでリスト表示 / 通貨ボタンをここにドラッグ＆ドロップ">
-          <span class="currency-field-indicator">FROM <span style="font-size: 8.5px; opacity: 0.65; font-weight: normal; letter-spacing: 0;">▼長押し</span></span>
+        <div id="currencyFromField" class="currency-field-label curr-drop-target active-field"
+          onclick="TimeCalc.setCurrencyActiveField('from')" title="タップで選択 / 長押しでリスト表示 / 通貨ボタンをここにドラッグ＆ドロップ">
+          <span class="currency-field-indicator">FROM <span
+              style="font-size: 8.5px; opacity: 0.65; font-weight: normal; letter-spacing: 0;">▼長押し</span></span>
           <select id="currencyFromSelect" class="currency-select" onchange="TimeCalc.onCurrencyChange()">
             <option value="USD" selected>🇺🇸 米国 USD (米ドル $)</option>
             <option value="JPY">🇯🇵 日本 JPY (日本円 ¥)</option>
@@ -740,8 +1009,10 @@
           </select>
         </div>
         <button type="button" class="currency-swap-btn" onclick="TimeCalc.swapCurrencies()" title="通貨を入れ替え">⇄</button>
-        <div id="currencyToField" class="currency-field-label curr-drop-target" onclick="TimeCalc.setCurrencyActiveField('to')" title="タップで選択 / 長押しでリスト表示 / 通貨ボタンをここにドラッグ＆ドロップ">
-          <span class="currency-field-indicator">TO <span style="font-size: 8.5px; opacity: 0.65; font-weight: normal; letter-spacing: 0;">▼長押し</span></span>
+        <div id="currencyToField" class="currency-field-label curr-drop-target"
+          onclick="TimeCalc.setCurrencyActiveField('to')" title="タップで選択 / 長押しでリスト表示 / 通貨ボタンをここにドラッグ＆ドロップ">
+          <span class="currency-field-indicator">TO <span
+              style="font-size: 8.5px; opacity: 0.65; font-weight: normal; letter-spacing: 0;">▼長押し</span></span>
           <select id="currencyToSelect" class="currency-select" onchange="TimeCalc.onCurrencyChange()">
             <option value="JPY" selected>🇯🇵 日本 JPY (日本円 ¥)</option>
             <option value="USD">🇺🇸 米国 USD (米ドル $)</option>
@@ -778,7 +1049,8 @@
       </div>
       <div id="timeCalcMainDisplay" class="time-calc-main-display">00:00:00</div>
       <div class="time-calc-screen-bottom">
-        <span id="timeCalcFormatBadge" class="time-calc-badge" onclick="TimeCalc.toggleFormatMode()">時分秒 ⇆ HH:MM:SS</span>
+        <span id="timeCalcFormatBadge" class="time-calc-badge" onclick="TimeCalc.toggleFormatMode()">時分秒 ⇆
+          HH:MM:SS</span>
         <div id="timeCalcSubDisplay" class="time-calc-sub-display">= 0.0000 h</div>
       </div>
       <!-- リアルタイム為替レート自動同期ステータスバー (ヒロさん仕様: ⚙レート表示の下に小さく配置) -->
@@ -795,11 +1067,16 @@
       <button type="button" id="calcKeyDel" class="calc-btn calc-btn-del" onclick="TimeCalc.pressKey('BS')">⌫</button>
 
       <!-- 2行目 -->
-      <button type="button" id="calcKeyUnitH" class="calc-btn calc-btn-unit" onclick="TimeCalc.pressKey('UNIT_H')" data-i18n="calc_unit_h">時間</button>
-      <button type="button" id="calcKeyUnitM" class="calc-btn calc-btn-unit" onclick="TimeCalc.pressKey('UNIT_M')" data-i18n="calc_unit_m">分</button>
-      <button type="button" id="calcKeyUnitS" class="calc-btn calc-btn-unit" onclick="TimeCalc.pressKey('UNIT_S')" data-i18n="calc_unit_s">秒</button>
-      <button type="button" id="calcKeyClear" class="calc-btn calc-btn-clear" onclick="TimeCalc.pressKey('C')">C</button>
-      <button type="button" id="calcKeyAC" class="calc-btn calc-btn-allclear" onclick="TimeCalc.pressKey('AC')">AC</button>
+      <button type="button" id="calcKeyUnitH" class="calc-btn calc-btn-unit" onclick="TimeCalc.pressKey('UNIT_H')"
+        data-i18n="calc_unit_h">時間</button>
+      <button type="button" id="calcKeyUnitM" class="calc-btn calc-btn-unit" onclick="TimeCalc.pressKey('UNIT_M')"
+        data-i18n="calc_unit_m">分</button>
+      <button type="button" id="calcKeyUnitS" class="calc-btn calc-btn-unit" onclick="TimeCalc.pressKey('UNIT_S')"
+        data-i18n="calc_unit_s">秒</button>
+      <button type="button" id="calcKeyClear" class="calc-btn calc-btn-clear"
+        onclick="TimeCalc.pressKey('C')">C</button>
+      <button type="button" id="calcKeyAC" class="calc-btn calc-btn-allclear"
+        onclick="TimeCalc.pressKey('AC')">AC</button>
 
       <!-- 3行目 -->
       <button type="button" class="calc-btn calc-btn-num" onclick="TimeCalc.pressKey('7')">7</button>
@@ -833,10 +1110,14 @@
     <!-- 2. 割り勘用キーパッド (画像1に完全準拠) -->
     <div id="keypadSplit" class="time-calc-keypad" style="display:none;">
       <!-- 1行目: 総額 / 人数 / 端数単位 / 差額 / ⌫ -->
-      <button type="button" id="splitKeyTotal" class="calc-btn calc-btn-unit calc-btn-active-field" onclick="TimeCalc.setSplitActiveField('total')" data-i18n="split_total">総額</button>
-      <button type="button" id="splitKeyPeople" class="calc-btn calc-btn-unit" onclick="TimeCalc.setSplitActiveField('people')" data-i18n="split_people">人数</button>
-      <button type="button" id="splitKeyRounding" class="calc-btn calc-btn-unit" onclick="TimeCalc.cycleSplitRounding()">¥1,000</button>
-      <button type="button" id="splitKeyTierGap" class="calc-btn calc-btn-unit" style="font-size: 11px; line-height: 1.2;" onclick="TimeCalc.cycleSplitTierGap()">差:<br>¥1,000</button>
+      <button type="button" id="splitKeyTotal" class="calc-btn calc-btn-unit calc-btn-active-field"
+        onclick="TimeCalc.setSplitActiveField('total')" data-i18n="split_total">総額</button>
+      <button type="button" id="splitKeyPeople" class="calc-btn calc-btn-unit"
+        onclick="TimeCalc.setSplitActiveField('people')" data-i18n="split_people">人数</button>
+      <button type="button" id="splitKeyRounding" class="calc-btn calc-btn-unit"
+        onclick="TimeCalc.cycleSplitRounding()">¥1,000</button>
+      <button type="button" id="splitKeyTierGap" class="calc-btn calc-btn-unit"
+        style="font-size: 11px; line-height: 1.2;" onclick="TimeCalc.cycleSplitTierGap()">差:<br>¥1,000</button>
       <button type="button" class="calc-btn calc-btn-del" onclick="TimeCalc.pressKey('BS')">⌫</button>
 
       <!-- 2行目: 7 8 9 C AC -->
@@ -850,8 +1131,10 @@
       <button type="button" class="calc-btn calc-btn-num" onclick="TimeCalc.pressKey('4')">4</button>
       <button type="button" class="calc-btn calc-btn-num" onclick="TimeCalc.pressKey('5')">5</button>
       <button type="button" class="calc-btn calc-btn-num" onclick="TimeCalc.pressKey('6')">6</button>
-      <button type="button" id="splitKeyMore" class="calc-btn calc-btn-unit" style="font-size: 11px; line-height: 1.2;" onclick="TimeCalc.cycleSplitMoreCount()">▲ 多:<br>0人</button>
-      <button type="button" id="splitKeyLess" class="calc-btn calc-btn-unit" style="font-size: 11px; line-height: 1.2;" onclick="TimeCalc.cycleSplitLessCount()">▼ 少:<br>0人</button>
+      <button type="button" id="splitKeyMore" class="calc-btn calc-btn-unit" style="font-size: 11px; line-height: 1.2;"
+        onclick="TimeCalc.cycleSplitMoreCount()">▲ 多:<br>0人</button>
+      <button type="button" id="splitKeyLess" class="calc-btn calc-btn-unit" style="font-size: 11px; line-height: 1.2;"
+        onclick="TimeCalc.cycleSplitLessCount()">▼ 少:<br>0人</button>
 
       <!-- 4行目: 1 2 3 . (空き1マス) -->
       <button type="button" class="calc-btn calc-btn-num" onclick="TimeCalc.pressKey('1')">1</button>
@@ -863,7 +1146,8 @@
       <!-- 5行目: 00 0 ＝記録(3マス分) -->
       <button type="button" class="calc-btn calc-btn-num" onclick="TimeCalc.pressKey('00')">00</button>
       <button type="button" class="calc-btn calc-btn-num" onclick="TimeCalc.pressKey('0')">0</button>
-      <button type="button" class="calc-btn calc-btn-eq" style="grid-column: span 3; font-size: 18px;" onclick="TimeCalc.pressKey('=')" data-i18n="split_btn_record">＝記録</button>
+      <button type="button" class="calc-btn calc-btn-eq" style="grid-column: span 3; font-size: 18px;"
+        onclick="TimeCalc.pressKey('=')" data-i18n="split_btn_record">＝記録</button>
     </div>
 
     <!-- 3. レート変換用キーパッド (画像2に完全準拠) -->
@@ -872,7 +1156,8 @@
       <button type="button" class="calc-btn calc-btn-num" onclick="TimeCalc.pressKey('7')">7</button>
       <button type="button" class="calc-btn calc-btn-num" onclick="TimeCalc.pressKey('8')">8</button>
       <button type="button" class="calc-btn calc-btn-num" onclick="TimeCalc.pressKey('9')">9</button>
-      <button type="button" class="calc-btn calc-btn-unit" style="font-size: 12px;" onclick="TimeCalc.swapCurrencies()" data-i18n="curr_btn_swap">⇄ 切替</button>
+      <button type="button" class="calc-btn calc-btn-unit" style="font-size: 12px;" onclick="TimeCalc.swapCurrencies()"
+        data-i18n="curr_btn_swap">⇄ 切替</button>
       <button type="button" class="calc-btn calc-btn-del" onclick="TimeCalc.pressKey('BS')">⌫</button>
 
       <!-- 2行目: 4 5 6 C AC -->
@@ -886,21 +1171,29 @@
       <button type="button" class="calc-btn calc-btn-num" onclick="TimeCalc.pressKey('1')">1</button>
       <button type="button" class="calc-btn calc-btn-num" onclick="TimeCalc.pressKey('2')">2</button>
       <button type="button" class="calc-btn calc-btn-num" onclick="TimeCalc.pressKey('3')">3</button>
-      <button type="button" id="currSlot_0" class="calc-btn calc-btn-unit curr-draggable-btn" onclick="TimeCalc.selectCurrencySlot(0)">🇺🇸 USD</button>
-      <button type="button" id="currSlot_1" class="calc-btn calc-btn-unit curr-draggable-btn" onclick="TimeCalc.selectCurrencySlot(1)">🇯🇵 JPY</button>
+      <button type="button" id="currSlot_0" class="calc-btn calc-btn-unit curr-draggable-btn"
+        onclick="TimeCalc.selectCurrencySlot(0)">🇺🇸 USD</button>
+      <button type="button" id="currSlot_1" class="calc-btn calc-btn-unit curr-draggable-btn"
+        onclick="TimeCalc.selectCurrencySlot(1)">🇯🇵 JPY</button>
 
       <!-- 4行目: 00 0 . スロット2(C:EUR) スロット3(D:GBP) -->
       <button type="button" class="calc-btn calc-btn-num" onclick="TimeCalc.pressKey('00')">00</button>
       <button type="button" class="calc-btn calc-btn-num" onclick="TimeCalc.pressKey('0')">0</button>
       <button type="button" class="calc-btn calc-btn-num" onclick="TimeCalc.pressKey('.')">.</button>
-      <button type="button" id="currSlot_2" class="calc-btn calc-btn-unit curr-draggable-btn" onclick="TimeCalc.selectCurrencySlot(2)">🇪🇺 EUR</button>
-      <button type="button" id="currSlot_3" class="calc-btn calc-btn-unit curr-draggable-btn" onclick="TimeCalc.selectCurrencySlot(3)">🇬🇧 GBP</button>
+      <button type="button" id="currSlot_2" class="calc-btn calc-btn-unit curr-draggable-btn"
+        onclick="TimeCalc.selectCurrencySlot(2)">🇪🇺 EUR</button>
+      <button type="button" id="currSlot_3" class="calc-btn calc-btn-unit curr-draggable-btn"
+        onclick="TimeCalc.selectCurrencySlot(3)">🇬🇧 GBP</button>
 
       <!-- 5行目: ＝記録(2マス) レート選択 スロット4(E:AUD) スロット5(F:CAD) -->
-      <button type="button" class="calc-btn calc-btn-eq" style="grid-column: span 2; font-size: 16px;" onclick="TimeCalc.pressKey('=')" data-i18n="split_btn_record">＝記録</button>
-      <button type="button" id="currKey_rateSelect" class="calc-btn calc-btn-rate-select" onclick="TimeCalc.openRateSelectLayer()" data-i18n="curr_btn_select">レート<br>選択</button>
-      <button type="button" id="currSlot_4" class="calc-btn calc-btn-unit curr-draggable-btn" onclick="TimeCalc.selectCurrencySlot(4)">🇦🇺 AUD</button>
-      <button type="button" id="currSlot_5" class="calc-btn calc-btn-unit curr-draggable-btn" onclick="TimeCalc.selectCurrencySlot(5)">🇨🇦 CAD</button>
+      <button type="button" class="calc-btn calc-btn-eq" style="grid-column: span 2; font-size: 16px;"
+        onclick="TimeCalc.pressKey('=')" data-i18n="split_btn_record">＝記録</button>
+      <button type="button" id="currKey_rateSelect" class="calc-btn calc-btn-rate-select"
+        onclick="TimeCalc.openRateSelectLayer()" data-i18n="curr_btn_select">レート<br>選択</button>
+      <button type="button" id="currSlot_4" class="calc-btn calc-btn-unit curr-draggable-btn"
+        onclick="TimeCalc.selectCurrencySlot(4)">🇦🇺 AUD</button>
+      <button type="button" id="currSlot_5" class="calc-btn calc-btn-unit curr-draggable-btn"
+        onclick="TimeCalc.selectCurrencySlot(5)">🇨🇦 CAD</button>
     </div>
 
     <!-- 計算履歴エリア（ヒロさん仕様: 初期非表示、＝を押すと出現、0件で自動非表示） -->
@@ -910,17 +1203,21 @@
           <span data-i18n="time_calc_history">計算履歴</span>
           <span class="time-calc-history-guide" data-i18n="double_tap_to_restore">💡 ダブルタップで復元</span>
         </div>
-        <button class="time-calc-history-clear-btn" onclick="TimeCalc.clearHistory()" data-i18n="clear_history">履歴クリア</button>
+        <button class="time-calc-history-clear-btn" onclick="TimeCalc.clearHistory()"
+          data-i18n="clear_history">履歴クリア</button>
       </div>
       <div id="timeCalcHistoryList" class="time-calc-history-list">
         <div class="time-calc-history-empty" data-i18n="no_records">記録された結果はありません。</div>
       </div>
     </div>
   </div>
-  <div id="informationPage" style="display:none; position:relative; text-align:center; padding: 40px 16px; min-height: 100vh; width: 100%; box-sizing: border-box; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none;"><br>
+  <div id="informationPage"
+    style="display:none; position:relative; text-align:center; padding: 40px 16px; min-height: 100vh; width: 100%; box-sizing: border-box; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none;">
+    <br>
     <div style="position: absolute; top: 10px; right: 10px; display: flex; align-items: center; gap: 4px;">
       <span style="font-size: 16px;">🌐</span>
-      <select class="lang-selector" onchange="setLanguage(this.value)" style="background: transparent; border: 1px solid var(--accent); color: var(--text-main); border-radius: 4px; padding: 4px; font-size: 14px; width: auto; appearance: none; text-align: center; text-align-last: center;">
+      <select class="lang-selector" onchange="setLanguage(this.value)"
+        style="background: transparent; border: 1px solid var(--accent); color: var(--text-main); border-radius: 4px; padding: 4px; font-size: 14px; width: auto; appearance: none; text-align: center; text-align-last: center;">
         <option value="ja">JP 日本語</option>
         <option value="en">EN English</option>
         <option value="nl">NL Nederlands</option>
@@ -935,13 +1232,18 @@
         <option value="tr">TR Türkçe</option>
       </select>
     </div>
-    <button class="back-btn" onclick="backToLockScreen()" style="position: absolute; top: 10px; left: 10px; margin: 0; padding: 4px 10px; font-size: 13px;" data-i18n="back_to_lock">← 初期画面に戻る</button>
+    <button class="back-btn" onclick="backToLockScreen()"
+      style="position: absolute; top: 10px; left: 10px; margin: 0; padding: 4px 10px; font-size: 13px;"
+      data-i18n="back_to_lock">← 初期画面に戻る</button>
     <h1 class="fkz" style="margin-top: 40px;" data-i18n="info_page_title">Information</h1>
     <div id="informationContent"
       style="margin-top: 30px; text-align: left; max-width: 500px; margin-left: auto; margin-right: auto;">
-      <p style="margin-bottom: 8px; font-size: clamp(12px, 3.8vw, 14.5px); letter-spacing: -0.2px; white-space: nowrap;" id="infoCreatedBy">このアプリは、<strong>H.Fukazu</strong>によって制作されました。</p>
-      <p style="margin-bottom: 8px;"><span data-i18n="info_version">バージョン：</span><strong>v3.3.3</strong> <span data-i18n="info_updated_date">（2026/09/23 更新）</span></p>
-      <p style="margin-bottom: 24px; font-size: 13px; opacity: 0.85;"><span data-i18n="info_initial_release">初版リリース：</span><strong>v1.0.0（2025/10/19）</strong></p>
+      <p style="margin-bottom: 8px; font-size: clamp(12px, 3.8vw, 14.5px); letter-spacing: -0.2px; white-space: nowrap;"
+        id="infoCreatedBy">このアプリは、<strong>H.Fukazu</strong>によって制作されました。</p>
+      <p style="margin-bottom: 8px;"><span data-i18n="info_version">バージョン：</span><strong>v3.3.3</strong> <span
+          data-i18n="info_updated_date">（2026/09/23 更新）</span></p>
+      <p style="margin-bottom: 24px; font-size: 13px; opacity: 0.85;"><span
+          data-i18n="info_initial_release">初版リリース：</span><strong>v1.0.0（2025/10/19）</strong></p>
 
       <!-- 著作権情報ボタン -->
       <div style="text-align: center; margin: 28px 0;">
@@ -952,21 +1254,27 @@
     </div><br><br>
     <h2 data-i18n="info_latest_news">↓↓↓最新バージョン情報はこちらから↓↓↓</h2>
     <p data-i18n="info_qr_desc">URL又はQRコードから<br>最新情報を確認してください。</p>
-    <button class="action-btn" onclick="showQRCodePage()" style="margin-top: 30px;" data-i18n="show_qr">URL／QRコードを表示</button>
+    <button class="action-btn" onclick="showQRCodePage()" style="margin-top: 30px;"
+      data-i18n="show_qr">URL／QRコードを表示</button>
   </div>
-  <div id="qrCodePage" style="display:none; text-align:center; padding: 40px 16px; min-height: 100vh; width: 100%; box-sizing: border-box;">
+  <div id="qrCodePage"
+    style="display:none; text-align:center; padding: 40px 16px; min-height: 100vh; width: 100%; box-sizing: border-box;">
     <div style="margin-top: 100px;">
       <img id="qrCodeImage" src="QRCorde.PNG" alt="Time Regulus QR Code"
         style="border: 4px solid var(--text-main); border-radius: 8px;">
     </div>
-    <a href="https://fkz1977.github.io/Time-Regulus-news/" target="_blank" rel="noopener noreferrer" onclick="openLatestNews(event, this)" class="url-link" style="font-size: 12px; display:block; color: skyblue;">https://fkz1977.github.io/Time-Regulus-news/</a>
-    <button class="action-btn" onclick="closeQRCodePage()" style="margin-top: 40px; background-color: #ff4d4d;" data-i18n="close">☒ 閉じる</button>
+    <a href="https://fkz1977.github.io/Time-Regulus-news/" target="_blank" rel="noopener noreferrer"
+      onclick="openLatestNews(event, this)" class="url-link"
+      style="font-size: 12px; display:block; color: skyblue;">https://fkz1977.github.io/Time-Regulus-news/</a>
+    <button class="action-btn" onclick="closeQRCodePage()" style="margin-top: 40px; background-color: #ff4d4d;"
+      data-i18n="close">☒ 閉じる</button>
   </div>
   <!-- 時分秒専用の三連極上カスタム無限ドラムロールピッカー (ボトムシート) -->
   <div id="pickerOverlay" class="picker-overlay"></div>
   <div id="regulusTimePicker" class="picker-bottom-sheet">
     <div class="picker-header time-picker-header">
-      <button type="button" id="pickerRecordBtn" class="keypad-record-btn" onclick="RegulusKeypad.recordToList()" style="display: none;" data-i18n="record_to_list">結果一覧に記録する</button>
+      <button type="button" id="pickerRecordBtn" class="keypad-record-btn" onclick="RegulusKeypad.recordToList()"
+        style="display: none;" data-i18n="record_to_list">結果一覧に記録する</button>
       <button type="button" class="picker-confirm-btn" onclick="closeTimePicker()" data-i18n="done">▼ 完了</button>
     </div>
     <div class="picker-content">
@@ -1005,7 +1313,8 @@
         <button type="button" class="keypad-nav-btn" onclick="RegulusKeypad.prevField()" title="前の枠へ">◀</button>
         <button type="button" class="keypad-nav-btn" onclick="RegulusKeypad.nextField()" title="次の枠へ">▶</button>
       </div>
-      <button type="button" id="keypadRecordBtn" class="keypad-record-btn" onclick="RegulusKeypad.recordToList()" style="display: none;" data-i18n="record_to_list">結果一覧に記録する</button>
+      <button type="button" id="keypadRecordBtn" class="keypad-record-btn" onclick="RegulusKeypad.recordToList()"
+        style="display: none;" data-i18n="record_to_list">結果一覧に記録する</button>
       <button type="button" class="picker-confirm-btn" onclick="RegulusKeypad.close()" data-i18n="done">▼ 完了</button>
     </div>
     <div class="keypad-content">
@@ -1013,15 +1322,15 @@
         <button type="button" class="custom-keypad-btn" onclick="RegulusKeypad.press(1)">1</button>
         <button type="button" class="custom-keypad-btn" onclick="RegulusKeypad.press(2)">2</button>
         <button type="button" class="custom-keypad-btn" onclick="RegulusKeypad.press(3)">3</button>
-        
+
         <button type="button" class="custom-keypad-btn" onclick="RegulusKeypad.press(4)">4</button>
         <button type="button" class="custom-keypad-btn" onclick="RegulusKeypad.press(5)">5</button>
         <button type="button" class="custom-keypad-btn" onclick="RegulusKeypad.press(6)">6</button>
-        
+
         <button type="button" class="custom-keypad-btn" onclick="RegulusKeypad.press(7)">7</button>
         <button type="button" class="custom-keypad-btn" onclick="RegulusKeypad.press(8)">8</button>
         <button type="button" class="custom-keypad-btn" onclick="RegulusKeypad.press(9)">9</button>
-        
+
         <button type="button" class="custom-keypad-btn btn-ac" onclick="RegulusKeypad.clear()">AC</button>
         <button type="button" class="custom-keypad-btn" onclick="RegulusKeypad.press(0)">0</button>
         <button type="button" class="custom-keypad-btn btn-bs" onclick="RegulusKeypad.backspace()">⌫</button>
@@ -1029,7 +1338,8 @@
     </div>
   </div>
   <!-- カスタムレート入力モーダル -->
-  <div id="customRateModal" role="dialog" aria-modal="true" onclick="if(event.target===this)TimeCalc.closeCustomRateModal()">
+  <div id="customRateModal" role="dialog" aria-modal="true"
+    onclick="if(event.target===this)TimeCalc.closeCustomRateModal()">
     <div class="custom-rate-modal-box">
       <div class="custom-rate-modal-title" id="customRateModalTitle">💱 レートを手動入力</div>
       <label class="custom-rate-modal-label" id="customRateModalLabel">1 GBP = ? JPY</label>
@@ -1040,19 +1350,24 @@
         <span id="customRateToLabel">JPY</span>
       </div>
       <!-- ライブレート取得ボタン -->
-      <button id="liveRateBtn" class="live-rate-fetch-btn" onclick="TimeCalc.fetchLiveRate()" data-i18n="custom_rate_fetch">🌐 現在のレートを取得</button>
+      <button id="liveRateBtn" class="live-rate-fetch-btn" onclick="TimeCalc.fetchLiveRate()"
+        data-i18n="custom_rate_fetch">🌐 現在のレートを取得</button>
       <div id="liveRateStatus" class="live-rate-status"></div>
       <div class="custom-rate-modal-btns">
-        <button class="custom-rate-modal-cancel" onclick="TimeCalc.closeCustomRateModal()" data-i18n="cancel">キャンセル</button>
+        <button class="custom-rate-modal-cancel" onclick="TimeCalc.closeCustomRateModal()"
+          data-i18n="cancel">キャンセル</button>
         <button class="custom-rate-modal-ok" onclick="TimeCalc.applyCustomRate()" data-i18n="apply">✓ 適用</button>
       </div>
-      <button class="custom-rate-reset-btn" onclick="TimeCalc.resetCustomRate()" data-i18n="custom_rate_reset">↺ デフォルトレートに戻す</button>
-      <button class="custom-rate-save-default-btn" onclick="TimeCalc.saveAsDefaultRate()" data-i18n="custom_rate_save">💾 このレートをデフォルトとして保存</button>
+      <button class="custom-rate-reset-btn" onclick="TimeCalc.resetCustomRate()" data-i18n="custom_rate_reset">↺
+        デフォルトレートに戻す</button>
+      <button class="custom-rate-save-default-btn" onclick="TimeCalc.saveAsDefaultRate()"
+        data-i18n="custom_rate_save">💾 このレートをデフォルトとして保存</button>
     </div>
   </div>
 
   <!-- レート選択レイヤー (ヒロさんの手描きイメージ画像に完全準拠 & 多言語化) -->
-  <div id="rateSelectModal" class="rate-select-modal" role="dialog" aria-modal="true" style="display:none;" onclick="if(event.target===this)TimeCalc.closeRateSelectLayer()">
+  <div id="rateSelectModal" class="rate-select-modal" role="dialog" aria-modal="true" style="display:none;"
+    onclick="if(event.target===this)TimeCalc.closeRateSelectLayer()">
     <div class="rate-select-modal-box">
       <div class="rate-select-modal-header">
         <div class="rate-select-modal-title" data-i18n="rate_modal_title">💱 レート枠の選択・配置 (全21種類)</div>
@@ -1108,8 +1423,10 @@
       </div>
 
       <div class="rate-select-footer">
-        <button type="button" class="calc-btn calc-btn-clear" style="padding: 6px 14px; font-size: 12px;" onclick="TimeCalc.resetCurrencySlotsToDefault()" data-i18n="rate_modal_reset">↺ 初期値に戻す</button>
-        <button type="button" class="calc-btn calc-btn-rate-confirm" onclick="TimeCalc.closeRateSelectLayer()" data-i18n="rate_modal_confirm">✓ 決定して閉じる</button>
+        <button type="button" class="calc-btn calc-btn-clear" style="padding: 6px 14px; font-size: 12px;"
+          onclick="TimeCalc.resetCurrencySlotsToDefault()" data-i18n="rate_modal_reset">↺ 初期値に戻す</button>
+        <button type="button" class="calc-btn calc-btn-rate-confirm" onclick="TimeCalc.closeRateSelectLayer()"
+          data-i18n="rate_modal_confirm">✓ 決定して閉じる</button>
       </div>
     </div>
   </div>
@@ -1118,13 +1435,7 @@
   <div id="currDragGhost" class="curr-drag-ghost" style="display:none;">USD</div>
 
   <script src="i18n.js?v=17" defer></script>
-  <script src="script.js?c=91" defer></script>
-  <script>
-    if ('serviceWorker' in navigator) { window.addEventListener('load', () => { navigator.serviceWorker.getRegistrations().then(r => r.forEach(reg => reg.unregister())); }); }
-  </script>
+  <script src="script.js?c=92" defer></script>
 </body>
+
 </html>
-
-
-
-

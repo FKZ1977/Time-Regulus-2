@@ -17,9 +17,25 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
+  <!-- ファビコン・アプリアイコン設定（Windows, iOS, Chrome, Edge, Safari, ブックマーク対応） -->
+  <link rel="shortcut icon" href="favicon.ico?v=2">
+  <link rel="icon" type="image/x-icon" href="favicon.ico?v=2">
+  <link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png?v=2">
+  <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png?v=2">
+  <link rel="icon" type="image/png" sizes="48x48" href="favicon-48x48.png?v=2">
+  <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png?v=2">
+  <!-- iOS Safari対応 -->
+  <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png?v=2">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png?v=2">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="TimeRegulus💫">
+  <!-- Windows / Chrome テーマカラー & タイル画像 -->
+  <meta name="theme-color" content="#0e0f11">
+  <meta name="msapplication-TileColor" content="#0e0f11">
+  <meta name="msapplication-TileImage" content="icon-192.png?v=2">
+  <!-- PWA Manifest -->
   <link rel="manifest" href="manifest.json">
-  <meta name="apple-mobile-web-app-title" content="TimeRegulus🦖">
-  <link rel="apple-touch-icon" href="icon-192.png">
   <!-- ★【起動高速化】ロック画面用CSS（小・ブロッキング）→ 先に読み込んで即表示 -->
   <link rel="stylesheet" href="style-lock.css?c=32">
   <!-- ★【起動高速化】メインCSS（大・非ブロッキング）→ ロック画面表示後に裏で読み込む -->
@@ -27,8 +43,6 @@
   <noscript>
     <link rel="stylesheet" href="style-main.css?c=71">
   </noscript>
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <style>
     @keyframes riseInLong {
       0% {

@@ -1,13 +1,13 @@
 // Time Regulus Service Worker - PWA & Network-First for HTML
-const CACHE_NAME = "time-regulus-v3.3.3-pwa-v3";
+const CACHE_NAME = "time-regulus-v3.4.0-pwa-v7";
 
 const urlsToCache = [
   "./",
   "./index.html",
   "./style-lock.css?c=32",
   "./style-main.css?c=71",
-  "./script.js?c=92",
-  "./i18n.js?v=17",
+  "./script.js?c=99",
+  "./i18n.js?v=20",
   "./manifest.json",
   "./favicon.ico",
   "./favicon-16x16.ico",

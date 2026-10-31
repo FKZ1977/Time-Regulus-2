@@ -1,4 +1,4 @@
-const currentVersion = "3.4.0";
+const currentVersion = "3.3.3";
 let lastError = null;
 let hasCalculated = false;
 let reverseMode = "toStandard";
@@ -1086,7 +1086,7 @@ const RegulusKeypad = {
     try {
       inputEl.focus({ preventScroll: true });
       const len = inputEl.value.length;
-      if (len > 0) { if (typeof inputEl.select === 'function') inputEl.select(); inputEl.setSelectionRange(0, len); } else { inputEl.setSelectionRange(0, 0); }
+      inputEl.setSelectionRange(len, len);
     } catch (e) {}
 
     // 記録ボタンの表示制御（結果が存在する時のみ表示）
@@ -1130,23 +1130,6 @@ const RegulusKeypad = {
 
     // 新規入力開始フラグ（最初の数字で既存の値を上書きできるようにする）
     inputEl.dataset.freshFocus = 'true';
-    const ensureSelected = () => {
-      if (this.isOpen && this.activeInput === inputEl && inputEl.dataset.freshFocus === 'true') {
-        try {
-          if (document.activeElement !== inputEl) inputEl.focus({ preventScroll: true });
-          const l = inputEl.value.length;
-          if (l > 0) {
-            if (typeof inputEl.select === 'function') inputEl.select();
-            inputEl.setSelectionRange(0, l);
-          } else {
-            inputEl.setSelectionRange(0, 0);
-          }
-        } catch (e) {}
-      }
-    };
-    requestAnimationFrame(ensureSelected);
-    setTimeout(ensureSelected, 30);
-    setTimeout(ensureSelected, 90);
   },
 
   close() {
@@ -1289,7 +1272,6 @@ const RegulusKeypad = {
     if (this.activeInput === el) {
       try {
         const nextLen = el.value.length;
-        if (document.activeElement !== el) el.focus({ preventScroll: true });
         el.setSelectionRange(nextLen, nextLen);
       } catch (e) {}
     }
@@ -1306,7 +1288,6 @@ const RegulusKeypad = {
     if (this.activeInput === el) {
       try {
         const nextLen = el.value.length;
-        if (document.activeElement !== el) el.focus({ preventScroll: true });
         el.setSelectionRange(nextLen, nextLen);
       } catch (e) {}
     }
@@ -1321,7 +1302,6 @@ const RegulusKeypad = {
 
     if (this.activeInput === el) {
       try {
-        if (document.activeElement !== el) el.focus({ preventScroll: true });
         el.setSelectionRange(0, 0);
       } catch (e) {}
     }
@@ -2984,7 +2964,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
   // 起動時のバージョンポップアップ
   if (localStorage.getItem("lastVersion") !== currentVersion) {
-    alert("タイムレグルスがv3.4.0にアップデートされました！\n”information”に安全性に関するお知らせが追加されました！");
+    alert("タイムレグルスがv3.3.3にアップデートされました！");
     localStorage.setItem("lastVersion", currentVersion);
   }
 
@@ -3027,7 +3007,6 @@ document.addEventListener("DOMContentLoaded", function () {
         el.blur();
 
         if (typeof RegulusKeypad !== 'undefined' && RegulusKeypad.isOpen && RegulusKeypad.activeInput && RegulusKeypad.activeInput.id === 'errorDays_direct') {
-          if (e && (e.type === 'mousedown' || e.type === 'touchstart')) RegulusKeypad.open(RegulusKeypad.activeInput);
           return;
         }
 
@@ -3048,7 +3027,6 @@ document.addEventListener("DOMContentLoaded", function () {
       el.addEventListener("touchstart", onDaysHelperFocus, { passive: false });
       el.addEventListener("mousedown", onDaysHelperFocus);
       el.addEventListener("focus", (e) => {
-        if (el.id === "errorDays_direct" && typeof RegulusKeypad !== 'undefined' && RegulusKeypad.isOpen && RegulusKeypad.activeInput === el) return;
         if (e && e.preventDefault) e.preventDefault();
         el.blur();
         onDaysHelperFocus(e);
@@ -3277,7 +3255,6 @@ document.addEventListener("DOMContentLoaded", function () {
           if (e && e.stopPropagation) e.stopPropagation();
           el.blur();
           if (typeof RegulusKeypad !== 'undefined' && RegulusKeypad.isOpen && RegulusKeypad.activeInput && RegulusKeypad.activeInput.id === 'errorDays_direct') {
-          if (e && (e.type === 'mousedown' || e.type === 'touchstart')) RegulusKeypad.open(RegulusKeypad.activeInput);
             return;
           }
           if (inputHelperEnabled) {
@@ -3321,20 +3298,6 @@ document.addEventListener("DOMContentLoaded", function () {
       };
       el.addEventListener("mousedown", directKeypadOpen);
       el.addEventListener("touchstart", directKeypadOpen);
-      const keepSelectOnRelease = (e) => {
-        if (typeof RegulusKeypad !== 'undefined' && RegulusKeypad.isOpen && RegulusKeypad.activeInput === el && el.dataset.freshFocus === 'true') {
-          if (e && e.cancelable) e.preventDefault();
-          try {
-            const l = el.value.length;
-            if (l > 0) {
-              if (typeof el.select === 'function') el.select();
-              el.setSelectionRange(0, l);
-            }
-          } catch (err) {}
-        }
-      };
-      el.addEventListener("mouseup", keepSelectOnRelease);
-      el.addEventListener("click", keepSelectOnRelease);
 
       // ④ タップ時はクリアせず、入力開始時までクリアを待つためのフラグ ＆ 手動選択時の全選択
       el.addEventListener("focus", function() {

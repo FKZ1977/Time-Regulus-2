@@ -3,7 +3,7 @@
 
 <head>
   <meta charset="UTF-8">
-  <title>Time Regulus v3.3.3</title>
+  <title>Time Regulus v3.4.0</title>
   <!-- Google tag (gtag.js) -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-R7PW7DY4GF"></script>
   <script>
@@ -122,7 +122,7 @@
       </select>
     </div>
     <h1 class="fkz anim-title-rise" id="lockTitle" data-i18n="app_title">Time Regulus</h1>
-    <p class="subtitle anim-slow-fade" id="lockSubtitle" data-i18n="app_subtitle">タイム　レグルス　v3.3.3</p>
+    <p class="subtitle anim-slow-fade" id="lockSubtitle" data-i18n="app_subtitle">タイム　レグルス　v3.4.0</p>
     <div class="passcode-row anim-slow-fade">
       <label for="passcode" class="passcode-label" data-i18n="passcode">暗証番号：</label>
       <input type="password" id="passcode" placeholder="例：12345" data-i18n-placeholder="passcode_placeholder"
@@ -1254,22 +1254,43 @@
       style="margin-top: 30px; text-align: left; max-width: 500px; margin-left: auto; margin-right: auto;">
       <p style="margin-bottom: 8px; font-size: clamp(12px, 3.8vw, 14.5px); letter-spacing: -0.2px; white-space: nowrap;"
         id="infoCreatedBy">このアプリは、<strong>H.Fukazu</strong>によって制作されました。</p>
-      <p style="margin-bottom: 8px;"><span data-i18n="info_version">バージョン：</span><strong>v3.3.3</strong> <span
-          data-i18n="info_updated_date">（2026/09/23 更新）</span></p>
+      <p style="margin-bottom: 8px;"><span data-i18n="info_version">バージョン：</span><strong>v3.4.0</strong> <span
+          data-i18n="info_updated_date">（2026/10/31 更新）</span></p>
       <p style="margin-bottom: 24px; font-size: 13px; opacity: 0.85;"><span
           data-i18n="info_initial_release">初版リリース：</span><strong>v1.0.0（2025/10/19）</strong></p>
 
+      <!-- 安全性に関するお知らせ -->
+      <div style="text-align: center; margin-top: 24px; margin-bottom: 14px;">
+        <a href="https://fkz1977.github.io/Time-Regulus/" target="_blank" rel="noopener noreferrer" class="action-btn"
+          id="securityGuideBtn" onclick="if(typeof gtag==='function'){gtag('event', 'view_security_guide');}"
+          style="display: inline-flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none; background: linear-gradient(135deg, rgba(0,255,224,0.15), rgba(0,255,224,0.05)); border: 1px solid var(--accent); color: var(--accent); box-shadow: 0 0 12px rgba(0,255,224,0.25); font-size: 15px; padding: 12px 26px; margin: 0; border-radius: 8px;">
+          <span data-i18n="show_security_guide">📖 安全性に関するお知らせ</span>
+          <svg style="width: 15px; height: 15px; fill: currentColor; flex-shrink: 0;" viewBox="0 0 24 24"
+            aria-hidden="true">
+            <path
+              d="M19 19H5V5h7V3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2v-7h-2v7zM14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3h-7z" />
+          </svg>
+        </a>
+      </div>
+
       <!-- 著作権情報ボタン -->
-      <div style="text-align: center; margin: 28px 0;">
+      <div style="text-align: center; margin-bottom: 24px;">
         <button class="action-btn" id="showCopyrightBtn" onclick="showReadmePageFromInfo()"
           style="background: linear-gradient(135deg, rgba(0,255,224,0.15), rgba(0,255,224,0.05)); border: 1px solid var(--accent); color: var(--accent); box-shadow: 0 0 12px rgba(0,255,224,0.25); font-size: 15px; padding: 12px 28px; margin-top: 0;"
           data-i18n="show_copyright">📖 著作権情報を見る</button>
       </div>
-    </div><br><br>
-    <h2 data-i18n="info_latest_news">↓↓↓最新バージョン情報はこちらから↓↓↓</h2>
-    <p data-i18n="info_qr_desc">URL又はQRコードから<br>最新情報を確認してください。</p>
-    <button class="action-btn" onclick="showQRCodePage()" style="margin-top: 30px;"
-      data-i18n="show_qr">URL／QRコードを表示</button>
+    </div>
+
+    <!-- 最新バージョン情報枠（水色枠で囲み、間隔を調整） -->
+    <div
+      style="max-width: 500px; margin: 24px auto 0 auto; padding: 22px 16px; border: 1.5px solid var(--accent); border-radius: 12px; background: rgba(0, 255, 224, 0.04); box-shadow: 0 0 15px rgba(0, 255, 224, 0.12); box-sizing: border-box;">
+      <h2 style="margin-top: 0; margin-bottom: 12px; font-size: clamp(16px, 4.2vw, 19px);" data-i18n="info_latest_news">
+        ↓↓↓最新バージョン情報はこちらから↓↓↓</h2>
+      <p style="margin: 0 0 12px 0; font-size: 14px; line-height: 1.6;" data-i18n="info_qr_desc">
+        URL又はQRコードから<br>最新情報を確認してください。</p>
+      <button class="action-btn" onclick="showQRCodePage()" style="margin-top: 0;"
+        data-i18n="show_qr">URL／QRコードを表示</button>
+    </div>
   </div>
   <div id="qrCodePage"
     style="display:none; text-align:center; padding: 40px 16px; min-height: 100vh; width: 100%; box-sizing: border-box;">
@@ -1448,8 +1469,8 @@
   <!-- 指/マウス追従用 ドラッグゴースト要素 -->
   <div id="currDragGhost" class="curr-drag-ghost" style="display:none;">USD</div>
 
-  <script src="i18n.js?v=17" defer></script>
-  <script src="script.js?c=92" defer></script>
+  <script src="i18n.js?v=20" defer></script>
+  <script src="script.js?c=98" defer></script>
 </body>
 
 </html>

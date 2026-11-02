@@ -1,206 +1,551 @@
 <!DOCTYPE html>
 <html lang="ja">
+
 <head>
   <meta charset="UTF-8">
-  <title>RegulusNotice📢</title>
- 
-  <script async src="https://www.googletagmanager.com/gtag/js?id=G-LC92TT3087"></script>
+  <title>Time Regulus v3.4.0</title>
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-R7PW7DY4GF"></script>
   <script>
     window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
+    function gtag() { dataLayer.push(arguments); }
     gtag('js', new Date());
-
-    gtag('config', 'G-LC92TT3087');
+    gtag('config', 'G-R7PW7DY4GF');
   </script>
-  
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate, max-age=0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <!-- ブラウザのHTTPキャッシュ制御（常に最新のHTMLを取得） -->
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  
-  <!-- ★【重要】HTML更新時はここのバージョン番号を変更してください（例: 日付や 20261010_01 など）★ -->
-  <meta name="app-version" content="20261102_01">
-   
-  <!-- ファビコン・アプリアイコン設定 (Windows, Chrome, iPhone, Android対応) -->
-  <link rel="apple-touch-icon" sizes="512x512" href="apple-touch-icon.png?v=20261102_01">
-  <link rel="icon" type="image/png" sizes="512x512" href="icon-512.png?v=20261102_01">
-  <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png?v=20261102_01">
-  <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png?v=20261102_01">
-  <link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png?v=20261102_01">
-  <link rel="icon" type="image/x-icon" href="favicon.ico?v=20261102_01">
-  <link rel="manifest" href="manifest.json?v=20261102_01">
-
-  <!-- iOS Safari 共有シート（下から出るメニュー）で白枠なしの大きいアイコンを表示するための設定 -->
-  <meta property="og:title" content="RegulusNotice📢">
-  <meta property="og:image" content="icon-512.png?v=20261102_01">
-  <meta property="og:image:type" content="image/png">
-  <meta property="og:image:width" content="512">
-  <meta property="og:image:height" content="512">
-
-  <!-- モバイル & ブラウザ設定 -->
-  <meta name="theme-color" content="#0e0f11">
+  <!-- iOS Safari / アプリアイコン・ファビコン設定（512px/180px優先で白枠縮小を完全防止） -->
+  <link rel="apple-touch-icon" sizes="512x512" href="icon-512.png?v=3">
+  <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png?v=3">
+  <link rel="apple-touch-icon" href="icon-512.png?v=3">
+  <link rel="icon" type="image/png" sizes="512x512" href="icon-512.png?v=3">
+  <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png?v=3">
+  <link rel="shortcut icon" href="icon-192.png?v=3">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="RegulusNotice📢">
+  <meta name="apple-mobile-web-app-title" content="TimeRegulus💫">
+  <!-- Windows / Chrome テーマカラー & タイル画像 -->
+  <meta name="theme-color" content="#0e0f11">
+  <meta name="msapplication-TileColor" content="#0e0f11">
+  <meta name="msapplication-TileImage" content="icon-512.png?v=3">
+  <!-- PWA Manifest -->
+  <link rel="manifest" href="manifest.json?v=3">
+  <!-- ★【起動高速化】ロック画面用CSS（小・ブロッキング）→ 先に読み込んで即表示 -->
+  <link rel="stylesheet" href="style-lock.css?c=32">
+  <!-- ★【起動高速化】メインCSS（大・非ブロッキング）→ ロック画面表示後に裏で読み込む -->
+  <link rel="stylesheet" href="style-main.css?c=71" media="print" onload="this.media='all'">
+  <noscript>
+    <link rel="stylesheet" href="style-main.css?c=71">
+  </noscript>
   <style>
-    /* 元のアプリのスタイル変数の一部を再利用して見た目を統一 */
-    :root {
-      --bg-dark: #0e0f11;
-      --accent: #00ffe0; /* 水色/メインカラー */
-      --text-main: #e0e0e0;
-      --text-sub: #999;
-      --pink-highlight: #ff69b4; /* ピンク色 */
-    }
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-      background-color: var(--bg-dark);
-      color: var(--text-main);
-      text-align: center;
-      padding: 20px 15px;
-      margin: 0;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      min-height: 100vh;
-      box-sizing: border-box;
-    }
-    .container {
-      width: 100%;
-      max-width: 600px;
-      margin-top: 30px;
-      padding: 20px 24px;
-      border: 1px solid var(--accent);
-      border-radius: 12px;
-      background-color: #151c27;
-      box-shadow: 0 0 20px rgba(0, 255, 224, 0.3);
-      box-sizing: border-box;
-    }
-    .lang-bar {
-      display: flex;
-      justify-content: flex-end;
-      align-items: center;
-      gap: 6px;
-      margin-bottom: 12px;
-    }
-    .lang-selector {
-      background: #0e131b;
-      border: 1px solid var(--accent);
-      color: var(--text-main);
-      border-radius: 6px;
-      padding: 5px 8px;
-      font-size: 13px;
-      outline: none;
-      cursor: pointer;
-      box-shadow: 0 0 8px rgba(0, 255, 224, 0.15);
-      transition: border-color 0.2s, box-shadow 0.2s;
-    }
-    .lang-selector:focus, .lang-selector:hover {
-      border-color: #fff;
-      box-shadow: 0 0 12px rgba(0, 255, 224, 0.4);
-    }
-    .fkz {
-      font-family: 'serif'; 
-      color: var(--accent);
-      text-shadow: 0 0 15px rgba(0, 255, 224, 0.7);
-      margin: 0;
-      font-size: 38px;
-      opacity: 0; 
-      animation: fadeIn 2s forwards; 
-    }
-    .subtitle {
-      color: var(--text-sub);
-      margin-top: 4px;
-      margin-bottom: 20px;
-      font-size: 16px; 
-      opacity: 0; 
-      animation: fadeIn 2s forwards 0.5s; 
-    }
-    .notice-header {
-      font-weight: bold;
-      font-size: 18px;
-      margin-top: 20px;
-      margin-bottom: 0;
-      line-height: 1.5;
-    }
-    .notice-box {
-      font-weight: bold;
-      font-size: 16px;
-      margin-top: 15px;
-      line-height: 1.7;
-      text-align: left !important;
-      word-break: break-word;
-    }
-    .notice-box p {
-      margin: 0 0 12px;
-      line-height: 1.7;
-    }
-    /* 安全である理由のリスト */
-    .reason-list {
-      margin: 0 0 14px;
-      padding-left: 1.6em;
-    }
-    .reason-list li {
-      margin-bottom: 12px;
-    }
-    .reason-title {
-      color: var(--accent);
-    }
-    .reason-body {
-      display: block;
-      font-weight: normal;
-    }
-    h2 {
-      color: var(--accent);
-      display: inline-block;
-      padding-bottom: 5px;
-      margin-top: 30px;
-      font-size: 20px;
-    }
-    a {
-      color: var(--accent);
-      font-weight: bold;
-      text-decoration: underline;
-    }
-    a:hover {
-      color: #fff;
-      text-shadow: 0 0 8px var(--accent);
-    }
-    img {
-      max-width: 250px;
-      height: auto;
-      margin: 20px auto;
-      display: block;
-      border: 4px solid var(--text-main);
-      border-radius: 8px;
-    }
-    .url-link {
-      word-break: break-all;
-      display: block;
-      margin-top: 10px;
-      font-size: 16px;
-    }
-    .pink-highlight-text {
-      color: var(--pink-highlight); 
-      font-weight: bold;
-      font-size: 16px; 
-    }
-    p {
-      line-height: 1.6;
+    @keyframes riseInLong {
+      0% {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+
+      100% {
+        opacity: 1;
+        transform: translateY(0);
+      }
     }
 
-    /* フェードインアニメーションの定義 */
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(10px); }
-      to { opacity: 1; transform: translateY(0); }
+    @keyframes riseInShort {
+      0% {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+
+      100% {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .rise-in-long {
+      animation: riseInLong 1s ease-out forwards;
+    }
+
+    .rise-in-short {
+      animation: riseInShort 1s ease-out forwards;
+    }
+
+    /* 標準時刻が上の時の00秒のスタイル */
+    .seconds-fixed-00 {
+      /* input要素のスタイルを上書きしてセレクトボックスの枠を消し、背景色を適用 */
+      background-color: var(--bg-dark-navy) !important;
+      border: 1px solid var(--accent) !important;
+      color: var(--error-late-color) !important;
+      /* 赤色文字 */
+      font-weight: bold;
+      pointer-events: none;
+      text-align: center;
+      box-shadow: none;
+      -webkit-appearance: none;
+      /* Safari/Chrome */
+      -moz-appearance: none;
+      /* Firefox */
+      appearance: none;
+      /* 標準 */
     }
   </style>
 </head>
-<body>
-  <div class="container">
-    <!-- 言語切り替えバー -->
-    <div class="lang-bar">
+
+<body class="fade-in">
+  <!-- iOS Safari テンキー∧∨ナビゲーション時のデッドロック（フリーズ）回避用ダミー入力枠 -->
+  <input type="text" id="iosKeyboardCloser" readonly tabindex="-1"
+    style="position: absolute; top: -9999px; left: -9999px; opacity: 0; pointer-events: none;">
+  <div id="lockScreen">
+    <div class="anim-slow-fade"
+      style="position: absolute; top: 10px; right: 10px; display: flex; align-items: center; gap: 4px;">
       <span style="font-size: 16px;">🌐</span>
-      <select id="langSelector" class="lang-selector" onchange="setLanguage(this.value)">
+      <select class="lang-selector" onchange="setLanguage(this.value)"
+        style="background: transparent; border: 1px solid var(--accent); color: var(--text-main); border-radius: 4px; padding: 4px; font-size: 14px; width: auto; appearance: none; text-align: center; text-align-last: center;">
+        <option value="ja">JP 日本語</option>
+        <option value="en">EN English</option>
+        <option value="nl">NL Nederlands</option>
+        <option value="pt">PT Português</option>
+        <option value="es">ES Español</option>
+        <option value="fr">FR Français</option>
+        <option value="it">IT Italiano</option>
+        <option value="de">DE Deutsch</option>
+        <option value="uk">UK Українська</option>
+        <option value="id">ID Indonesia</option>
+        <option value="ko">KO 한국어</option>
+        <option value="tr">TR Türkçe</option>
+      </select>
+    </div>
+    <h1 class="fkz anim-title-rise" id="lockTitle" data-i18n="app_title">Time Regulus</h1>
+    <p class="subtitle anim-slow-fade" id="lockSubtitle" data-i18n="app_subtitle">タイム　レグルス　v3.4.0</p>
+    <div class="passcode-row anim-slow-fade">
+      <label for="passcode" class="passcode-label" data-i18n="passcode">暗証番号：</label>
+      <input type="password" id="passcode" placeholder="例：12345" data-i18n-placeholder="passcode_placeholder"
+        tabindex="1" readonly class="passcode-input">
+    </div>
+    <button class="action-btn anim-slow-fade" onclick="checkPass()" tabindex="2" data-i18n="open">開く</button>
+    <div id="keypad" class="keypad-grid">
+      <button type="button">&nbsp;</button>
+      <button type="button">&nbsp;</button>
+      <button type="button">&nbsp;</button>
+      <button type="button">&nbsp;</button>
+      <button type="button">&nbsp;</button>
+      <button type="button">&nbsp;</button>
+      <button type="button">&nbsp;</button>
+      <button type="button">&nbsp;</button>
+      <button type="button">&nbsp;</button>
+    </div>
+    <p id="error" class="anim-slow-fade"></p>
+    <p class="subtitle anim-slow-fade">- produced by H.Fukazu -</p>
+    <p class="info-link anim-slow-fade" onclick="showInformationPage()"> - Information - </p>
+  </div>
+  <!-- ★ 12345 → 著作権情報ページ（多言語README表示） -->
+  <div id="readmePage" style="display:none;">
+    <div id="readmeHeader">
+      <!-- ← Information に戻るボタン（informationPageから来た場合のみ有効） -->
+      <button id="readmeBackBtn" class="back-btn" onclick="backToInfoFromReadme()"
+        style="display:none; position:absolute; top:10px; left:10px; z-index:10; font-size:13px; padding:4px 10px;">
+        ← Information
+      </button>
+      <h1 class="fkz" id="readmeTitle">Copyright Info</h1>
+      <div id="readmeCountryBar" style="display: flex; align-items: center; justify-content: center; gap: 8px;">
+        <span style="font-size: 18px;">🌐</span>
+        <select id="readmeCountrySelect" onchange="jumpToReadmeSection(this.value)"
+          style="width: auto; max-width: 180px;">
+          <option value="sec-ja">JP 日本語</option>
+          <option value="sec-en">EN English</option>
+          <option value="sec-nl">NL Nederlands</option>
+          <option value="sec-pt">PT Português</option>
+          <option value="sec-es">ES Español</option>
+          <option value="sec-fr">FR Français</option>
+          <option value="sec-it">IT Italiano</option>
+          <option value="sec-de">DE Deutsch</option>
+          <option value="sec-uk">UA Українська</option>
+          <option value="sec-hi">HI हिन्दी</option>
+          <option value="sec-ar">AR العربية</option>
+          <option value="sec-ru">RU Русский</option>
+          <option value="sec-id">ID Bahasa Indonesia</option>
+          <option value="sec-zh">ZH 中文</option>
+          <option value="sec-ko">KO 한국어</option>
+          <option value="sec-tr">TR Türkçe</option>
+        </select>
+      </div>
+    </div>
+    <div id="readmeBody">
+      <section id="sec-ja" class="readme-section" dir="ltr">
+        <div class="readme-flag">🇯🇵</div>
+        <h2 class="readme-lang-title">＜＜ 日本語 ＞＞</h2>
+        <p>このアプリは <strong>H.Fukazu</strong> によって制作されました。</p>
+        <p><strong>著作権および利用規約</strong><br>本作品（ソフトウェア、コード、ドキュメント、および関連する全ての内容を含む）の著作権は、© 2025 H.Fukazu に帰属します。© 2025
+          H.Fukazu. All Rights Reserved.</p>
+        <p><strong>厳禁事項</strong><br>著作者からの書面による事前の明示的な許可なく、以下の行為を固く禁じます。</p>
+        <ul>
+          <li>無断転用、複製、改変、二次利用は禁止</li>
+          <li>ソースコードの全部または一部の無断転載および再配布の禁止</li>
+          <li>商業的な目的での利用禁止（営利・非営利を問わず、対価を得る活動への利用）</li>
+          <li>本作品を基にした派生作品の作成および公開も禁止</li>
+        </ul>
+        <p>本作品は、著作権法によって最大限に保護されています。</p>
+      </section>
+      <section id="sec-en" class="readme-section" dir="ltr">
+        <div class="readme-flag">🇺🇸 🇬🇧</div>
+        <h2 class="readme-lang-title">＜＜ English (英語) ＞＞</h2>
+        <p>This application was created by <strong>H.Fukazu</strong>.</p>
+        <p><strong>Copyright and Usage Policy</strong><br>All rights to this work—including software, code,
+          documentation, and all related content—are reserved by © 2025 H.Fukazu. All Rights Reserved.</p>
+        <p><strong>Strictly Prohibited</strong><br>The following actions are strictly prohibited without prior explicit
+          written permission from the author:</p>
+        <ul>
+          <li>Unauthorized use, reproduction, modification, or secondary use</li>
+          <li>Republishing or redistributing all or part of the source code without permission</li>
+          <li>Use for commercial purposes (including both for-profit and non-profit activities involving compensation)
+          </li>
+          <li>Creation or publication of derivative works based on this work</li>
+        </ul>
+        <p>This work is fully protected under copyright law.</p>
+      </section>
+      <section id="sec-nl" class="readme-section" dir="ltr">
+        <div class="readme-flag">🇳🇱</div>
+        <h2 class="readme-lang-title">◆ Nederlands (オランダ語) ◆</h2>
+        <p>Deze applicatie is gemaakt door <strong>H.Fukazu</strong>.</p>
+        <p><strong>Auteursrecht en gebruiksvoorwaarden</strong><br>Het auteursrecht berust bij © 2025 H.Fukazu. All
+          Rights Reserved.</p>
+        <p><strong>Strikt verboden</strong></p>
+        <ul>
+          <li>Ongeoorloofd gebruik, reproductie, wijziging of hergebruik</li>
+          <li>Ongeoorloofde publicatie of distributie van de broncode</li>
+          <li>Commercieel gebruik verboden</li>
+          <li>Creatie en publicatie van afgeleide werken verboden</li>
+        </ul>
+        <p>Dit werk is maximaal beschermd onder de auteurswet.</p>
+      </section>
+      <section id="sec-pt" class="readme-section" dir="ltr">
+        <div class="readme-flag">🇵🇹 🇧🇷</div>
+        <h2 class="readme-lang-title">＜＜ Português (ポルトガル語) ＞＞</h2>
+        <p>Este aplicativo foi criado por <strong>H.Fukazu</strong>.</p>
+        <p><strong>Direitos autorais e política de uso</strong><br>Os direitos autorais pertencem a © 2025 H.Fukazu. All
+          Rights Reserved.</p>
+        <p><strong>Proibições estritas</strong></p>
+        <ul>
+          <li>Uso, cópia, modificação ou reutilização não autorizados</li>
+          <li>Reprodução ou redistribuição não autorizada do código-fonte</li>
+          <li>Uso para fins comerciais proibido</li>
+          <li>Criação e publicação de obras derivadas proibidas</li>
+        </ul>
+        <p>Esta obra está protegida ao máximo pela lei de direitos autorais.</p>
+      </section>
+      <section id="sec-es" class="readme-section" dir="ltr">
+        <div class="readme-flag">🇪🇸 🇲🇽</div>
+        <h2 class="readme-lang-title">＜＜ Español (スペイン語) ＞＞</h2>
+        <p>Esta aplicación fue creada por <strong>H.Fukazu</strong>.</p>
+        <p><strong>Derechos de autor y política de uso</strong><br>Los derechos de autor pertenecen a © 2025 H.Fukazu.
+          All Rights Reserved.</p>
+        <p><strong>Prohibiciones estrictas</strong></p>
+        <ul>
+          <li>Uso, copia, modificación o reutilización sin autorización</li>
+          <li>Reproducción o redistribución no autorizada del código fuente</li>
+          <li>Uso con fines comerciales prohibido</li>
+          <li>Creación y publicación de obras derivadas prohibidas</li>
+        </ul>
+        <p>Esta obra está protegida al máximo por la ley de derechos de autor.</p>
+      </section>
+      <section id="sec-fr" class="readme-section" dir="ltr">
+        <div class="readme-flag">🇫🇷</div>
+        <h2 class="readme-lang-title">＜＜ Français (フランス語) ＞＞</h2>
+        <p>Cette application a été créée par <strong>H.Fukazu</strong>.</p>
+        <p><strong>Politique de droits d'auteur</strong><br>Tous les droits relatifs à cette œuvre sont réservés à ©
+          2025 H.Fukazu. Tous droits réservés.</p>
+        <p><strong>Strictement interdit</strong></p>
+        <ul>
+          <li>Utilisation, reproduction, modification ou réutilisation non autorisée</li>
+          <li>Républication ou redistribution partielle ou totale du code source</li>
+          <li>Utilisation à des fins commerciales</li>
+          <li>Création ou publication d'œuvres dérivées</li>
+        </ul>
+        <p>Cette œuvre est pleinement protégée par la législation sur le droit d'auteur.</p>
+      </section>
+      <section id="sec-it" class="readme-section" dir="ltr">
+        <div class="readme-flag">🇮🇹</div>
+        <h2 class="readme-lang-title">＜＜ Italiano (イタリア語) ＞＞</h2>
+        <p>Questa app è stata creata da <strong>H.Fukazu</strong>.</p>
+        <p><strong>Copyright e condizioni d'uso</strong><br>Il copyright di quest'opera appartiene a © 2025 H.Fukazu.
+          All Rights Reserved.</p>
+        <p><strong>Divieti assoluti</strong></p>
+        <ul>
+          <li>Uso, copia, modifica o riutilizzo non autorizzati</li>
+          <li>Ripubblicazione o ridistribuzione non autorizzata del codice sorgente</li>
+          <li>Uso a scopo commerciale vietato</li>
+          <li>Creazione e pubblicazione di opere derivate vietate</li>
+        </ul>
+        <p>Quest'opera è protetta al massimo dalla legge sul copyright.</p>
+      </section>
+      <section id="sec-de" class="readme-section" dir="ltr">
+        <div class="readme-flag">🇩🇪</div>
+        <h2 class="readme-lang-title">＜＜ Deutsch (ドイツ語) ＞＞</h2>
+        <p>Diese App wurde von <strong>H.Fukazu</strong> entwickelt.</p>
+        <p><strong>Urheberrecht und Nutzungsbedingungen</strong><br>Das Urheberrecht liegt bei © 2025 H.Fukazu. All
+          Rights Reserved.</p>
+        <p><strong>Streng verboten</strong></p>
+        <ul>
+          <li>Unerlaubte Verwendung, Vervielfältigung, Änderung oder Weiterverwendung</li>
+          <li>Unerlaubte Veröffentlichung oder Weitergabe des Quellcodes</li>
+          <li>Kommerzielle Nutzung verboten</li>
+          <li>Erstellung und Veröffentlichung abgeleiteter Werke verboten</li>
+        </ul>
+        <p>Dieses Werk ist durch das Urheberrecht maximal geschützt.</p>
+      </section>
+      <section id="sec-uk" class="readme-section" dir="ltr">
+        <div class="readme-flag">🇺🇦</div>
+        <h2 class="readme-lang-title">＜＜ Українська (ウクライナ語) ＞＞</h2>
+        <p>Цей додаток створено <strong>H.Fukazu</strong>.</p>
+        <p><strong>Авторське право та умови використання</strong><br>Авторські права належать © 2025 H.Fukazu. All
+          Rights Reserved.</p>
+        <p><strong>Строго заборонено</strong></p>
+        <ul>
+          <li>Несанкціоноване використання, копіювання, модифікацію або повторне використання</li>
+          <li>Публікацію або повторне розповсюдження вихідного коду без дозволу</li>
+          <li>Використання з комерційною метою заборонено</li>
+          <li>Створення та публікація похідних творів також заборонені</li>
+        </ul>
+        <p>Цей твір максимально захищено законом про авторське право.</p>
+      </section>
+      <section id="sec-hi" class="readme-section" dir="ltr">
+        <div class="readme-flag">🇮🇳</div>
+        <h2 class="readme-lang-title">＜＜ हिन्दी (ヒンディー語) ＞＞</h2>
+        <p>यह ऐप <strong>H.Fukazu</strong> द्वारा बनाया गया है।</p>
+        <p><strong>कॉपीराइट और उपयोग की शर्तें</strong><br>इस रचना का कॉपीराइट © 2025 H.Fukazu के पास है। All Rights
+          Reserved.</p>
+        <p><strong>कड़ाई से निषिद्ध</strong></p>
+        <ul>
+          <li>अनधिकृत उपयोग, प्रतिलिपि, संशोधन या पुनः उपयोग</li>
+          <li>स्रोत कोड का अनधिकृत पुनः प्रकाशन या पुनः वितरण</li>
+          <li>व्यावसायिक उद्देश्य के लिए उपयोग निषिद्ध</li>
+          <li>व्युत्पन्न कार्यों का निर्माण और प्रकाशन निषिद्ध</li>
+        </ul>
+        <p>यह रचना कॉपीराइट कानून द्वारा पूरी तरह से संरक्षित है।</p>
+      </section>
+      <section id="sec-ar" class="readme-section" dir="rtl">
+        <div class="readme-flag">🇸🇦</div>
+        <h2 class="readme-lang-title">＜＜ العربية (アラビア語) ＞＞</h2>
+        <p>تم إنشاء هذا التطبيق بواسطة <strong>H.Fukazu</strong>.</p>
+        <p><strong>حقوق النشر وشروط الاستخدام</strong><br>حقوق النشر لهذا العمل تعود إلى © 2025 H.Fukazu. All Rights
+          Reserved.</p>
+        <p><strong>المحظورات الصارمة</strong></p>
+        <ul>
+          <li>الاستخدام أو النسخ أو التعديل أو إعادة الاستخدام بدون إذن</li>
+          <li>إعادة نشر أو توزيع الشيفرة المصدرية بدون إذن</li>
+          <li>الاستخدام لأغراض تجارية ممنوع</li>
+          <li>إنشاء ونشر أعمال مشتقة ممنوع</li>
+        </ul>
+        <p>هذا العمل محمي بأقصى درجة بموجب قانون حقوق النشر.</p>
+      </section>
+      <section id="sec-ru" class="readme-section" dir="ltr">
+        <div class="readme-flag">🇷🇺</div>
+        <h2 class="readme-lang-title">＜＜ Русский (ロシア語) ＞＞</h2>
+        <p>Это приложение было создано <strong>H.Fukazu</strong>.</p>
+        <p><strong>Авторские права и условия использования</strong><br>Авторские права принадлежат © 2025 H.Fukazu. All
+          Rights Reserved.</p>
+        <p><strong>Строго запрещено</strong></p>
+        <ul>
+          <li>Несанкционированное использование, копирование, изменение или повторное использование</li>
+          <li>Публикация или распространение исходного кода без разрешения</li>
+          <li>Использование в коммерческих целях запрещено</li>
+          <li>Создание и публикация производных работ запрещены</li>
+        </ul>
+        <p>Данная работа максимально защищена законом об авторском праве.</p>
+      </section>
+      <section id="sec-id" class="readme-section" dir="ltr">
+        <div class="readme-flag">🇮🇩</div>
+        <h2 class="readme-lang-title">＜＜ Bahasa Indonesia (インドネシア語) ＞＞</h2>
+        <p>Aplikasi ini dibuat oleh <strong>H.Fukazu</strong>.</p>
+        <p><strong>Hak Cipta dan Ketentuan Penggunaan</strong><br>Hak cipta dimiliki oleh © 2025 H.Fukazu. All Rights
+          Reserved.</p>
+        <p><strong>Larangan Keras</strong></p>
+        <ul>
+          <li>Penggunaan, penyalinan, modifikasi, atau penggunaan ulang tanpa izin</li>
+          <li>Publikasi atau distribusi ulang kode sumber tanpa izin</li>
+          <li>Penggunaan untuk tujuan komersial dilarang</li>
+          <li>Pembuatan dan publikasi karya turunan juga dilarang</li>
+        </ul>
+        <p>Karya ini dilindungi secara maksimal oleh undang-undang hak cipta.</p>
+      </section>
+      <section id="sec-zh" class="readme-section" dir="ltr">
+        <div class="readme-flag">🇨🇳</div>
+        <h2 class="readme-lang-title">＜＜ 中文 (中国語) ＞＞</h2>
+        <p>本应用由 <strong>H.Fukazu</strong> 制作。</p>
+        <p><strong>版权与使用条款</strong><br>本作品的版权归 © 2025 H.Fukazu 所有。All Rights Reserved.</p>
+        <p><strong>严禁事项</strong></p>
+        <ul>
+          <li>禁止擅自转载、复制、修改、二次使用</li>
+          <li>禁止未经授权转载或再分发源代码</li>
+          <li>禁止用于商业目的</li>
+          <li>禁止基于本作品创作并发布衍生作品</li>
+        </ul>
+        <p>本作品受到版权法的最大保护。</p>
+      </section>
+      <section id="sec-ko" class="readme-section" dir="ltr">
+        <div class="readme-flag">🇰🇷</div>
+        <h2 class="readme-lang-title">＜＜ 한국어 (韓国語) ＞＞</h2>
+        <p>이 앱은 <strong>H.Fukazu</strong>에 의해 제작되었습니다.</p>
+        <p><strong>저작권 및 이용 약관</strong><br>본 작품의 저작권은 © 2025 H.Fukazu에게 있습니다. All Rights Reserved.</p>
+        <p><strong>금지 사항</strong></p>
+        <ul>
+          <li>무단 전용, 복제, 수정, 2차 사용 금지</li>
+          <li>소스 코드의 무단 게시 및 재배포 금지</li>
+          <li>상업적 목적의 사용 금지</li>
+          <li>본 작품을 기반으로 한 2차 창작 및 공개 금지</li>
+        </ul>
+        <p>본 작품은 저작권법에 의해 최대한 보호받습니다.</p>
+      </section>
+      <section id="sec-tr" class="readme-section" dir="ltr">
+        <div class="readme-flag">🇹🇷</div>
+        <h2 class="readme-lang-title">＜＜ Türkçe (トルコ語) ＞＞</h2>
+        <p>Bu uygulama <strong>H.Fukazu</strong> tarafından oluşturulmuştur.</p>
+        <p><strong>Telif Hakkı ve Kullanım Koşulları</strong><br>Bu eserin telif hakkı © 2025 H.Fukazu'ya aittir. Tüm
+          Hakları Saklıdır.</p>
+        <p><strong>Kesinlikle Yasaktır</strong></p>
+        <ul>
+          <li>İzinsiz kullanım, kopyalama, değiştirme veya ikincil kullanım</li>
+          <li>Kaynak kodunun izinsiz olarak yeniden yayımlanması veya dağıtılması</li>
+          <li>Ticari amaçlarla kullanılması yasaktır</li>
+          <li>Türev eserlerin oluşturulması ve yayımlanması yasaktır</li>
+        </ul>
+        <p>Bu eser telif hakkı yasaları ile maksimum düzeyde korunmaktadır.</p>
+      </section>
+    </div>
+    <button type="button" id="readmeScrollToTopBtn" class="scroll-to-top-btn" onclick="scrollToTopReadme()"
+      data-i18n="back_to_top" style="z-index: 9050;">↑ TOPへ</button>
+  </div>
+  <svg id="readmeHoldRing" viewBox="0 0 60 60">
+    <circle cx="30" cy="30" r="26" id="readmeRingCircle" />
+  </svg>
+  <p id="readmeHoldHint"></p>
+  <!-- ダミー画面 (囮パスワード用デジタル時計) -->
+  <div id="decoyScreen" style="display:none;">
+    <h1 class="fkz decoy-title anim-title-rise">Time Regulus</h1>
+    <br>
+    <div class="decoy-clock-wrap anim-slow-fade">
+      <div class="decoy-date" id="decoyDate">----年--月--日</div>
+      <div class="decoy-time" id="decoyTime">--:--:--.--</div>
+    </div>
+
+    <!-- カウントダウンタイマー -->
+    <div class="decoy-timer-container anim-slow-fade">
+      <div class="decoy-timer-top">
+        <div id="decoyCountdown" class="decoy-countdown" style="visibility: hidden;">00:00.0</div>
+        <button id="decoyPauseBtn" class="decoy-pause-btn" style="visibility: hidden;"
+          onclick="toggleDecoyTimer()">❚❚</button>
+      </div>
+      <div class="decoy-timer-buttons">
+        <button onclick="startDecoyTimer(1)">1分</button>
+        <button onclick="startDecoyTimer(3)">3分</button>
+        <button onclick="startDecoyTimer(5)">5分</button>
+      </div>
+      <div class="decoy-timer-cancel">
+        <button onclick="cancelDecoyTimer()">解除</button>
+      </div>
+    </div>
+
+    <!-- 普段から画面最下部に控えめに表示される固定ガイド -->
+    <div class="decoy-bottom-guide" id="decoyBottomGuide" data-i18n="hold_to_return">長押しで戻る</div>
+
+    <p class="decoy-hint" id="decoyHint"></p>
+    <!-- 長押しプログレスリング -->
+    <svg id="decoyHoldRing" viewBox="0 0 60 60">
+      <circle cx="30" cy="30" r="26" id="decoyRingCircle" />
+    </svg>
+  </div>
+
+  <!-- 第2のおとり画面 (view_lock_screen) -->
+  <div id="viewLockScreen" style="display:none;">
+    <!-- ネオン時計 -->
+    <div class="view-lock-clock-wrap" style="flex-direction: column;">
+      <div id="viewLockDate" class="view-lock-date" style="display:none;"></div>
+      <div id="viewLockClock" class="view-lock-clock">--:--:--</div>
+    </div>
+
+    <!-- 長押しプログレスリング -->
+    <svg id="viewLockHoldRing" class="hold-ring" viewBox="0 0 60 60">
+      <circle cx="30" cy="30" r="26" id="viewLockRingCircle" />
+    </svg>
+  </div>
+
+  <!-- アナログ時計隠し画面 (analogLockScreen) -->
+  <div id="analogLockScreen" style="display:none;" class="analog-lock-screen info-state-0">
+    <div id="analogInfoContainer" class="analog-info-container">
+      <div id="analogDigitalClock" class="analog-digital-clock">00:00</div>
+      <div id="analogCalendarViewport" class="analog-calendar-viewport">
+        <div id="analogCalendarRail" class="analog-calendar-rail"></div>
+      </div>
+    </div>
+    <div class="analog-swipe-container" id="analogSwipeContainer">
+      <!-- 1. Regulus Core -->
+      <div class="analog-page">
+        <div class="clock-regulus">
+          <div class="clock-face" id="regulusFace">
+            <!-- JavaScriptで星の目盛りを動的に生成します -->
+            <div class="clock-hand hour-hand" id="regulusHour"></div>
+            <div class="clock-hand minute-hand" id="regulusMinute"></div>
+            <div class="clock-hand second-hand sweep-tail" id="regulusSecond"></div>
+            <div class="clock-center"></div>
+          </div>
+        </div>
+      </div>
+      <!-- 2. Neon Radar -->
+      <div class="analog-page">
+        <div class="clock-radar">
+          <div class="radar-grid"></div>
+          <div class="clock-face" id="radarFace">
+            <div class="clock-hand hour-hand" id="radarHour"></div>
+            <div class="clock-hand minute-hand" id="radarMinute"></div>
+            <div class="clock-hand second-hand sweep-radar" id="radarSecond"></div>
+            <div class="clock-center"></div>
+          </div>
+        </div>
+      </div>
+      <!-- 3. Eclipse -->
+      <div class="analog-page">
+        <div class="clock-eclipse">
+          <div class="clock-face" id="eclipseFace">
+            <div class="clock-hand hour-hand" id="eclipseHour"></div>
+            <div class="clock-hand minute-hand" id="eclipseMinute"></div>
+            <div class="clock-hand second-hand sweep-corona" id="eclipseSecond"></div>
+            <svg class="eclipse-corona-svg" viewBox="0 0 300 300">
+              <defs>
+                <filter id="coronaBlur1" x="-50%" y="-50%" width="200%" height="200%">
+                  <feGaussianBlur stdDeviation="8" />
+                </filter>
+                <filter id="coronaBlur2" x="-50%" y="-50%" width="200%" height="200%">
+                  <feGaussianBlur stdDeviation="15" />
+                </filter>
+              </defs>
+              <path class="corona-layer corona-layer1" filter="url(#coronaBlur1)"></path>
+              <path class="corona-layer corona-layer2" filter="url(#coronaBlur2)"></path>
+            </svg>
+            <div class="eclipse-center"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="analog-pager" id="analogPager">
+      <span class="pager-dot active"></span>
+      <span class="pager-dot"></span>
+      <span class="pager-dot"></span>
+    </div>
+
+    <!-- 長押しプログレスリング -->
+    <svg id="analogHoldRing" class="hold-ring" viewBox="0 0 60 60">
+      <circle cx="30" cy="30" r="26" id="analogRingCircle" />
+    </svg>
+  </div>
+  <div id="modeSelect" class="regulus-mode-select-screen" style="display:none;">
+    <!-- 言語セレクター (右上) -->
+    <div class="mode-select-header-right">
+      <span style="font-size: 16px;">🌐</span>
+      <select class="lang-selector mode-lang-select" onchange="setLanguage(this.value)">
         <option value="ja">🇯🇵 JP 日本語</option>
         <option value="en">🇺🇸 EN English</option>
         <option value="nl">🇳🇱 NL Nederlands</option>
@@ -216,357 +561,913 @@
       </select>
     </div>
 
-    <h1 class="fkz">Time Regulus</h1>
-    <!-- 以下の本文はJavaScript無効時の表示用です。実際の表示内容は下の多言語辞書（i18n_news）で管理しています -->
-    <p class="subtitle" data-i18n="subtitle">安全性に関するお知らせ (2026/10/31)</p>
-    
-    <p class="notice-header" data-i18n="notice_header">
-      ...Time Regulus...<br>＜安心してご利用いただけます＞
-    </p>
+    <!-- タイトルエリア (ヒロさんのこだわり: fkz rise-in-short 浮かび上がるアニメーション完全復元) -->
+    <div class="mode-select-title-area">
+      <h1 class="fkz rise-in-short mode-select-app-title" data-i18n="app_title">Time Regulus</h1>
+      <p class="mode-select-subtitle" data-i18n="select_mode">- モード選択 -</p>
+      <div id="updateNotification" style="display:none;"></div>
+    </div>
 
-    <div class="notice-box" data-i18n="notice_msg">
-      <p>…昨今、PHP等で作られたWebサービスへのサイバー攻撃による情報流出が社会問題となっていますが、Time Regulusにおける情報流出等はありません。安心してご利用ください。</p>
-      <p>その理由は次のとおりです。</p>
-      <ol class="reason-list">
-        <li><span class="reason-title">信頼できる場所から配信</span><span class="reason-body">Time Regulusのプログラムは、世界中の開発者が信頼する大手プラットフォーム「GitHub（ギットハブ）」に置かれています。通信はすべて暗号化（HTTPS）されているため、途中で内容を書き換えられたり、のぞき見られたりする心配もありません。</span></li>
-        <li><span class="reason-title">サーバーを使わない仕組み</span><span class="reason-body">情報流出の原因となりやすいサーバー側の処理（PHPやデータベース等）を一切使わず、お手元のブラウザの中だけで動作する仕組み（静的サイト）で作られています。</span></li>
-        <li><span class="reason-title">個人情報を入力しない（入力は数字のみ）</span><span class="reason-body">そもそも氏名やメールアドレス等の個人情報を入力する場面がなく、計算もすべてお手元の端末の中で完結するため、漏れて困るような情報を扱っていません。</span></li>
-        <li><span class="reason-title">ホーム画面に追加しても安全</span><span class="reason-body">『ホーム画面に追加』（『アプリをインストール』）は、ページを開くためのショートカットを、アプリのような見た目でホーム画面に置く機能です。中身はあくまでWebページのままで、ブラウザの安全な枠組みの中で動作するため、位置情報・連絡先・写真等へのアクセス許可を求めることはなく、ほかのアプリのデータを読み取ることもできません。</span></li>
-      </ol>
-      <p>簡単に言えば、「ホームページ上に置かれた電卓」で時間の計算をしているだけです。<br>これからも安心してTime Regulusをご利用ください。m(_ _)m … H.Fukazu<br><a href="https://fkz1977.github.io/Time-Regulus-2/" class="url-link">https://fkz1977.github.io/Time-Regulus-2/</a></p>
+    <!-- 宇宙・天体オービットステージ (ヒロさん仕様: 時計回り回転の楕円 ＆ 縦3つ並びの美しい惑星ボタン) -->
+    <div class="orbit-stage-container vertical-orbit-stage">
+      <!-- 天体軌道リングSVG (ヒロさん仕様: ボタンに隠れないよう拡大 & 2つの楕円を美しく展開) -->
+      <svg class="orbit-ring-svg" viewBox="0 0 460 380">
+        <defs>
+          <linearGradient id="orbitGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#00ffe0" stop-opacity="0.95" />
+            <stop offset="45%" stop-color="#0088ff" stop-opacity="0.45" />
+            <stop offset="100%" stop-color="#ff00aa" stop-opacity="0.85" />
+          </linearGradient>
+          <filter id="orbitGlow" x="-20%" y="-20%" width="140%" height="140%">
+            <feGaussianBlur stdDeviation="3.5" result="glow" />
+            <feMerge>
+              <feMergeNode in="glow" />
+              <feMergeNode in="SourceGraphic" />
+            </feMerge>
+          </filter>
+        </defs>
+        <!-- メイン軌道楕円 (拡大 & 傾き固定 & 点線のみ時計回り) -->
+        <ellipse cx="230" cy="190" rx="195" ry="130" class="orbit-ellipse-line" filter="url(#orbitGlow)"
+          transform="rotate(-15 230 190)" pathLength="980" />
+        <!-- サブ交差軌道楕円 (逆斜めの細い線・拡大 & 立体感強調) -->
+        <ellipse cx="230" cy="190" rx="185" ry="115" class="orbit-ellipse-sub" transform="rotate(30 230 190)" />
+      </svg>
+
+      <!-- 縦に3つ並ぶ惑星ボタン群 (揺らぎアニメーション & 水鏡反射付き) -->
+      <div class="orbit-vertical-buttons">
+        <!-- 1. 誤差の計算 -->
+        <div class="orbit-btn-wrapper-vert vert-delay-1">
+          <button type="button" class="orbit-planet-btn btn-vert-card btn-calc-error"
+            onclick="triggerModeTransition('error', showErrorMode)" tabindex="3">
+            <span class="planet-btn-glow"></span>
+            <span class="planet-btn-text" data-i18n="calc_error">誤差の計算</span>
+          </button>
+          <div class="planet-btn-reflection"></div>
+        </div>
+
+        <!-- 2. 補正時刻の計算 -->
+        <div class="orbit-btn-wrapper-vert vert-delay-2">
+          <button type="button" class="orbit-planet-btn btn-vert-card btn-calc-correction"
+            onclick="triggerModeTransition('correction', showCorrectionMode)" tabindex="4">
+            <span class="planet-btn-glow"></span>
+            <span class="planet-btn-text" data-i18n="calc_correction">補正時刻の計算</span>
+          </button>
+          <div class="planet-btn-reflection"></div>
+        </div>
+
+        <!-- 3. マルチ電卓 -->
+        <div class="orbit-btn-wrapper-vert vert-delay-3">
+          <button type="button" class="orbit-planet-btn btn-vert-card btn-calc-multi"
+            onclick="triggerModeTransition('multi', showTimeCalcMode)" tabindex="5">
+            <span class="planet-btn-glow"></span>
+            <span class="planet-btn-text" data-i18n="time_calculator_etc">マルチ電卓</span>
+          </button>
+          <div class="planet-btn-reflection"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 下部アクション: 入力情報のリセット -->
+    <div class="mode-select-footer-area">
+      <a href="#" onclick="showResetConfirmation(); return false;" id="resetLink" class="neon-reset-link"
+        data-i18n="reset_inputs_link">入力情報のリセット</a>
+      <div id="resetConfirmContainer" style="display:none; margin-top: 15px;">
+        <button class="action-btn" onclick="resetAppAndReturnToLock()"
+          style="background-color: var(--toggle-bg); box-shadow: 0 4px 12px rgba(255, 0, 170, 0.3); font-size: 14px; padding: 10px 20px;"
+          data-i18n="reset_inputs_btn">入力情報を消去して初期画面に戻ります</button>
+      </div>
+    </div>
+  </div>
+  <div id="errorMode" class="mode-card" style="display:none;">
+    <button class="back-btn" onclick="backToModeSelect()" data-i18n="back_mode_select">← モード選択に戻る</button>
+    <h2 data-i18n="calc_error">誤差の計算</h2>
+    <div class="helper-toggle-wrapper">
+      <div style="display: flex; align-items: center; gap: 12px;">
+        <span class="helper-toggle-label" data-i18n="input_helper">入力補助</span>
+        <label class="switch-container">
+          <input type="checkbox" id="inputHelperToggleError" onchange="toggleInputHelper(this.checked)">
+          <span class="switch-slider"></span>
+        </label>
+      </div>
+      <div style="display: flex; align-items: center; gap: 12px;">
+        <span class="helper-toggle-label" data-i18n="include_date">年月日も計算</span>
+        <label class="switch-container">
+          <input type="checkbox" id="includeDateToggle" onchange="toggleIncludeDate(this.checked)">
+          <span class="switch-slider"></span>
+        </label>
+      </div>
+    </div>
+    <div id="errorModeDisplayInputGroup" class="input-group date-omitted">
+      <label data-i18n="display_time">表示時刻：</label>
+      <div class="datetime-row">
+        <!-- 【入力補助 ON 時の 日付カレンダー入力欄】 -->
+        <div class="date-input-wrapper input-helper-on" style="display: none;" id="displayDateWrapper">
+          <input type="date" id="displayDate" placeholder="yyyy/mm/dd">
+          <span class="date-placeholder-guide">yyyy / mm / dd</span>
+        </div>
+        <!-- 【入力補助 OFF 時の 直接日付テンキー入力欄】 -->
+        <div class="direct-group direct-group-date input-helper-off" id="displayDateGroup_direct"
+          style="display: none;">
+          <input type="tel" id="displayYear_direct" placeholder="yyyy" maxlength="4" class="direct-year">
+          <span class="delimiter">/</span>
+          <input type="tel" id="displayMonth_direct" placeholder="mm" maxlength="2" class="direct-two">
+          <span class="delimiter">/</span>
+          <input type="tel" id="displayDay_direct" placeholder="dd" maxlength="2" class="direct-two">
+        </div>
+        <!-- 【共通の時刻入力欄 (常にテンキー用直接入力枠を表示 - 三分割均等幅)】 -->
+        <div class="direct-capsule-wrapper" style="flex: 1.8; display: flex; align-items: center; gap: 4px;">
+          <div class="direct-group" style="flex: 1; justify-content: center; height: 38px !important;">
+            <input type="tel" id="displayHour_direct" placeholder="hh" maxlength="2" class="direct-two"
+              style="text-align: center;">
+          </div>
+          <span class="direct-colon" style="margin: 0 2px;">:</span>
+          <div class="direct-group" style="flex: 1; justify-content: center; height: 38px !important;">
+            <input type="tel" id="displayMin_direct" placeholder="mm" maxlength="2" class="direct-two"
+              style="text-align: center;">
+          </div>
+          <span class="direct-colon" style="margin: 0 2px;">:</span>
+          <div class="direct-group" style="flex: 1; justify-content: center; height: 38px !important;">
+            <input type="tel" id="displaySec_direct" placeholder="ss" maxlength="2" class="direct-two"
+              style="text-align: center;">
+          </div>
+        </div>
+      </div>
+      <div id="displayWarning"
+        style="color: #FFFF00; font-size: 14px; font-weight: bold; position: absolute; bottom: -22px; left: 0; width: 100%; text-align: center; visibility: hidden; pointer-events: none;">
+      </div>
+    </div>
+    <div id="swap-button-wrapper" style="text-align: center; margin: 10px 0; position: relative;">
+      <button id="swapButton" class="action-btn toggle-btn swap-btn" onclick="swapErrorModeInputs()">🔃</button>
+    </div>
+    <div id="errorModeStandardInputGroup" class="input-group date-omitted">
+      <div id="realTimeCheckboxRow" class="real-time-toggle-dynamic"
+        style="display: none; position: absolute; top: -6px; right: 0; z-index: 5; align-items: center; justify-content: flex-end; white-space: nowrap;">
+        <span class="helper-toggle-label" data-i18n="real_time"
+          style="font-size: 13px; margin-right: 6px; color: var(--accent); letter-spacing: 0.5px;">Real Time</span>
+        <label class="switch-container"
+          style="position: relative !important; top: auto !important; left: auto !important; width: 50px !important; height: 28px !important; line-height: normal !important; transform: none !important; pointer-events: auto !important; margin: 0 !important;">
+          <input type="checkbox" id="realTimeCheckbox" onchange="toggleRealTime(this.checked)">
+          <span class="switch-slider"></span>
+        </label>
+      </div>
+      <label data-i18n="standard_time">標準時刻：</label>
+      <button class="action-btn" id="standardNowButton" onclick="setNowToStandard()" style="margin-left: 8px;"
+        data-i18n="now">NOW🔄</button>
+      <div class="datetime-row">
+        <!-- 【入力補助 ON 時の 日付カレンダー入力欄】 -->
+        <div class="date-input-wrapper input-helper-on" style="display: none;" id="standardDateWrapper">
+          <input type="date" id="standardDate" placeholder="yyyy/mm/dd">
+          <span class="date-placeholder-guide">yyyy / mm / dd</span>
+        </div>
+        <!-- 【入力補助 OFF 時の 直接日付テンキー入力欄】 -->
+        <div class="direct-group direct-group-date input-helper-off" id="standardDateGroup_direct"
+          style="display: none;">
+          <input type="tel" id="standardYear_direct" placeholder="yyyy" maxlength="4" class="direct-year">
+          <span class="delimiter">/</span>
+          <input type="tel" id="standardMonth_direct" placeholder="mm" maxlength="2" class="direct-two">
+          <span class="delimiter">/</span>
+          <input type="tel" id="standardDay_direct" placeholder="dd" maxlength="2" class="direct-two">
+        </div>
+        <!-- 【共通の時刻入力欄 (常にテンキー用直接入力枠を表示 - 三分割均等幅)】 -->
+        <div class="direct-capsule-wrapper" style="flex: 1.8; display: flex; align-items: center; gap: 4px;">
+          <div class="direct-group" style="flex: 1; justify-content: center; height: 38px !important;">
+            <input type="tel" id="standardHour_direct" placeholder="hh" maxlength="2" class="direct-two"
+              style="text-align: center;">
+          </div>
+          <span class="direct-colon" style="margin: 0 2px;">:</span>
+          <div class="direct-group" style="flex: 1; justify-content: center; height: 38px !important;">
+            <input type="tel" id="standardMin_direct" placeholder="mm" maxlength="2" class="direct-two"
+              style="text-align: center;">
+          </div>
+          <span class="direct-colon" style="margin: 0 2px;">:</span>
+          <div class="direct-group" style="flex: 1; justify-content: center; height: 38px !important;">
+            <input type="tel" id="standardSec_direct" placeholder="ss" maxlength="2" class="direct-two"
+              style="text-align: center;">
+          </div>
+        </div>
+      </div>
+      <div id="standardWarning"
+        style="color: #FFFF00; font-size: 14px; font-weight: bold; position: absolute; bottom: -22px; left: 0; width: 100%; text-align: center; visibility: hidden; pointer-events: none;">
+      </div>
+    </div>
+    <div class="result-box" id="result"></div>
+    <div style="text-align: right;">
+      <div id="toReverseButton" onclick="switchToCorrectionMode()" class="to-reverse-link" style="display: none;"
+        data-i18n="calc_correction_arrow">
+        補正時刻を計算→
+      </div>
+    </div>
+  </div>
+  <div id="correctionMode" class="mode-card deep-green" style="display:none;">
+    <button class="back-btn" onclick="backToModeSelect()" tabindex="12" data-i18n="back_mode_select">← モード選択に戻る</button>
+    <h2 data-i18n="calc_correction">補正時刻の計算</h2>
+    <div class="helper-toggle-wrapper">
+      <div style="display: flex; align-items: center; gap: 12px;">
+        <span class="helper-toggle-label" data-i18n="input_helper">入力補助</span>
+        <label class="switch-container">
+          <input type="checkbox" id="inputHelperToggleCorrection" onchange="toggleInputHelper(this.checked)">
+          <span class="switch-slider"></span>
+        </label>
+      </div>
+    </div>
+    <label data-i18n="error_for_correction">補正に使う誤差：</label>
+    <!-- ON/OFF切り替え用日数と、共通時分秒 -->
+    <div class="flex-wrap" style="align-items: center !important; overflow: visible !important; padding: 4px 2px;">
+      <!-- 【入力補助 ON 時の日数入力欄】 -->
+      <div class="unit-input input-helper-on error-days-wrapper"
+        style="display: none; align-items: center !important; overflow: visible !important; padding: 4px 2px; margin-left: 2px;">
+        <div class="direct-group-error-days">
+          <input type="number" id="errorDays" min="0" step="1" placeholder="d" tabindex="13" inputmode="none"
+            pattern="[0-9]*">
+        </div>
+        <span class="unit-label" data-i18n="days_unit"
+          style="margin-left: 4px; margin-right: 4px; white-space: nowrap; flex-shrink: 0;">日</span>
+      </div>
+      <!-- 【入力補助 OFF 時の日数入力欄】 -->
+      <div class="unit-input input-helper-off error-days-wrapper"
+        style="align-items: center !important; overflow: visible !important; padding: 4px 2px; margin-left: 2px;">
+        <div class="direct-group-error-days">
+          <input type="tel" id="errorDays_direct" placeholder="d" tabindex="13" inputmode="none" pattern="[0-9]*"
+            class="direct-error-val">
+        </div>
+        <span class="unit-label" data-i18n="days_unit"
+          style="margin-left: 4px; margin-right: 4px; white-space: nowrap; flex-shrink: 0;">日</span>
+      </div>
+      <!-- 【共通の時分秒入力欄 (常にテンキー用直接入力枠を表示 - 三分割均等幅)】 -->
+      <div class="unit-capsule-wrapper" style="flex: none; width: auto; display: flex; align-items: center; gap: 2px;">
+        <div class="direct-group-error-time" id="errorHoursGroup_direct"
+          style="width: 34px !important; min-width: 32px !important; justify-content: center; height: 32px !important; border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 6px; background-color: #1f1f2f; display: flex; align-items: center;">
+          <input type="tel" id="errorHours_direct" placeholder="hh" maxlength="2" tabindex="14"
+            style="text-align: center; background: transparent; border: none; color: var(--text-main); width: 100%; outline: none; height: 100%;">
+        </div>
+        <span class="direct-colon" style="margin: 0 1px;">:</span>
+        <div class="direct-group-error-time" id="errorMinutesGroup_direct"
+          style="width: 34px !important; min-width: 32px !important; justify-content: center; height: 32px !important; border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 6px; background-color: #1f1f2f; display: flex; align-items: center;">
+          <input type="tel" id="errorMinutes_direct" placeholder="mm" maxlength="2" tabindex="15"
+            style="text-align: center; background: transparent; border: none; color: var(--text-main); width: 100%; outline: none; height: 100%;">
+        </div>
+        <span class="direct-colon" style="margin: 0 1px;">:</span>
+        <div class="direct-group-error-time" id="errorSecondsGroup_direct"
+          style="width: 34px !important; min-width: 32px !important; justify-content: center; height: 32px !important; border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 6px; background-color: #1f1f2f; display: flex; align-items: center;">
+          <input type="tel" id="errorSeconds_direct" placeholder="ss" maxlength="2" tabindex="16"
+            class="direct-error-val error-sec-direct"
+            style="text-align: center; background: transparent; border: none; color: var(--text-main); width: 100%; outline: none; height: 100%;">
+        </div>
+      </div>
+      <span class="unit-label" data-i18n="hms_unit">時分秒</span>
+    </div>
+    <div class="input-group input-group-direction">
+      <label data-i18n="display_time_is">表示時刻は標準時刻より：</label>
+      <select id="errorDirection" style="display: none;">
+        <option value="late" data-i18n="fast">進んでいる</option>
+        <option value="early" data-i18n="slow">遅れている</option>
+      </select>
+      <div class="segmented-control" id="errorDirectionToggleContainer">
+        <button type="button" class="segment-btn active-late" id="btnLate" onclick="toggleDirection()" tabindex="17"
+          data-i18n="fast">進んでいる</button>
+        <button type="button" class="segment-btn" id="btnEarly" onclick="toggleDirection()"
+          data-i18n="slow">遅れている</button>
+      </div>
+    </div>
+    <br>
+    <!-- 横長スワップボタンの独立配置コンテナ -->
+    <div style="text-align: center; margin: 0 auto 12px auto; width: 100%; max-width: 310px;">
+      <button class="action-btn toggle-btn active-toggle" id="reverseModeToggleBtn" onclick="toggleReverseMode()">
+        <span class="swap-text-container">
+          <span class="swap-text-left" id="swapTextLeft" data-i18n="find_correction">補正時刻を求める</span>
+          <span class="swap-arrow">⇆</span>
+          <span class="swap-text-right" id="swapTextRight" data-i18n="find_display">表示時刻を求める</span>
+        </span>
+      </button>
+    </div>
+    <!-- 年月日も計算トグルの独立配置・左寄せコンテナ -->
+    <div class="helper-toggle-wrapper correction-date-toggle-wrapper">
+      <span class="helper-toggle-label" style="font-size: 14px !important;" data-i18n="include_date">年月日も計算</span>
+      <label class="switch-container">
+        <input type="checkbox" id="includeDateToggleCorrection" onchange="toggleIncludeDateCorrection(this.checked)">
+        <span class="switch-slider"></span>
+      </label>
+    </div>
+    <div id="reverseTimeBlock" class="input-group">
+      <label id="reverseTimeLabel" for="reverseDisplayHour_direct" data-i18n="display_time">表示時刻:</label>
+      <!-- ON/OFF切り替え用日付と、共通時分秒 -->
+      <div class="datetime-direct-row" style="height: 38px !important; display: flex; align-items: center !important;">
+        <!-- 【入力補助 ON 時の 日付カレンダー入力欄】 -->
+        <div class="date-input-wrapper input-helper-on" style="display: none;" id="reverseDisplayDateWrapper"
+          tabindex="18">
+          <input type="date" id="reverseDisplayDate" placeholder="yyyy/mm/dd">
+          <span class="date-placeholder-guide">yyyy / mm / dd</span>
+        </div>
+        <!-- 【入力補助 OFF 時の 直接日付テンキー入力欄】 -->
+        <div class="direct-group direct-group-date input-helper-off" id="reverseDisplayDateGroup_direct"
+          style="display: none;">
+          <input type="tel" id="reverseDisplayYear_direct" placeholder="yyyy" maxlength="4" class="direct-year"
+            tabindex="18">
+          <span class="delimiter">/</span>
+          <input type="tel" id="reverseDisplayMonth_direct" placeholder="mm" maxlength="2" class="direct-two"
+            tabindex="19">
+          <span class="delimiter">/</span>
+          <input type="tel" id="reverseDisplayDay_direct" placeholder="dd" maxlength="2" class="direct-two"
+            tabindex="20">
+        </div>
+        <!-- 【共通の時刻入力欄 (常にテンキー用直接入力枠を表示 - 三分割均等幅)】 -->
+        <div class="direct-capsule-wrapper" style="flex: 1.8; display: flex; align-items: center; gap: 4px;">
+          <div class="direct-group" style="flex: 1; justify-content: center; height: 38px !important;">
+            <input type="tel" id="reverseDisplayHour_direct" placeholder="hh" maxlength="2" class="direct-two"
+              tabindex="21" style="text-align: center;">
+          </div>
+          <span class="direct-colon" style="margin: 0 2px;">:</span>
+          <div class="direct-group" style="flex: 1; justify-content: center; height: 38px !important;">
+            <input type="tel" id="reverseDisplayMin_direct" placeholder="mm" maxlength="2" class="direct-two"
+              tabindex="22" style="text-align: center;">
+          </div>
+          <span class="direct-colon" style="margin: 0 2px;">:</span>
+          <div class="direct-group" style="flex: 1; justify-content: center; height: 38px !important;">
+            <input type="tel" id="reverseDisplaySec_direct" placeholder="ss" maxlength="2" class="direct-two"
+              tabindex="23" style="text-align: center;">
+          </div>
+        </div>
+      </div>
+      <div id="correctionWarning"
+        style="color: #e6c300; font-size: 13px; font-weight: bold; position: absolute; bottom: -22px; left: 0; width: 100%; text-align: center; visibility: hidden; pointer-events: none;">
+      </div>
+    </div>
+    <div id="reverseResult" class="result-box"></div>
+    <div style="display: flex; flex-direction: column; align-items: center; margin-top: 10px;">
+      <button class="action-btn" id="addToListButton" onclick="addResultToList()"
+        data-i18n="record_to_list">結果一覧に記録する</button>
+    </div>
+    <p id="showListLink" class="show-list-link" onclick="showResultList()"
+      style="display:none; text-align: right; margin-top: 20px;" tabindex="-1" data-i18n="show_list_arrow">結果一覧を表示 →</p>
+    <br>
+  </div>
+  <div id="resultListPage" style="display:none; padding: 20px 16px;">
+    <button class="back-btn" onclick="backToCorrectionMode()" data-i18n="back_to_correction">← 補正時刻の計算に戻る</button>
+    <h1 class="fkz" style="margin-top: 4px;" data-i18n="result_list">結果一覧</h1>
+    <p class="result-list-guide" style="text-align: center;" data-i18n="double_tap_to_restore">💡 ダブルタップで復元</p>
+    <div id="resultListContainer" style="margin-top: 10px;"></div>
+    <button type="button" id="scrollToTopBtn" class="scroll-to-top-btn" onclick="scrollToTopResultList()"
+      data-i18n="back_to_top">↑ TOPへ</button>
+  </div>
+  <!-- 電卓総合画面 (timeCalcMode) -->
+  <div id="timeCalcMode" class="mode-card time-calc-card" style="display:none;">
+    <div class="time-calc-topbar">
+      <button class="back-btn" onclick="backToModeSelect()" data-i18n="back_mode_select_right"
+        style="margin:0;">モード選択に戻る →</button>
+    </div>
+
+    <!-- 4連常設ナビゲーションタブ (💸 💱 🔢 ⏰) -->
+    <div class="calc-nav-tabs">
+      <!-- アクティブタブをスライドするグロー枠インジケーター -->
+      <div class="tab-slider" id="calcTabSlider"></div>
+      <button type="button" class="calc-nav-tab" id="calcTab_split" onclick="TimeCalc.setEngineMode('split')">
+        <span class="calc-nav-icon">💸</span>
+        <span class="calc-nav-text" data-i18n="split_calculator">割り勘</span>
+      </button>
+      <button type="button" class="calc-nav-tab" id="calcTab_currency" onclick="TimeCalc.setEngineMode('currency')">
+        <span class="calc-nav-icon">💱</span>
+        <span class="calc-nav-text" data-i18n="currency_calculator">レート</span>
+      </button>
+      <button type="button" class="calc-nav-tab" id="calcTab_precision" onclick="TimeCalc.setEngineMode('precision')">
+        <span class="calc-nav-icon">🔢</span>
+        <span class="calc-nav-text" data-i18n="standard_calculator">電卓</span>
+      </button>
+      <button type="button" class="calc-nav-tab active" id="calcTab_time" onclick="TimeCalc.setEngineMode('time')">
+        <span class="calc-nav-icon">⏰</span>
+        <span class="calc-nav-text" data-i18n="time_calculator">時間電卓</span>
+      </button>
+    </div>
+
+    <!-- 割り勘用入力セレクター (💸モード時のみ表示 & 多通貨対応) -->
+    <div id="splitControls" class="split-controls" style="display:none;">
+      <!-- 通貨選択行 (ヒロさん仕様: 日本円や米ドル・ユーロ等の外貨での割り勘に対応) -->
+      <div class="split-currency-row"
+        style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; padding: 2px 4px;">
+        <span
+          style="font-size: 12px; font-weight: bold; color: var(--accent); display: flex; align-items: center; gap: 4px;">
+          <span>💱</span> <span data-i18n="split_currency_label">通貨</span>:
+        </span>
+        <select id="splitCurrencySelect" class="currency-select"
+          style="width: auto; max-width: 230px; font-size: 12px; padding: 3px 8px; height: 28px; background: rgba(0, 255, 224, 0.08); border: 1px solid rgba(0, 255, 224, 0.4); border-radius: 6px; color: #fff;"
+          onchange="TimeCalc.onSplitCurrencyChange()">
+          <option value="JPY" selected>🇯🇵 日本 JPY (¥)</option>
+          <option value="USD">🇺🇸 米国 USD ($)</option>
+          <option value="EUR">🇪🇺 欧州 EUR (€)</option>
+          <option value="GBP">🇬🇧 英国 GBP (£)</option>
+          <option value="AUD">🇦🇺 豪州 AUD (A$)</option>
+          <option value="CAD">🇨🇦 加国 CAD (C$)</option>
+          <option value="CHF">🇨🇭 スイス CHF (Fr)</option>
+          <option value="CNY">🇨🇳 中国 CNY (¥)</option>
+          <option value="KRW">🇰🇷 韓国 KRW (₩)</option>
+          <option value="HKD">🇭🇰 香港 HKD (HK$)</option>
+          <option value="SGD">🇸🇬 シンガポール SGD (S$)</option>
+          <option value="TWD">🇹🇼 台湾 TWD (NT$)</option>
+          <option value="THB">🇹🇭 タイ THB (฿)</option>
+          <option value="TRY">🇹🇷 トルコ TRY (₺)</option>
+        </select>
+      </div>
+
+      <div style="display: flex; gap: 6px;">
+        <div id="splitFieldTotal" class="split-field-row active-field" style="flex: 1.3;"
+          onclick="TimeCalc.setSplitActiveField('total')">
+          <span class="split-field-label" data-i18n="split_total">総額</span>
+          <span id="splitValTotal" class="split-field-val">¥0</span>
+        </div>
+        <div id="splitFieldPeople" class="split-field-row" style="flex: 1;"
+          onclick="TimeCalc.setSplitActiveField('people')">
+          <span class="split-field-label" data-i18n="split_people">人数</span>
+          <span id="splitValPeople" class="split-field-val">2人</span>
+        </div>
+      </div>
+      <div class="split-round-pills" id="splitRoundPills">
+        <button type="button" class="split-pill" id="splitRound_1" onclick="TimeCalc.setSplitRounding(1)">1円</button>
+        <button type="button" class="split-pill" id="splitRound_10" onclick="TimeCalc.setSplitRounding(10)">10円</button>
+        <button type="button" class="split-pill" id="splitRound_100"
+          onclick="TimeCalc.setSplitRounding(100)">100円</button>
+        <button type="button" class="split-pill active" id="splitRound_1000"
+          onclick="TimeCalc.setSplitRounding(1000)">1000円</button>
+      </div>
+    </div>
+
+    <div id="currencyControls" class="currency-controls" style="display:none;">
+      <div class="currency-select-row">
+        <div id="currencyFromField" class="currency-field-label curr-drop-target active-field"
+          onclick="TimeCalc.setCurrencyActiveField('from')" title="タップで選択 / 長押しでリスト表示 / 通貨ボタンをここにドラッグ＆ドロップ">
+          <span class="currency-field-indicator">FROM <span
+              style="font-size: 8.5px; opacity: 0.65; font-weight: normal; letter-spacing: 0;">▼長押し</span></span>
+          <select id="currencyFromSelect" class="currency-select" onchange="TimeCalc.onCurrencyChange()">
+            <option value="USD" selected>🇺🇸 米国 USD (米ドル $)</option>
+            <option value="JPY">🇯🇵 日本 JPY (日本円 ¥)</option>
+            <option value="EUR">🇪🇺 欧州 EUR (ユーロ €)</option>
+            <option value="GBP">🇬🇧 英国 GBP (英ポンド £)</option>
+            <option value="AUD">🇦🇺 豪州 AUD (豪ドル A$)</option>
+            <option value="CAD">🇨🇦 加国 CAD (加ドル C$)</option>
+            <option value="CHF">🇨🇭 スイス CHF (フラン Fr)</option>
+            <option value="CNY">🇨🇳 中国 CNY (人民元 ¥)</option>
+            <option value="KRW">🇰🇷 韓国 KRW (ウォン ₩)</option>
+            <option value="HKD">🇭🇰 香港 HKD (香港ドル HK$)</option>
+            <option value="SGD">🇸🇬 シンガポール SGD (S$)</option>
+            <option value="TWD">🇹🇼 台湾 TWD (台湾ドル NT$)</option>
+            <option value="THB">🇹🇭 タイ THB (バーツ ฿)</option>
+            <option value="NZD">🇳🇿 NZ NZD (NZドル NZ$)</option>
+            <option value="INR">🇮🇳 インド INR (ルピー ₹)</option>
+            <option value="PHP">🇵🇭 比国 PHP (ペソ ₱)</option>
+            <option value="IDR">🇮🇩 インドネシア IDR (ルピア Rp)</option>
+            <option value="VND">🇻🇳 ベトナム VND (ドン ₫)</option>
+            <option value="MYR">🇲🇾 マレーシア MYR (リンギット RM)</option>
+            <option value="BRL">🇧🇷 ブラジル BRL (レアル R$)</option>
+            <option value="TRY">🇹🇷 トルコ TRY (リラ ₺)</option>
+          </select>
+        </div>
+        <button type="button" class="currency-swap-btn" onclick="TimeCalc.swapCurrencies()" title="通貨を入れ替え">⇄</button>
+        <div id="currencyToField" class="currency-field-label curr-drop-target"
+          onclick="TimeCalc.setCurrencyActiveField('to')" title="タップで選択 / 長押しでリスト表示 / 通貨ボタンをここにドラッグ＆ドロップ">
+          <span class="currency-field-indicator">TO <span
+              style="font-size: 8.5px; opacity: 0.65; font-weight: normal; letter-spacing: 0;">▼長押し</span></span>
+          <select id="currencyToSelect" class="currency-select" onchange="TimeCalc.onCurrencyChange()">
+            <option value="JPY" selected>🇯🇵 日本 JPY (日本円 ¥)</option>
+            <option value="USD">🇺🇸 米国 USD (米ドル $)</option>
+            <option value="EUR">🇪🇺 欧州 EUR (ユーロ €)</option>
+            <option value="GBP">🇬🇧 英国 GBP (英ポンド £)</option>
+            <option value="AUD">🇦🇺 豪州 AUD (豪ドル A$)</option>
+            <option value="CAD">🇨🇦 加国 CAD (加ドル C$)</option>
+            <option value="CHF">🇨🇭 スイス CHF (フラン Fr)</option>
+            <option value="CNY">🇨🇳 中国 CNY (人民元 ¥)</option>
+            <option value="KRW">🇰🇷 韓国 KRW (ウォン ₩)</option>
+            <option value="HKD">🇭🇰 香港 HKD (香港ドル HK$)</option>
+            <option value="SGD">🇸🇬 シンガポール SGD (S$)</option>
+            <option value="TWD">🇹🇼 台湾 TWD (台湾ドル NT$)</option>
+            <option value="THB">🇹🇭 タイ THB (バーツ ฿)</option>
+            <option value="NZD">🇳🇿 NZ NZD (NZドル NZ$)</option>
+            <option value="INR">🇮🇳 インド INR (ルピー ₹)</option>
+            <option value="PHP">🇵🇭 比国 PHP (ペソ ₱)</option>
+            <option value="IDR">🇮🇩 インドネシア IDR (ルピア Rp)</option>
+            <option value="VND">🇻🇳 ベトナム VND (ドン ₫)</option>
+            <option value="MYR">🇲🇾 マレーシア MYR (リンギット RM)</option>
+            <option value="BRL">🇧🇷 ブラジル BRL (レアル R$)</option>
+            <option value="TRY">🇹🇷 トルコ TRY (リラ ₺)</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- 電卓液晶風ディスプレイ -->
+    <div class="time-calc-screen">
+      <div class="time-calc-screen-top">
+        <span id="timeCalcMemIndicator" class="time-calc-indicator" style="visibility: hidden;">M</span>
+        <span id="timeCalcOpIndicator" class="time-calc-indicator time-calc-op-indicator" style="display:none;"></span>
+        <div id="timeCalcFormula" class="time-calc-formula"></div>
+      </div>
+      <div id="timeCalcMainDisplay" class="time-calc-main-display">00:00:00</div>
+      <div class="time-calc-screen-bottom">
+        <span id="timeCalcFormatBadge" class="time-calc-badge" onclick="TimeCalc.toggleFormatMode()">時分秒 ⇆
+          HH:MM:SS</span>
+        <div id="timeCalcSubDisplay" class="time-calc-sub-display">= 0.0000 h</div>
+      </div>
+      <!-- リアルタイム為替レート自動同期ステータスバー (ヒロさん仕様: ⚙レート表示の下に小さく配置) -->
+      <div id="timeCalcLiveRateStatus" class="time-calc-live-rate-bar" style="display:none;"></div>
+    </div>
+
+    <!-- 1. 時間電卓 & 電卓用キーパッド (5列) -->
+    <div id="keypadTime" class="time-calc-keypad">
+      <!-- 1行目 -->
+      <button type="button" id="calcKeyMC" class="calc-btn calc-btn-mem" onclick="TimeCalc.pressKey('MC')">MC</button>
+      <button type="button" id="calcKeyMR" class="calc-btn calc-btn-mem" onclick="TimeCalc.pressKey('MR')">MR</button>
+      <button type="button" id="calcKeyMM" class="calc-btn calc-btn-mem" onclick="TimeCalc.pressKey('M-')">M-</button>
+      <button type="button" id="calcKeyMP" class="calc-btn calc-btn-mem" onclick="TimeCalc.pressKey('M+')">M+</button>
+      <button type="button" id="calcKeyDel" class="calc-btn calc-btn-del" onclick="TimeCalc.pressKey('BS')">⌫</button>
+
+      <!-- 2行目 -->
+      <button type="button" id="calcKeyUnitH" class="calc-btn calc-btn-unit" onclick="TimeCalc.pressKey('UNIT_H')"
+        data-i18n="calc_unit_h">時間</button>
+      <button type="button" id="calcKeyUnitM" class="calc-btn calc-btn-unit" onclick="TimeCalc.pressKey('UNIT_M')"
+        data-i18n="calc_unit_m">分</button>
+      <button type="button" id="calcKeyUnitS" class="calc-btn calc-btn-unit" onclick="TimeCalc.pressKey('UNIT_S')"
+        data-i18n="calc_unit_s">秒</button>
+      <button type="button" id="calcKeyClear" class="calc-btn calc-btn-clear"
+        onclick="TimeCalc.pressKey('C')">C</button>
+      <button type="button" id="calcKeyAC" class="calc-btn calc-btn-allclear"
+        onclick="TimeCalc.pressKey('AC')">AC</button>
+
+      <!-- 3行目 -->
+      <button type="button" class="calc-btn calc-btn-num" onclick="TimeCalc.pressKey('7')">7</button>
+      <button type="button" class="calc-btn calc-btn-num" onclick="TimeCalc.pressKey('8')">8</button>
+      <button type="button" class="calc-btn calc-btn-num" onclick="TimeCalc.pressKey('9')">9</button>
+      <button type="button" id="calcKeyDiv" class="calc-btn calc-btn-op" onclick="TimeCalc.pressKey('/')">÷</button>
+      <button type="button" id="calcKeyMod" class="calc-btn calc-btn-op" onclick="TimeCalc.pressKey('%')">%</button>
+
+      <!-- 4行目 -->
+      <button type="button" class="calc-btn calc-btn-num" onclick="TimeCalc.pressKey('4')">4</button>
+      <button type="button" class="calc-btn calc-btn-num" onclick="TimeCalc.pressKey('5')">5</button>
+      <button type="button" class="calc-btn calc-btn-num" onclick="TimeCalc.pressKey('6')">6</button>
+      <button type="button" id="calcKeyMul" class="calc-btn calc-btn-op" onclick="TimeCalc.pressKey('*')">×</button>
+      <button type="button" id="calcKeyNeg" class="calc-btn calc-btn-op" onclick="TimeCalc.pressKey('NEG')">±</button>
+
+      <!-- 5行目 -->
+      <button type="button" class="calc-btn calc-btn-num" onclick="TimeCalc.pressKey('1')">1</button>
+      <button type="button" class="calc-btn calc-btn-num" onclick="TimeCalc.pressKey('2')">2</button>
+      <button type="button" class="calc-btn calc-btn-num" onclick="TimeCalc.pressKey('3')">3</button>
+      <button type="button" id="calcKeySub" class="calc-btn calc-btn-op" onclick="TimeCalc.pressKey('-')">−</button>
+      <button type="button" id="calcKeyColon" class="calc-btn calc-btn-unit" onclick="TimeCalc.pressKey(':')">:</button>
+
+      <!-- 6行目 -->
+      <button type="button" class="calc-btn calc-btn-num" onclick="TimeCalc.pressKey('0')">0</button>
+      <button type="button" class="calc-btn calc-btn-num" onclick="TimeCalc.pressKey('00')">00</button>
+      <button type="button" id="calcKeyDot" class="calc-btn calc-btn-num" onclick="TimeCalc.pressKey('.')">.</button>
+      <button type="button" id="calcKeyAdd" class="calc-btn calc-btn-op" onclick="TimeCalc.pressKey('+')">+</button>
+      <button type="button" id="calcKeyEq" class="calc-btn calc-btn-eq" onclick="TimeCalc.pressKey('=')">=</button>
+    </div>
+
+    <!-- 2. 割り勘用キーパッド (画像1に完全準拠) -->
+    <div id="keypadSplit" class="time-calc-keypad" style="display:none;">
+      <!-- 1行目: 総額 / 人数 / 端数単位 / 差額 / ⌫ -->
+      <button type="button" id="splitKeyTotal" class="calc-btn calc-btn-unit calc-btn-active-field"
+        onclick="TimeCalc.setSplitActiveField('total')" data-i18n="split_total">総額</button>
+      <button type="button" id="splitKeyPeople" class="calc-btn calc-btn-unit"
+        onclick="TimeCalc.setSplitActiveField('people')" data-i18n="split_people">人数</button>
+      <button type="button" id="splitKeyRounding" class="calc-btn calc-btn-unit"
+        onclick="TimeCalc.cycleSplitRounding()">¥1,000</button>
+      <button type="button" id="splitKeyTierGap" class="calc-btn calc-btn-unit"
+        style="font-size: 11px; line-height: 1.2;" onclick="TimeCalc.cycleSplitTierGap()">差:<br>¥1,000</button>
+      <button type="button" class="calc-btn calc-btn-del" onclick="TimeCalc.pressKey('BS')">⌫</button>
+
+      <!-- 2行目: 7 8 9 C AC -->
+      <button type="button" class="calc-btn calc-btn-num" onclick="TimeCalc.pressKey('7')">7</button>
+      <button type="button" class="calc-btn calc-btn-num" onclick="TimeCalc.pressKey('8')">8</button>
+      <button type="button" class="calc-btn calc-btn-num" onclick="TimeCalc.pressKey('9')">9</button>
+      <button type="button" class="calc-btn calc-btn-clear" onclick="TimeCalc.pressKey('C')">C</button>
+      <button type="button" class="calc-btn calc-btn-allclear" onclick="TimeCalc.pressKey('AC')">AC</button>
+
+      <!-- 3行目: 4 5 6 ▲多 ▼少 -->
+      <button type="button" class="calc-btn calc-btn-num" onclick="TimeCalc.pressKey('4')">4</button>
+      <button type="button" class="calc-btn calc-btn-num" onclick="TimeCalc.pressKey('5')">5</button>
+      <button type="button" class="calc-btn calc-btn-num" onclick="TimeCalc.pressKey('6')">6</button>
+      <button type="button" id="splitKeyMore" class="calc-btn calc-btn-unit" style="font-size: 11px; line-height: 1.2;"
+        onclick="TimeCalc.cycleSplitMoreCount()">▲ 多:<br>0人</button>
+      <button type="button" id="splitKeyLess" class="calc-btn calc-btn-unit" style="font-size: 11px; line-height: 1.2;"
+        onclick="TimeCalc.cycleSplitLessCount()">▼ 少:<br>0人</button>
+
+      <!-- 4行目: 1 2 3 . (空き1マス) -->
+      <button type="button" class="calc-btn calc-btn-num" onclick="TimeCalc.pressKey('1')">1</button>
+      <button type="button" class="calc-btn calc-btn-num" onclick="TimeCalc.pressKey('2')">2</button>
+      <button type="button" class="calc-btn calc-btn-num" onclick="TimeCalc.pressKey('3')">3</button>
+      <button type="button" class="calc-btn calc-btn-num" onclick="TimeCalc.pressKey('.')">.</button>
+      <div style="visibility:hidden;"></div>
+
+      <!-- 5行目: 00 0 ＝記録(3マス分) -->
+      <button type="button" class="calc-btn calc-btn-num" onclick="TimeCalc.pressKey('00')">00</button>
+      <button type="button" class="calc-btn calc-btn-num" onclick="TimeCalc.pressKey('0')">0</button>
+      <button type="button" class="calc-btn calc-btn-eq" style="grid-column: span 3; font-size: 18px;"
+        onclick="TimeCalc.pressKey('=')" data-i18n="split_btn_record">＝記録</button>
+    </div>
+
+    <!-- 3. レート変換用キーパッド (画像2に完全準拠) -->
+    <div id="keypadCurrency" class="time-calc-keypad" style="display:none;">
+      <!-- 1行目: 7 8 9 ⇄切替 ⌫ -->
+      <button type="button" class="calc-btn calc-btn-num" onclick="TimeCalc.pressKey('7')">7</button>
+      <button type="button" class="calc-btn calc-btn-num" onclick="TimeCalc.pressKey('8')">8</button>
+      <button type="button" class="calc-btn calc-btn-num" onclick="TimeCalc.pressKey('9')">9</button>
+      <button type="button" class="calc-btn calc-btn-unit" style="font-size: 12px;" onclick="TimeCalc.swapCurrencies()"
+        data-i18n="curr_btn_swap">⇄ 切替</button>
+      <button type="button" class="calc-btn calc-btn-del" onclick="TimeCalc.pressKey('BS')">⌫</button>
+
+      <!-- 2行目: 4 5 6 C AC -->
+      <button type="button" class="calc-btn calc-btn-num" onclick="TimeCalc.pressKey('4')">4</button>
+      <button type="button" class="calc-btn calc-btn-num" onclick="TimeCalc.pressKey('5')">5</button>
+      <button type="button" class="calc-btn calc-btn-num" onclick="TimeCalc.pressKey('6')">6</button>
+      <button type="button" class="calc-btn calc-btn-clear" onclick="TimeCalc.pressKey('C')">C</button>
+      <button type="button" class="calc-btn calc-btn-allclear" onclick="TimeCalc.pressKey('AC')">AC</button>
+
+      <!-- 3行目: 1 2 3 スロット0(A:USD) スロット1(B:JPY) -->
+      <button type="button" class="calc-btn calc-btn-num" onclick="TimeCalc.pressKey('1')">1</button>
+      <button type="button" class="calc-btn calc-btn-num" onclick="TimeCalc.pressKey('2')">2</button>
+      <button type="button" class="calc-btn calc-btn-num" onclick="TimeCalc.pressKey('3')">3</button>
+      <button type="button" id="currSlot_0" class="calc-btn calc-btn-unit curr-draggable-btn"
+        onclick="TimeCalc.selectCurrencySlot(0)">🇺🇸 USD</button>
+      <button type="button" id="currSlot_1" class="calc-btn calc-btn-unit curr-draggable-btn"
+        onclick="TimeCalc.selectCurrencySlot(1)">🇯🇵 JPY</button>
+
+      <!-- 4行目: 00 0 . スロット2(C:EUR) スロット3(D:GBP) -->
+      <button type="button" class="calc-btn calc-btn-num" onclick="TimeCalc.pressKey('00')">00</button>
+      <button type="button" class="calc-btn calc-btn-num" onclick="TimeCalc.pressKey('0')">0</button>
+      <button type="button" class="calc-btn calc-btn-num" onclick="TimeCalc.pressKey('.')">.</button>
+      <button type="button" id="currSlot_2" class="calc-btn calc-btn-unit curr-draggable-btn"
+        onclick="TimeCalc.selectCurrencySlot(2)">🇪🇺 EUR</button>
+      <button type="button" id="currSlot_3" class="calc-btn calc-btn-unit curr-draggable-btn"
+        onclick="TimeCalc.selectCurrencySlot(3)">🇬🇧 GBP</button>
+
+      <!-- 5行目: ＝記録(2マス) レート選択 スロット4(E:AUD) スロット5(F:CAD) -->
+      <button type="button" class="calc-btn calc-btn-eq" style="grid-column: span 2; font-size: 16px;"
+        onclick="TimeCalc.pressKey('=')" data-i18n="split_btn_record">＝記録</button>
+      <button type="button" id="currKey_rateSelect" class="calc-btn calc-btn-rate-select"
+        onclick="TimeCalc.openRateSelectLayer()" data-i18n="curr_btn_select">レート<br>選択</button>
+      <button type="button" id="currSlot_4" class="calc-btn calc-btn-unit curr-draggable-btn"
+        onclick="TimeCalc.selectCurrencySlot(4)">🇦🇺 AUD</button>
+      <button type="button" id="currSlot_5" class="calc-btn calc-btn-unit curr-draggable-btn"
+        onclick="TimeCalc.selectCurrencySlot(5)">🇨🇦 CAD</button>
+    </div>
+
+    <!-- 計算履歴エリア（ヒロさん仕様: 初期非表示、＝を押すと出現、0件で自動非表示） -->
+    <div id="timeCalcHistoryDrawer" class="time-calc-history-drawer" style="display:none; margin-top: 14px;">
+      <div class="time-calc-history-header">
+        <div class="time-calc-history-title-group">
+          <span data-i18n="time_calc_history">計算履歴</span>
+          <span class="time-calc-history-guide" data-i18n="double_tap_to_restore">💡 ダブルタップで復元</span>
+        </div>
+        <button class="time-calc-history-clear-btn" onclick="TimeCalc.clearHistory()"
+          data-i18n="clear_history">履歴クリア</button>
+      </div>
+      <div id="timeCalcHistoryList" class="time-calc-history-list">
+        <div class="time-calc-history-empty" data-i18n="no_records">記録された結果はありません。</div>
+      </div>
+    </div>
+  </div>
+  <div id="informationPage"
+    style="display:none; position:relative; text-align:center; padding: 40px 16px; min-height: 100vh; width: 100%; box-sizing: border-box; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none;">
+    <br>
+    <div style="position: absolute; top: 10px; right: 10px; display: flex; align-items: center; gap: 4px;">
+      <span style="font-size: 16px;">🌐</span>
+      <select class="lang-selector" onchange="setLanguage(this.value)"
+        style="background: transparent; border: 1px solid var(--accent); color: var(--text-main); border-radius: 4px; padding: 4px; font-size: 14px; width: auto; appearance: none; text-align: center; text-align-last: center;">
+        <option value="ja">JP 日本語</option>
+        <option value="en">EN English</option>
+        <option value="nl">NL Nederlands</option>
+        <option value="pt">PT Português</option>
+        <option value="es">ES Español</option>
+        <option value="fr">FR Français</option>
+        <option value="it">IT Italiano</option>
+        <option value="de">DE Deutsch</option>
+        <option value="uk">UK Українська</option>
+        <option value="id">ID Indonesia</option>
+        <option value="ko">KO 한국어</option>
+        <option value="tr">TR Türkçe</option>
+      </select>
+    </div>
+    <button class="back-btn" onclick="backToLockScreen()"
+      style="position: absolute; top: 10px; left: 10px; margin: 0; padding: 4px 10px; font-size: 13px;"
+      data-i18n="back_to_lock">← 初期画面に戻る</button>
+    <h1 class="fkz" style="margin-top: 40px;" data-i18n="info_page_title">Information</h1>
+    <div id="informationContent"
+      style="margin-top: 30px; text-align: left; max-width: 500px; margin-left: auto; margin-right: auto;">
+      <p style="margin-bottom: 8px; font-size: clamp(12px, 3.8vw, 14.5px); letter-spacing: -0.2px; white-space: nowrap;"
+        id="infoCreatedBy">このアプリは、<strong>H.Fukazu</strong>によって制作されました。</p>
+      <p style="margin-bottom: 8px;"><span data-i18n="info_version">バージョン：</span><strong>v3.4.0</strong> <span
+          data-i18n="info_updated_date">（2026/10/31 更新）</span></p>
+      <p style="margin-bottom: 24px; font-size: 13px; opacity: 0.85;"><span
+          data-i18n="info_initial_release">初版リリース：</span><strong>v1.0.0（2025/10/19）</strong></p>
+
+      <!-- 安全性に関するお知らせ -->
+      <div style="text-align: center; margin-top: 24px; margin-bottom: 14px;">
+        <a href="https://fkz1977.github.io/Time-Regulus/" target="_blank" rel="noopener noreferrer" class="action-btn"
+          id="securityGuideBtn" onclick="if(typeof gtag==='function'){gtag('event', 'view_security_guide');}"
+          style="display: inline-flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none; background: linear-gradient(135deg, rgba(0,255,224,0.15), rgba(0,255,224,0.05)); border: 1px solid var(--accent); color: var(--accent); box-shadow: 0 0 12px rgba(0,255,224,0.25); font-size: 15px; padding: 12px 26px; margin: 0; border-radius: 8px;">
+          <span data-i18n="show_security_guide">📖 安全性に関するお知らせ</span>
+          <svg style="width: 15px; height: 15px; fill: currentColor; flex-shrink: 0;" viewBox="0 0 24 24"
+            aria-hidden="true">
+            <path
+              d="M19 19H5V5h7V3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2v-7h-2v7zM14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3h-7z" />
+          </svg>
+        </a>
+      </div>
+
+      <!-- 著作権情報ボタン -->
+      <div style="text-align: center; margin-bottom: 24px;">
+        <button class="action-btn" id="showCopyrightBtn" onclick="showReadmePageFromInfo()"
+          style="background: linear-gradient(135deg, rgba(0,255,224,0.15), rgba(0,255,224,0.05)); border: 1px solid var(--accent); color: var(--accent); box-shadow: 0 0 12px rgba(0,255,224,0.25); font-size: 15px; padding: 12px 28px; margin-top: 0;"
+          data-i18n="show_copyright">📖 著作権情報を見る</button>
+      </div>
+    </div>
+
+    <!-- 最新バージョン情報枠（水色枠で囲み、間隔を調整） -->
+    <div
+      style="max-width: 500px; margin: 24px auto 0 auto; padding: 22px 16px; border: 1.5px solid var(--accent); border-radius: 12px; background: rgba(0, 255, 224, 0.04); box-shadow: 0 0 15px rgba(0, 255, 224, 0.12); box-sizing: border-box;">
+      <h2 style="margin-top: 0; margin-bottom: 12px; font-size: clamp(16px, 4.2vw, 19px);" data-i18n="info_latest_news">
+        ↓↓↓最新バージョン情報はこちらから↓↓↓</h2>
+      <p style="margin: 0 0 12px 0; font-size: 14px; line-height: 1.6;" data-i18n="info_qr_desc">
+        URL又はQRコードから<br>最新情報を確認してください。</p>
+      <button class="action-btn" onclick="showQRCodePage()" style="margin-top: 0;"
+        data-i18n="show_qr">URL／QRコードを表示</button>
+    </div>
+  </div>
+  <div id="qrCodePage"
+    style="display:none; text-align:center; padding: 40px 16px; min-height: 100vh; width: 100%; box-sizing: border-box;">
+    <div style="margin-top: 100px;">
+      <img id="qrCodeImage" src="QRCorde.PNG" alt="Time Regulus QR Code"
+        style="border: 4px solid var(--text-main); border-radius: 8px;">
+    </div>
+    <a href="https://fkz1977.github.io/Time-Regulus-news/" target="_blank" rel="noopener noreferrer"
+      onclick="openLatestNews(event, this)" class="url-link"
+      style="font-size: 12px; display:block; color: skyblue;">https://fkz1977.github.io/Time-Regulus-news/</a>
+    <button class="action-btn" onclick="closeQRCodePage()" style="margin-top: 40px; background-color: #ff4d4d;"
+      data-i18n="close">☒ 閉じる</button>
+  </div>
+  <!-- 時分秒専用の三連極上カスタム無限ドラムロールピッカー (ボトムシート) -->
+  <div id="pickerOverlay" class="picker-overlay"></div>
+  <div id="regulusTimePicker" class="picker-bottom-sheet">
+    <div class="picker-header time-picker-header">
+      <button type="button" id="pickerRecordBtn" class="keypad-record-btn" onclick="RegulusKeypad.recordToList()"
+        style="display: none;" data-i18n="record_to_list">結果一覧に記録する</button>
+      <button type="button" class="picker-confirm-btn" onclick="closeTimePicker()" data-i18n="done">▼ 完了</button>
+    </div>
+    <div class="picker-content">
+      <div class="picker-wheels-wrapper">
+        <!-- 時ホイール -->
+        <div class="picker-wheel-container">
+          <div class="picker-selection-indicator"></div>
+          <div class="picker-wheel" id="pickerWheelHour"></div>
+          <div class="picker-mask-top"></div>
+          <div class="picker-mask-bottom"></div>
+        </div>
+        <span class="picker-separator">:</span>
+        <!-- 分ホイール -->
+        <div class="picker-wheel-container">
+          <div class="picker-selection-indicator"></div>
+          <div class="picker-wheel" id="pickerWheelMin"></div>
+          <div class="picker-mask-top"></div>
+          <div class="picker-mask-bottom"></div>
+        </div>
+        <span class="picker-separator">:</span>
+        <!-- 秒ホイール -->
+        <div class="picker-wheel-container">
+          <div class="picker-selection-indicator"></div>
+          <div class="picker-wheel" id="pickerWheelSec"></div>
+          <div class="picker-mask-top"></div>
+          <div class="picker-mask-bottom"></div>
+        </div>
+      </div>
     </div>
   </div>
 
-  <script>
-    // お知らせ本文（notice_msg）のHTMLを組み立てる関数
-    // lead: 導入文 / intro: 理由の前置き / reasons: [見出し, 本文] の配列 / closing: 締めの文
-    function buildNoticeMsg(lead, intro, reasons, closing) {
-      const items = reasons.map(function(r) {
-        return '<li><span class="reason-title">' + r[0] + '</span><span class="reason-body">' + r[1] + '</span></li>';
-      }).join('');
-      return '<p>' + lead + '</p><p>' + intro + '</p><ol class="reason-list">' + items + '</ol><p>' + closing + '</p>';
-    }
+  <!-- 時分秒・日付直接入力用オリジナルカスタムテンキー (ボトムシート) -->
+  <div id="regulusCustomKeypad" class="picker-bottom-sheet keypad-bottom-sheet">
+    <div class="picker-header keypad-header">
+      <div class="keypad-header-nav">
+        <button type="button" class="keypad-nav-btn" onclick="RegulusKeypad.prevField()" title="前の枠へ">◀</button>
+        <button type="button" class="keypad-nav-btn" onclick="RegulusKeypad.nextField()" title="次の枠へ">▶</button>
+      </div>
+      <button type="button" id="keypadRecordBtn" class="keypad-record-btn" onclick="RegulusKeypad.recordToList()"
+        style="display: none;" data-i18n="record_to_list">結果一覧に記録する</button>
+      <button type="button" class="picker-confirm-btn" onclick="RegulusKeypad.close()" data-i18n="done">▼ 完了</button>
+    </div>
+    <div class="keypad-content">
+      <div class="custom-keypad-grid">
+        <button type="button" class="custom-keypad-btn" onclick="RegulusKeypad.press(1)">1</button>
+        <button type="button" class="custom-keypad-btn" onclick="RegulusKeypad.press(2)">2</button>
+        <button type="button" class="custom-keypad-btn" onclick="RegulusKeypad.press(3)">3</button>
 
-    // 12言語の多言語辞書定義
-    const i18n_news = {
-      ja: {
-        subtitle: "安全性に関するお知らせ (2026/10/31)",
-        notice_header: "...Time Regulus...<br>＜安心してご利用いただけます＞",
-        notice_msg: buildNoticeMsg(
-          "…昨今、PHP等で作られたWebサービスへのサイバー攻撃による情報流出が社会問題となっていますが、Time Regulusにおける情報流出等はありません。安心してご利用ください。",
-          "その理由は次のとおりです。",
-          [
-            ["信頼できる場所から配信", "Time Regulusのプログラムは、世界中の開発者が信頼する大手プラットフォーム「GitHub（ギットハブ）」に置かれています。通信はすべて暗号化（HTTPS）されているため、途中で内容を書き換えられたり、のぞき見られたりする心配もありません。"],
-            ["サーバーを使わない仕組み", "情報流出の原因となりやすいサーバー側の処理（PHPやデータベース等）を一切使わず、お手元のブラウザの中だけで動作する仕組み（静的サイト）で作られています。"],
-            ["個人情報を入力しない（入力は数字のみ）", "そもそも氏名やメールアドレス等の個人情報を入力する場面がなく、計算もすべてお手元の端末の中で完結するため、漏れて困るような情報を扱っていません。"],
-            ["ホーム画面に追加しても安全", "『ホーム画面に追加』（『アプリをインストール』）は、ページを開くためのショートカットを、アプリのような見た目でホーム画面に置く機能です。中身はあくまでWebページのままで、ブラウザの安全な枠組みの中で動作するため、位置情報・連絡先・写真等へのアクセス許可を求めることはなく、ほかのアプリのデータを読み取ることもできません。"]
-          ],
-          "簡単に言えば、「ホームページ上に置かれた電卓」で時間の計算をしているだけです。<br>これからも安心してTime Regulusをご利用ください。m(_ _)m … H.Fukazu<br><a href=\"https://fkz1977.github.io/Time-Regulus-2/\" class=\"url-link\">https://fkz1977.github.io/Time-Regulus-2/</a>"
-        )
-      },
-      en: {
-        subtitle: "Safety Notice (2026/10/31)",
-        notice_header: "...Time Regulus...<br>&lt;Safe to Use with Peace of Mind&gt;",
-        notice_msg: buildNoticeMsg(
-          "...Recently, data leaks caused by cyberattacks on web services built with PHP and similar technologies have become a serious social issue. However, there are no data leaks or similar issues in Time Regulus, so please use it with peace of mind.",
-          "Here is why:",
-          [
-            ["Delivered from a trusted platform", "The Time Regulus program is hosted on GitHub, a major platform trusted by developers around the world. All communication is encrypted (HTTPS), so there is no risk of the content being altered or snooped on along the way."],
-            ["No server-side processing", "Time Regulus does not use any server-side processing (such as PHP or databases), which is a common cause of data leaks. It is built as a static site that runs entirely within your own browser."],
-            ["No personal information required (Numbers only)", "There is no need to enter personal information such as your name or email address, and all calculations are completed on your own device. Time Regulus simply does not handle any information worth worrying about being leaked."],
-            ["Safe even when added to your Home Screen", "“Add to Home Screen” (or “Install App”) simply places a shortcut to the page on your Home Screen with an app-like look. It remains a web page at heart and runs within the browser's secure framework, so it never asks for access to your location, contacts, or photos, and it cannot read data from other apps."]
-          ],
-          "Simply put, it is just like using a calculator placed on a web page to calculate time.<br>Please continue to enjoy Time Regulus with peace of mind. m(_ _)m … H.Fukazu<br><a href=\"https://fkz1977.github.io/Time-Regulus-2/\" class=\"url-link\">https://fkz1977.github.io/Time-Regulus-2/</a>"
-        )
-      },
-      nl: {
-        subtitle: "Veiligheidsbericht (2026/10/31)",
-        notice_header: "...Time Regulus...<br>&lt;Veilig en zorgeloos te gebruiken&gt;",
-        notice_msg: buildNoticeMsg(
-          "...De laatste tijd zijn datalekken door cyberaanvallen op webdiensten die met PHP en soortgelijke technieken zijn gebouwd, een groot maatschappelijk probleem geworden. Bij Time Regulus is er echter geen sprake van datalekken of dergelijke problemen, dus u kunt de app met een gerust hart gebruiken.",
-          "Dit zijn de redenen:",
-          [
-            ["Geleverd via een betrouwbaar platform", "Het programma van Time Regulus staat op GitHub, een groot platform dat door ontwikkelaars over de hele wereld wordt vertrouwd. Alle communicatie is versleuteld (HTTPS), dus de inhoud kan onderweg niet worden gewijzigd of meegelezen."],
-            ["Geen verwerking op een server", "Time Regulus gebruikt geen enkele serververwerking (zoals PHP of databases), een veelvoorkomende oorzaak van datalekken. Het is gebouwd als een statische website die volledig in uw eigen browser werkt."],
-            ["Geen persoonsgegevens nodig (Alleen getallen)", "U hoeft geen persoonsgegevens zoals uw naam of e-mailadres in te voeren en alle berekeningen worden op uw eigen apparaat uitgevoerd. Time Regulus verwerkt simpelweg geen gegevens waarvan uitlekken een probleem zou zijn."],
-            ["Ook veilig op het beginscherm", "‘Zet op beginscherm’ (of ‘App installeren’) plaatst alleen een snelkoppeling naar de pagina op uw beginscherm, met het uiterlijk van een app. Het blijft in wezen een webpagina die binnen de beveiligde omgeving van de browser werkt. Er wordt dus nooit om toegang tot uw locatie, contacten of foto's gevraagd, en gegevens van andere apps kunnen niet worden gelezen."]
-          ],
-          "Simpel gezegd is het net alsof u een rekenmachine op een webpagina gebruikt om tijden te berekenen.<br>Blijf Time Regulus met een gerust hart gebruiken. m(_ _)m … H.Fukazu<br><a href=\"https://fkz1977.github.io/Time-Regulus-2/\" class=\"url-link\">https://fkz1977.github.io/Time-Regulus-2/</a>"
-        )
-      },
-      pt: {
-        subtitle: "Aviso sobre Segurança (2026/10/31)",
-        notice_header: "...Time Regulus...<br>&lt;Use com total tranquilidade&gt;",
-        notice_msg: buildNoticeMsg(
-          "...Recentemente, vazamentos de dados causados por ataques cibernéticos a serviços web desenvolvidos com PHP e tecnologias semelhantes tornaram-se um grave problema social. No entanto, não há vazamento de dados ou problemas semelhantes no Time Regulus, portanto use-o com tranquilidade.",
-          "Veja os motivos:",
-          [
-            ["Distribuído por uma plataforma confiável", "O programa do Time Regulus está hospedado no GitHub, uma grande plataforma em que desenvolvedores do mundo todo confiam. Toda a comunicação é criptografada (HTTPS), portanto não há risco de o conteúdo ser alterado ou espionado no caminho."],
-            ["Sem processamento no servidor", "O Time Regulus não utiliza nenhum processamento no servidor (como PHP ou bancos de dados), uma causa comum de vazamentos de dados. Ele foi criado como um site estático que funciona inteiramente no seu próprio navegador."],
-            ["Nenhuma informação pessoal necessária (Apenas números)", "Não é necessário inserir informações pessoais, como nome ou e-mail, e todos os cálculos são realizados no seu próprio dispositivo. O Time Regulus simplesmente não lida com informações cujo vazamento possa causar problemas."],
-            ["Seguro mesmo na Tela de Início", "“Adicionar à Tela de Início” (ou “Instalar Aplicativo”) apenas coloca um atalho para a página na sua Tela de Início, com aparência de aplicativo. No fundo, continua sendo uma página da web que funciona dentro do ambiente seguro do navegador; por isso, nunca pede acesso à sua localização, contatos ou fotos, nem consegue ler dados de outros aplicativos."]
-          ],
-          "Em resumo, é apenas como usar uma calculadora colocada em uma página da web para calcular o tempo.<br>Continue usando o Time Regulus com tranquilidade. m(_ _)m … H.Fukazu<br><a href=\"https://fkz1977.github.io/Time-Regulus-2/\" class=\"url-link\">https://fkz1977.github.io/Time-Regulus-2/</a>"
-        )
-      },
-      es: {
-        subtitle: "Aviso sobre Seguridad (2026/10/31)",
-        notice_header: "...Time Regulus...<br>&lt;Úselo con total tranquilidad&gt;",
-        notice_msg: buildNoticeMsg(
-          "...Últimamente, las filtraciones de datos causadas por ciberataques a servicios web creados con PHP y tecnologías similares se han convertido en un grave problema social. Sin embargo, en Time Regulus no hay filtraciones de datos ni problemas similares, así que puede usarlo con total tranquilidad.",
-          "Estos son los motivos:",
-          [
-            ["Distribuido desde una plataforma de confianza", "El programa de Time Regulus está alojado en GitHub, una gran plataforma en la que confían desarrolladores de todo el mundo. Todas las comunicaciones están cifradas (HTTPS), por lo que no hay riesgo de que el contenido sea alterado o espiado por el camino."],
-            ["Sin procesamiento en servidor", "Time Regulus no utiliza ningún procesamiento en servidor (como PHP o bases de datos), una causa habitual de filtraciones de datos. Está creado como un sitio estático que funciona íntegramente dentro de su propio navegador."],
-            ["No requiere datos personales (Solo números)", "No es necesario introducir datos personales como su nombre o correo electrónico, y todos los cálculos se realizan en su propio dispositivo. Time Regulus simplemente no maneja información cuya filtración pueda causar problemas."],
-            ["Seguro también en la pantalla de inicio", "“Añadir a la pantalla de inicio” (o “Instalar aplicación”) solo coloca un acceso directo a la página en su pantalla de inicio, con aspecto de aplicación. En el fondo sigue siendo una página web que funciona dentro del entorno seguro del navegador, por lo que nunca solicita acceso a su ubicación, contactos o fotos, ni puede leer datos de otras aplicaciones."]
-          ],
-          "En pocas palabras, simplemente es como usar una calculadora colocada en una página web para calcular el tiempo.<br>Siga utilizando Time Regulus con total tranquilidad. m(_ _)m … H.Fukazu<br><a href=\"https://fkz1977.github.io/Time-Regulus-2/\" class=\"url-link\">https://fkz1977.github.io/Time-Regulus-2/</a>"
-        )
-      },
-      fr: {
-        subtitle: "Avis concernant la sécurité (2026/10/31)",
-        notice_header: "...Time Regulus...<br>&lt;Utilisez-le en toute sérénité&gt;",
-        notice_msg: buildNoticeMsg(
-          "...Ces derniers temps, les fuites de données causées par des cyberattaques visant des services web développés avec PHP et des technologies similaires sont devenues un grave problème de société. Cependant, il n'y a aucune fuite de données ou problème similaire dans Time Regulus&nbsp;: vous pouvez l'utiliser en toute sérénité.",
-          "En voici les raisons&nbsp;:",
-          [
-            ["Distribué depuis une plateforme de confiance", "Le programme Time Regulus est hébergé sur GitHub, une grande plateforme à laquelle font confiance les développeurs du monde entier. Toutes les communications sont chiffrées (HTTPS)&nbsp;: le contenu ne peut donc être ni modifié ni espionné en cours de route."],
-            ["Aucun traitement côté serveur", "Time Regulus n'utilise aucun traitement côté serveur (comme PHP ou des bases de données), cause fréquente de fuites de données. Il est conçu comme un site statique qui fonctionne entièrement dans votre propre navigateur."],
-            ["Aucune donnée personnelle requise (Chiffres uniquement)", "Vous n'avez à saisir aucune donnée personnelle, comme votre nom ou votre adresse e-mail, et tous les calculs sont effectués sur votre propre appareil. Time Regulus ne traite tout simplement aucune information dont la fuite poserait problème."],
-            ["Sûr même sur l'écran d'accueil", "«&nbsp;Sur l'écran d'accueil&nbsp;» (ou «&nbsp;Installer l'application&nbsp;») place simplement un raccourci vers la page sur votre écran d'accueil, avec l'apparence d'une application. Il s'agit toujours d'une page web qui fonctionne dans l'environnement sécurisé du navigateur&nbsp;: elle ne demande donc jamais l'accès à votre position, à vos contacts ou à vos photos, et ne peut pas lire les données des autres applications."]
-          ],
-          "En bref, c'est simplement comme utiliser une calculatrice placée sur une page web pour calculer le temps.<br>Continuez à utiliser Time Regulus en toute sérénité. m(_ _)m … H.Fukazu<br><a href=\"https://fkz1977.github.io/Time-Regulus-2/\" class=\"url-link\">https://fkz1977.github.io/Time-Regulus-2/</a>"
-        )
-      },
-      it: {
-        subtitle: "Avviso sulla sicurezza (2026/10/31)",
-        notice_header: "...Time Regulus...<br>&lt;Utilizzabile in tutta tranquillità&gt;",
-        notice_msg: buildNoticeMsg(
-          "...Negli ultimi tempi, le fughe di dati causate da attacchi informatici a servizi web realizzati con PHP e tecnologie simili sono diventate un grave problema sociale. Tuttavia, in Time Regulus non vi è alcuna fuga di dati o problema simile, quindi potete utilizzarlo in tutta tranquillità.",
-          "Ecco i motivi:",
-          [
-            ["Distribuito da una piattaforma affidabile", "Il programma di Time Regulus è ospitato su GitHub, una grande piattaforma di cui si fidano sviluppatori di tutto il mondo. Tutte le comunicazioni sono crittografate (HTTPS), quindi non c'è il rischio che il contenuto venga modificato o spiato lungo il percorso."],
-            ["Nessuna elaborazione lato server", "Time Regulus non utilizza alcuna elaborazione lato server (come PHP o database), una causa frequente di fughe di dati. È realizzato come sito statico che funziona interamente all'interno del vostro browser."],
-            ["Nessun dato personale richiesto (Solo numeri)", "Non è necessario inserire dati personali come nome o indirizzo e-mail, e tutti i calcoli vengono eseguiti sul vostro dispositivo. Time Regulus semplicemente non gestisce informazioni la cui divulgazione possa creare problemi."],
-            ["Sicuro anche nella schermata Home", "“Aggiungi a schermata Home” (o “Installa app”) inserisce semplicemente un collegamento alla pagina nella vostra schermata Home, con l'aspetto di un'app. Resta comunque una pagina web che funziona all'interno dell'ambiente sicuro del browser: per questo non richiede mai l'accesso a posizione, contatti o foto, né può leggere i dati di altre app."]
-          ],
-          "In parole semplici, è proprio come usare una calcolatrice posizionata su una pagina web per calcolare il tempo.<br>Continuate a utilizzare Time Regulus in tutta tranquillità. m(_ _)m … H.Fukazu<br><a href=\"https://fkz1977.github.io/Time-Regulus-2/\" class=\"url-link\">https://fkz1977.github.io/Time-Regulus-2/</a>"
-        )
-      },
-      de: {
-        subtitle: "Hinweis zur Sicherheit (2026/10/31)",
-        notice_header: "...Time Regulus...<br>&lt;Bedenkenlos nutzbar&gt;",
-        notice_msg: buildNoticeMsg(
-          "...In letzter Zeit sind Datenlecks durch Cyberangriffe auf Webdienste, die mit PHP und ähnlichen Technologien erstellt wurden, zu einem ernsten gesellschaftlichen Problem geworden. Bei Time Regulus gibt es jedoch keinerlei Datenlecks oder ähnliche Probleme, sodass Sie die App unbesorgt nutzen können.",
-          "Die Gründe dafür:",
-          [
-            ["Bereitstellung über eine vertrauenswürdige Plattform", "Das Programm von Time Regulus liegt auf GitHub, einer großen Plattform, der Entwickler auf der ganzen Welt vertrauen. Die gesamte Kommunikation ist verschlüsselt (HTTPS), sodass Inhalte unterwegs weder verändert noch mitgelesen werden können."],
-            ["Keine serverseitige Verarbeitung", "Time Regulus verwendet keinerlei serverseitige Verarbeitung (wie PHP oder Datenbanken), die eine häufige Ursache für Datenlecks ist. Es ist als statische Website aufgebaut, die vollständig in Ihrem eigenen Browser läuft."],
-            ["Keine persönlichen Daten erforderlich (Nur Zahlen)", "Sie müssen keine persönlichen Daten wie Ihren Namen oder Ihre E-Mail-Adresse eingeben, und alle Berechnungen erfolgen auf Ihrem eigenen Gerät. Time Regulus verarbeitet schlicht keine Informationen, deren Weitergabe problematisch wäre."],
-            ["Auch auf dem Home-Bildschirm sicher", "„Zum Home-Bildschirm“ (oder „App installieren“) legt lediglich eine Verknüpfung zur Seite im App-Look auf Ihrem Home-Bildschirm ab. Im Kern bleibt es eine Webseite, die innerhalb der geschützten Umgebung des Browsers läuft. Daher wird nie nach Zugriff auf Ihren Standort, Ihre Kontakte oder Fotos gefragt, und Daten anderer Apps können nicht gelesen werden."]
-          ],
-          "Einfach gesagt ist es so, als würden Sie einen Taschenrechner auf einer Webseite benutzen, um Zeit zu berechnen.<br>Nutzen Sie Time Regulus auch weiterhin ganz unbesorgt. m(_ _)m … H.Fukazu<br><a href=\"https://fkz1977.github.io/Time-Regulus-2/\" class=\"url-link\">https://fkz1977.github.io/Time-Regulus-2/</a>"
-        )
-      },
-      uk: {
-        subtitle: "Повідомлення щодо безпеки (2026/10/31)",
-        notice_header: "...Time Regulus...<br>&lt;Користуйтеся спокійно&gt;",
-        notice_msg: buildNoticeMsg(
-          "...Останнім часом витоки даних унаслідок кібератак на вебсервіси, створені на PHP та подібних технологіях, стали серйозною суспільною проблемою. Проте в Time Regulus немає жодних витоків даних чи подібних проблем, тож користуйтеся ним спокійно.",
-          "Ось чому:",
-          [
-            ["Розповсюдження з надійної платформи", "Програма Time Regulus розміщена на GitHub — великій платформі, якій довіряють розробники з усього світу. Увесь зв'язок зашифровано (HTTPS), тож вміст не можуть змінити чи перехопити дорогою."],
-            ["Жодної обробки на сервері", "Time Regulus не використовує жодної серверної обробки (як-от PHP чи бази даних), яка часто стає причиною витоків даних. Він створений як статичний сайт, що повністю працює у вашому власному браузері."],
-            ["Особисті дані не потрібні (Лише цифри)", "Вам не потрібно вводити особисті дані, як-от ім'я чи адресу електронної пошти, а всі обчислення виконуються на вашому власному пристрої. Time Regulus просто не обробляє інформації, витік якої міг би стати проблемою."],
-            ["Безпечно навіть на початковому екрані", "Функція «На початковий екран» (або «Встановити додаток») лише розміщує ярлик сторінки на вашому початковому екрані з виглядом додатка. По суті це й надалі вебсторінка, що працює в захищеному середовищі браузера, тому вона ніколи не запитує доступу до вашого місцезнаходження, контактів чи фотографій і не може читати дані інших додатків."]
-          ],
-          "Простіше кажучи, це все одно що користуватися калькулятором, розміщеним на вебсторінці, для обчислення часу.<br>Користуйтеся Time Regulus і надалі спокійно. m(_ _)m … H.Fukazu<br><a href=\"https://fkz1977.github.io/Time-Regulus-2/\" class=\"url-link\">https://fkz1977.github.io/Time-Regulus-2/</a>"
-        )
-      },
-      id: {
-        subtitle: "Pemberitahuan Keamanan (2026/10/31)",
-        notice_header: "...Time Regulus...<br>&lt;Aman dan Tenang Digunakan&gt;",
-        notice_msg: buildNoticeMsg(
-          "...Belakangan ini, kebocoran data akibat serangan siber terhadap layanan web yang dibuat dengan PHP dan teknologi serupa telah menjadi masalah sosial yang serius. Namun, tidak ada kebocoran data atau masalah serupa pada Time Regulus, jadi silakan gunakan dengan tenang.",
-          "Berikut alasannya:",
-          [
-            ["Didistribusikan dari platform tepercaya", "Program Time Regulus disimpan di GitHub, platform besar yang dipercaya oleh para pengembang di seluruh dunia. Semua komunikasi dienkripsi (HTTPS), sehingga isinya tidak dapat diubah atau diintip di tengah jalan."],
-            ["Tanpa pemrosesan di server", "Time Regulus sama sekali tidak menggunakan pemrosesan di sisi server (seperti PHP atau basis data), yang sering menjadi penyebab kebocoran data. Aplikasi ini dibuat sebagai situs statis yang berjalan sepenuhnya di dalam peramban (browser) Anda sendiri."],
-            ["Tidak memerlukan data pribadi (Hanya angka)", "Anda tidak perlu memasukkan data pribadi seperti nama atau alamat email, dan semua perhitungan dilakukan di perangkat Anda sendiri. Time Regulus memang tidak menangani informasi yang berbahaya jika bocor."],
-            ["Tetap aman di Layar Utama", "“Tambah ke Layar Utama” (atau “Instal Aplikasi”) hanya menempatkan pintasan ke halaman ini di Layar Utama Anda dengan tampilan seperti aplikasi. Pada dasarnya ini tetap halaman web yang berjalan di dalam lingkungan aman peramban, sehingga tidak pernah meminta akses ke lokasi, kontak, atau foto Anda, dan tidak dapat membaca data aplikasi lain."]
-          ],
-          "Sederhananya, ini hanya seperti menggunakan kalkulator yang diletakkan di sebuah halaman web untuk menghitung waktu.<br>Silakan terus gunakan Time Regulus dengan tenang. m(_ _)m … H.Fukazu<br><a href=\"https://fkz1977.github.io/Time-Regulus-2/\" class=\"url-link\">https://fkz1977.github.io/Time-Regulus-2/</a>"
-        )
-      },
-      ko: {
-        subtitle: "안전성에 관한 안내 (2026/10/31)",
-        notice_header: "...Time Regulus...<br>＜안심하고 이용하실 수 있습니다＞",
-        notice_msg: buildNoticeMsg(
-          "…최근 PHP 등으로 만들어진 웹 서비스에 대한 사이버 공격으로 인한 정보 유출이 사회 문제가 되고 있지만, Time Regulus에서의 정보 유출 등은 없습니다. 안심하고 이용해 주세요.",
-          "그 이유는 다음과 같습니다.",
-          [
-            ["신뢰할 수 있는 곳에서 배포", "Time Regulus의 프로그램은 전 세계 개발자들이 신뢰하는 대형 플랫폼 'GitHub(깃허브)'에 놓여 있습니다. 모든 통신은 암호화(HTTPS)되어 있어 도중에 내용이 변조되거나 엿보일 걱정도 없습니다."],
-            ["서버를 사용하지 않는 구조", "정보 유출의 원인이 되기 쉬운 서버 측 처리(PHP나 데이터베이스 등)를 전혀 사용하지 않으며, 사용자의 브라우저 안에서만 동작하는 구조(정적 사이트)로 만들어져 있습니다."],
-            ["개인 정보를 입력하지 않음 (입력은 숫자만)", "애초에 이름이나 이메일 주소 등의 개인 정보를 입력할 일이 없고, 계산도 모두 사용자의 기기 안에서 완료되므로, 유출되어 곤란한 정보를 다루지 않습니다."],
-            ["홈 화면에 추가해도 안전", "'홈 화면에 추가'(또는 '앱 설치')는 페이지를 여는 바로가기를 앱 같은 모습으로 홈 화면에 두는 기능입니다. 본질은 어디까지나 웹 페이지이며 브라우저의 안전한 틀 안에서 동작하므로, 위치 정보·연락처·사진 등에 대한 접근 권한을 요구하지 않으며 다른 앱의 데이터를 읽을 수도 없습니다."]
-          ],
-          "쉽게 말해 '홈페이지 위에 놓인 계산기'로 시간 계산을 하고 있을 뿐입니다.<br>앞으로도 안심하고 Time Regulus를 이용해 주세요. m(_ _)m … H.Fukazu<br><a href=\"https://fkz1977.github.io/Time-Regulus-2/\" class=\"url-link\">https://fkz1977.github.io/Time-Regulus-2/</a>"
-        )
-      },
-      tr: {
-        subtitle: "Güvenlik Bildirimi (2026/10/31)",
-        notice_header: "...Time Regulus...<br>&lt;Gönül Rahatlığıyla Kullanabilirsiniz&gt;",
-        notice_msg: buildNoticeMsg(
-          "...Son zamanlarda PHP ve benzeri teknolojilerle oluşturulmuş web hizmetlerine yönelik siber saldırılar sonucu yaşanan veri sızıntıları ciddi bir toplumsal sorun hâline geldi. Ancak Time Regulus'ta herhangi bir veri sızıntısı veya benzeri bir durum söz konusu değildir; gönül rahatlığıyla kullanabilirsiniz.",
-          "Nedenleri şunlardır:",
-          [
-            ["Güvenilir bir platformdan sunulur", "Time Regulus'un programı, dünyanın dört bir yanındaki geliştiricilerin güvendiği büyük platform GitHub'da barındırılır. Tüm iletişim şifrelidir (HTTPS), bu nedenle içeriğin yolda değiştirilmesi veya gizlice okunması gibi bir risk yoktur."],
-            ["Sunucu tarafında işlem yoktur", "Time Regulus, veri sızıntılarının yaygın bir nedeni olan sunucu tarafı işlemlerin (PHP veya veritabanları gibi) hiçbirini kullanmaz. Tamamen kendi tarayıcınızda çalışan statik bir site olarak geliştirilmiştir."],
-            ["Kişisel bilgi gerekmez (Yalnızca sayılar)", "Adınız veya e-posta adresiniz gibi kişisel bilgileri girmeniz gerekmez ve tüm hesaplamalar kendi cihazınızda yapılır. Time Regulus, sızması sorun yaratacak herhangi bir bilgiyi zaten işlemez."],
-            ["Ana ekrana eklendiğinde de güvenlidir", "“Ana Ekrana Ekle” (veya “Uygulamayı Yükle”), sayfaya ait bir kısayolu uygulama görünümünde ana ekranınıza yerleştirir. Özünde yine bir web sayfasıdır ve tarayıcının güvenli ortamı içinde çalışır; bu yüzden konumunuza, kişilerinize veya fotoğraflarınıza erişim izni istemez ve diğer uygulamaların verilerini okuyamaz."]
-          ],
-          "Kısacası, bir web sayfasına yerleştirilmiş hesap makinesini kullanarak zamanı hesaplamak gibidir.<br>Time Regulus'u gönül rahatlığıyla kullanmaya devam edin. m(_ _)m … H.Fukazu<br><a href=\"https://fkz1977.github.io/Time-Regulus-2/\" class=\"url-link\">https://fkz1977.github.io/Time-Regulus-2/</a>"
-        )
-      }
-    };
+        <button type="button" class="custom-keypad-btn" onclick="RegulusKeypad.press(4)">4</button>
+        <button type="button" class="custom-keypad-btn" onclick="RegulusKeypad.press(5)">5</button>
+        <button type="button" class="custom-keypad-btn" onclick="RegulusKeypad.press(6)">6</button>
 
-    // 初期言語の判定（本家Time Regulusと同じlocalStorageキー 'regulus_lang' を参照、なければブラウザ言語）
-    function getInitialLanguage() {
-      const saved = localStorage.getItem("regulus_lang");
-      if (saved && i18n_news[saved]) {
-        return saved;
-      }
-      const navLang = (navigator.language || navigator.userLanguage || "ja").toLowerCase();
-      const short = navLang.slice(0, 2);
-      if (i18n_news[short]) {
-        return short;
-      }
-      return "ja";
-    }
+        <button type="button" class="custom-keypad-btn" onclick="RegulusKeypad.press(7)">7</button>
+        <button type="button" class="custom-keypad-btn" onclick="RegulusKeypad.press(8)">8</button>
+        <button type="button" class="custom-keypad-btn" onclick="RegulusKeypad.press(9)">9</button>
 
-    let currentLang = getInitialLanguage();
+        <button type="button" class="custom-keypad-btn btn-ac" onclick="RegulusKeypad.clear()">AC</button>
+        <button type="button" class="custom-keypad-btn" onclick="RegulusKeypad.press(0)">0</button>
+        <button type="button" class="custom-keypad-btn btn-bs" onclick="RegulusKeypad.backspace()">⌫</button>
+      </div>
+    </div>
+  </div>
+  <!-- カスタムレート入力モーダル -->
+  <div id="customRateModal" role="dialog" aria-modal="true"
+    onclick="if(event.target===this)TimeCalc.closeCustomRateModal()">
+    <div class="custom-rate-modal-box">
+      <div class="custom-rate-modal-title" id="customRateModalTitle">💱 レートを手動入力</div>
+      <label class="custom-rate-modal-label" id="customRateModalLabel">1 GBP = ? JPY</label>
+      <div class="custom-rate-modal-input-row">
+        <span id="customRateFromLabel">1 GBP =</span>
+        <input type="number" id="customRateInput" placeholder="0.0000" inputmode="decimal" step="any" min="0"
+          onkeydown="if(event.key==='Enter')TimeCalc.applyCustomRate();if(event.key==='Escape')TimeCalc.closeCustomRateModal()">
+        <span id="customRateToLabel">JPY</span>
+      </div>
+      <!-- ライブレート取得ボタン -->
+      <button id="liveRateBtn" class="live-rate-fetch-btn" onclick="TimeCalc.fetchLiveRate()"
+        data-i18n="custom_rate_fetch">🌐 現在のレートを取得</button>
+      <div id="liveRateStatus" class="live-rate-status"></div>
+      <div class="custom-rate-modal-btns">
+        <button class="custom-rate-modal-cancel" onclick="TimeCalc.closeCustomRateModal()"
+          data-i18n="cancel">キャンセル</button>
+        <button class="custom-rate-modal-ok" onclick="TimeCalc.applyCustomRate()" data-i18n="apply">✓ 適用</button>
+      </div>
+      <button class="custom-rate-reset-btn" onclick="TimeCalc.resetCustomRate()" data-i18n="custom_rate_reset">↺
+        デフォルトレートに戻す</button>
+      <button class="custom-rate-save-default-btn" onclick="TimeCalc.saveAsDefaultRate()"
+        data-i18n="custom_rate_save">💾 このレートをデフォルトとして保存</button>
+    </div>
+  </div>
 
-    // 言語切り替え関数
-    function setLanguage(lang) {
-      if (!i18n_news[lang]) return;
-      currentLang = lang;
-      try {
-        localStorage.setItem("regulus_lang", lang);
-      } catch (e) {}
+  <!-- レート選択レイヤー (ヒロさんの手描きイメージ画像に完全準拠 & 多言語化) -->
+  <div id="rateSelectModal" class="rate-select-modal" role="dialog" aria-modal="true" style="display:none;"
+    onclick="if(event.target===this)TimeCalc.closeRateSelectLayer()">
+    <div class="rate-select-modal-box">
+      <div class="rate-select-modal-header">
+        <div class="rate-select-modal-title" data-i18n="rate_modal_title">💱 レート枠の選択・配置 (全21種類)</div>
+        <button type="button" class="rate-select-close-btn" onclick="TimeCalc.closeRateSelectLayer()">✕</button>
+      </div>
 
-      document.documentElement.lang = lang;
+      <div class="rate-select-layout">
+        <!-- 左〜下: 21種類の通貨パレット (3列×7行で美しく全マス埋まる) -->
+        <div class="rate-palette-container">
+          <div class="rate-section-label" data-i18n="rate_modal_available">利用可能な通貨 (21種類)</div>
+          <div id="ratePaletteGrid" class="rate-palette-grid">
+            <!-- JSで21種類の通貨ボタンを自動生成 -->
+          </div>
+        </div>
 
-      const sel = document.getElementById("langSelector");
-      if (sel && sel.value !== lang) {
-        sel.value = lang;
-      }
+        <!-- 右上: キーパッドに配置される6枠 (A〜F) -->
+        <div class="rate-slots-container">
+          <div class="rate-section-label" data-i18n="rate_modal_slots">キーパッドの6枠 (A〜F)</div>
+          <div class="rate-slots-grid" id="rateSlotsGrid">
+            <!-- A: Slot 0 -->
+            <div class="rate-slot-card" data-slot="0" onclick="TimeCalc.onRateSlotClick(0)">
+              <span class="slot-badge">A</span>
+              <span class="slot-curr-name" id="slotCardCurr_0">🇺🇸 USD</span>
+            </div>
+            <!-- B: Slot 1 -->
+            <div class="rate-slot-card" data-slot="1" onclick="TimeCalc.onRateSlotClick(1)">
+              <span class="slot-badge">B</span>
+              <span class="slot-curr-name" id="slotCardCurr_1">🇯🇵 JPY</span>
+            </div>
+            <!-- C: Slot 2 -->
+            <div class="rate-slot-card" data-slot="2" onclick="TimeCalc.onRateSlotClick(2)">
+              <span class="slot-badge">C</span>
+              <span class="slot-curr-name" id="slotCardCurr_2">🇪🇺 EUR</span>
+            </div>
+            <!-- D: Slot 3 -->
+            <div class="rate-slot-card" data-slot="3" onclick="TimeCalc.onRateSlotClick(3)">
+              <span class="slot-badge">D</span>
+              <span class="slot-curr-name" id="slotCardCurr_3">🇬🇧 GBP</span>
+            </div>
+            <!-- E: Slot 4 -->
+            <div class="rate-slot-card" data-slot="4" onclick="TimeCalc.onRateSlotClick(4)">
+              <span class="slot-badge">E</span>
+              <span class="slot-curr-name" id="slotCardCurr_4">🇦🇺 AUD</span>
+            </div>
+            <!-- F: Slot 5 -->
+            <div class="rate-slot-card" data-slot="5" onclick="TimeCalc.onRateSlotClick(5)">
+              <span class="slot-badge">F</span>
+              <span class="slot-curr-name" id="slotCardCurr_5">🇨🇦 CAD</span>
+            </div>
+          </div>
+          <div class="rate-slots-hint" data-i18n="rate_modal_guide">※通貨を選んで枠に割り当て、またはドラッグ＆ドロップできます</div>
+        </div>
+      </div>
 
-      const dict = i18n_news[lang] || i18n_news["ja"];
+      <div class="rate-select-footer">
+        <button type="button" class="calc-btn calc-btn-clear" style="padding: 6px 14px; font-size: 12px;"
+          onclick="TimeCalc.resetCurrencySlotsToDefault()" data-i18n="rate_modal_reset">↺ 初期値に戻す</button>
+        <button type="button" class="calc-btn calc-btn-rate-confirm" onclick="TimeCalc.closeRateSelectLayer()"
+          data-i18n="rate_modal_confirm">✓ 決定して閉じる</button>
+      </div>
+    </div>
+  </div>
 
-      // テキスト更新
-      document.querySelectorAll("[data-i18n]").forEach(function(el) {
-        const key = el.getAttribute("data-i18n");
-        if (dict[key] !== undefined) {
-          el.innerHTML = dict[key];
-        }
-      });
+  <!-- 指/マウス追従用 ドラッグゴースト要素 -->
+  <div id="currDragGhost" class="curr-drag-ghost" style="display:none;">USD</div>
 
-      // alt属性更新
-      document.querySelectorAll("[data-i18n-alt]").forEach(function(el) {
-        const key = el.getAttribute("data-i18n-alt");
-        if (dict[key] !== undefined) {
-          el.alt = dict[key];
-        }
-      });
-    }
-
-    // 初回適用
-    setLanguage(currentLang);
-
-    // 1. 過去のService Worker（キャッシュ機構）の完全解除
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.getRegistrations().then(function(registrations) {
-        for (let registration of registrations) {
-          registration.unregister();
-        }
-      });
-    }
-
-    // 2. ブラウザ内のCache Storageを完全にクリア（古い情報の蓄積を防止）
-    if ('caches' in window) {
-      caches.keys().then(function(names) {
-        for (let name of names) {
-          caches.delete(name);
-        }
-      });
-    }
-
-    // 3. QRコード画像の強制最新読み込み（キャッシュ回避）
-    function updateQrImage() {
-      const qrImg = document.getElementById('qrCodeImg');
-      if (qrImg) {
-        qrImg.src = 'QRCorde-z.PNG?t=' + Date.now();
-      }
-    }
-    updateQrImage();
-
-    // =========================================================================
-    // ★ HTML自動最新検知＆即時リフレッシュ（Safari / iPhoneホーム画面対応）
-    // =========================================================================
-    const CURRENT_HTML_VERSION = (document.querySelector('meta[name="app-version"]')?.getAttribute('content') || '20261010_02').trim();
-
-    function checkForHtmlUpdate() {
-      // Safariのキャッシュを100%回避するため、ミリ秒単位のタイムスタンプ付きURLでサーバーに直接問い合わせ
-      const checkUrl = window.location.pathname + '?nocache=' + Date.now();
-      fetch(checkUrl, {
-        cache: 'no-store',
-        headers: {
-          'Cache-Control': 'no-cache, no-store, must-revalidate',
-          'Pragma': 'no-cache'
-        }
-      })
-      .then(function(res) {
-        if (!res.ok) return null;
-        return res.text();
-      })
-      .then(function(htmlText) {
-        if (!htmlText) return;
-        // サーバー側の最新HTMLからバージョン番号を取得
-        const match = htmlText.match(/<meta\s+name=["']app-version["']\s+content=["']([^"']+)["']/i);
-        if (match && match[1]) {
-          const serverVersion = match[1].trim();
-          // サーバー側のバージョンが現在の画面と異なる場合、最新版を強制再読込
-          if (serverVersion !== CURRENT_HTML_VERSION) {
-            console.log('New version detected (' + serverVersion + '). Updating page to latest...');
-            const newUrl = window.location.pathname + '?v=' + encodeURIComponent(serverVersion);
-            window.location.replace(newUrl);
-          }
-        }
-      })
-      .catch(function(err) {
-        // オフライン環境や電波が届かない場所ではエラーを無視し、画面をそのまま利用可能にする
-        console.log('Update check skipped (offline or network error):', err);
-      });
-    }
-
-    // 起動時にサーバーの最新HTMLをチェック
-    checkForHtmlUpdate();
-
-    // 4. ホーム画面からの起動時やバックグラウンド復帰時の自動最新チェック（bfcache対策）
-    window.addEventListener('pageshow', function(event) {
-      if (event.persisted) {
-        checkForHtmlUpdate();
-      }
-    });
-
-    // 5. アプリ画面がアクティブ（前面）になった時にも最新バージョン＆QRを確認
-    document.addEventListener('visibilitychange', function() {
-      if (document.visibilityState === 'visible') {
-        updateQrImage();
-        checkForHtmlUpdate();
-      }
-    });
-  </script>
+  <script src="i18n.js?v=20" defer></script>
+  <script src="script.js?c=99" defer></script>
 </body>
+
 </html>
